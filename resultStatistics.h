@@ -1,7 +1,10 @@
+#ifndef __resultStatistics_h__
+#define __resultStatistics_h__
+
 #include "populationConfig.h"
 
 class ResultStatistics {
-public: 
+public:
 	PopulationConfig cfg;
 	double precision_percentage;
 	double recall_percentage;
@@ -10,9 +13,11 @@ public:
 	long LDA_count;
 	long LDA_time;
 
-	string to_string(string head) ;
+	// string to_string(string head) ;
 
-	string time_to_str(long milliseconds, long string_min_length) ;
+	// string time_to_str(long milliseconds, long string_min_length) ;
 
 	void OnLDAFinish(PopulationConfig cfg) ;
 };
+
+#endif

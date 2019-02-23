@@ -3,7 +3,7 @@
 
 ResultStatistics geneticLogic(int population, int numberOfDocuments)
 {
-    ResultStatistics result();
+    ResultStatistics result;
 
     PopulationConfig* mInitialPopulation = initArray(population);
 
@@ -13,21 +13,22 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments)
     for (int i = 0; i < population; i++) {
         mInitialPopulation[i].random();
     }
-    
+
     int loop_round = 0;
     while (!maxFitnessFound) {
         ++loop_round;
         clock_t t = clock();
-        
+
         bool error = false;
 
-        for (int i = 0; i < THREADS_PER_MACHINE; i++) {
-            int population_index = THREADS_PER_MACHINE * (NetworkManager.getInstance().getMyMachineID() + 1) + i;
-            threads[i] = new Thread(new MyThread(i, mInitialPopulation[population_index], population_index, numberOfDocuments, false));
-            // System.out.println("Thread " + i + " begin start...");
-            threads[i].start();
-            // System.out.println("Thread " + i + " end start...");
-        }
+        // TO DO:
+        // for (int i = 0; i < THREADS_PER_MACHINE; i++) {
+        //     int population_index = THREADS_PER_MACHINE * (NetworkManager.getInstance().getMyMachineID() + 1) + i;
+        //     threads[i] = new Thread(new MyThread(i, mInitialPopulation[population_index], population_index, numberOfDocuments, false));
+        //     // System.out.println("Thread " + i + " begin start...");
+        //     threads[i].start();
+        //     // System.out.println("Thread " + i + " end start...");
+        // }
 
         for(int i=0; i<population; ++i)
         {
@@ -35,8 +36,9 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments)
         }
 
         clock_t paraEndTime = clock() - t;
-        cout << "round " << loop_round << " parallel part takes " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms   "
-                            << NetworkManager.to_string(mInitialPopulation) << endl;
+        // TO DO:
+        // cout << "round " << loop_round << " parallel part takes " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms   "
+        //                     << NetworkManager.to_string(mInitialPopulation) << endl;
 
         // ranking and ordering the chromosomes based on the fitness function.
         // no sorting code found?(by Xiaolin)
@@ -63,12 +65,14 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments)
                         // run the function again to get the words in each topic
                         // the third parameter states that the topics are to be written to a file
                         // create an instance of the topic modelling class
-                        TopicModelling tm = new TopicModelling();
-                        tm.LDA(mInitialPopulation[j], true, false);
-                        cout << "The best distribution is: " << mInitialPopulation[j].to_string() << endl;
-                        result.cfg = mInitialPopulation[j];
-                        result.OnLDAFinish(result.cfg);
-                        maxFitnessFound = true;
+
+                        // TO DO:
+                        // TopicModelling tm = new TopicModelling();
+                        // tm.LDA(mInitialPopulation[j], true, false);
+                        // cout << "The best distribution is: " << mInitialPopulation[j].to_string() << endl;
+                        // result.cfg = mInitialPopulation[j];
+                        // result.OnLDAFinish(result.cfg);
+                        // maxFitnessFound = true;
                         break;
                     }
                     maxFitnessChromosome = j;
@@ -81,7 +85,7 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments)
 
             // copy the chromosome with high fitness to the next generation
             newPopulation[i].copy(mInitialPopulation[maxFitnessChromosome]);
-            mInitialPopulation[maxFitnessChromosome].fitness_value = Integer.MIN_VALUE;
+            mInitialPopulation[maxFitnessChromosome].fitness_value = INT_MIN;
         }
 
         if (maxFitnessFound) {
@@ -98,12 +102,12 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments)
 
         // perform crossover - to fill the rest of the 2/3rd of the initial Population
         if (BEST_POPULATION_SIZE <= 0) {
-            for (int i = 0; i < newPopulation.length; ++i) {
+            for (int i = 0; i < population; ++i) {
                 newPopulation[i].random();
             }
         } else {
             double MUTATION_RATIO = 0.5;
-            for (int i = BEST_POPULATION_SIZE; i < newPopulation.length; ++i) {
+            for (int i = BEST_POPULATION_SIZE; i < population; ++i) {
                 int iParent = i % BEST_POPULATION_SIZE;
                 newPopulation[i].copy(newPopulation[iParent]);
                 newPopulation[i].fitness_value = 0;
@@ -118,7 +122,9 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments)
 
         // substitute the initial population with the new population and continue
         mInitialPopulation = newPopulation;
-        SortInitialPopulation();
+
+        // TO DO:
+        //SortInitialPopulation();
 
         t = clock() - t;
         cout << "round " << loop_round << " other part takes " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms"<<endl;
@@ -130,7 +136,8 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments)
          * is repeated. Terminate the loop in predetermined number of iterations.
          */
     }
-    cout << "geneticLogic runs " << loop_round << " loops for fitness-threshhold: " << FITNESS_THRESHHOLD << ".  " 
-    << NetworkManager.to_string(result.cfg) << "    mInitialPopulation:" << NetworkManager.to_string(mInitialPopulation) << endl;
-    return result;   
+    // TO DO:
+    // cout << "geneticLogic runs " << loop_round << " loops for fitness-threshhold: " << FITNESS_THRESHHOLD << ".  "
+    // << NetworkManager.to_string(result.cfg) << "    mInitialPopulation:" << NetworkManager.to_string(mInitialPopulation) << endl;
+    return result;
 }
