@@ -39,7 +39,7 @@ int main()
     cout << "Preprocessing takes " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms" << endl;
 
 
-	// TODO: call genetic logic to perform LDA-GA
+	// call genetic logic to perform LDA-GA
 	geneticLogic(POPULATION_SIZE, documentsMap.size());
 
 	// TODO: call cluster on topics

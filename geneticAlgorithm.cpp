@@ -22,13 +22,9 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments)
         bool error = false;
 
         // TO DO:
-        // for (int i = 0; i < THREADS_PER_MACHINE; i++) {
-        //     int population_index = THREADS_PER_MACHINE * (NetworkManager.getInstance().getMyMachineID() + 1) + i;
-        //     threads[i] = new Thread(new MyThread(i, mInitialPopulation[population_index], population_index, numberOfDocuments, false));
-        //     // System.out.println("Thread " + i + " begin start...");
-        //     threads[i].start();
-        //     // System.out.println("Thread " + i + " end start...");
-        // }
+        for (int i = 0; i < population; i++) {
+            parallelizableStart(i, mInitialPopulation[population_index], population_index, numberOfDocuments, false);
+        }
 
         for(int i=0; i<population; ++i)
         {
@@ -36,9 +32,7 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments)
         }
 
         clock_t paraEndTime = clock() - t;
-        // TO DO:
-        // cout << "round " << loop_round << " parallel part takes " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms   "
-        //                     << NetworkManager.to_string(mInitialPopulation) << endl;
+        cout << "round " << loop_round << " parallelizable part takes " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms" << endl;
 
         // ranking and ordering the chromosomes based on the fitness function.
         // no sorting code found?(by Xiaolin)
