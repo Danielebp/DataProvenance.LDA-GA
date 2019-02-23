@@ -33,3 +33,6 @@ txtData/
 *.exe
 *.out
 *.app
+._.DS_Store
+err.txt
+ldaga
