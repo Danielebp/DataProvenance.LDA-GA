@@ -9,12 +9,15 @@
 #include <unistd.h> 
 #include <vector>
 #include "document.h"
+#include "geneticAlgorithm.h"
 #include "utils.h"
 using namespace std;
 
 bool isStopWord(string s, unordered_map<string,long> stopwords);
 unordered_map<string,long> loadStopWords (string filename);
 unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, unordered_map<string,long> stopWords);
+
+#define POPULATION_SIZE 6
 
 int main() 
 {
@@ -37,7 +40,8 @@ int main()
         
 	
 	// TODO: call genetic logic to perform LDA-GA
-	
+	geneticLogic(POPULATION_SIZE, documentsMap.size());
+
 	// TODO: call cluster on topics
 	
 	// TODO: calculate precision

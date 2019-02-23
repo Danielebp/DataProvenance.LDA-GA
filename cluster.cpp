@@ -8,4 +8,4 @@ class Cluster
 	// TODO: cleanClusters ()
 	
 	// TODO: cleanSourceFileCluster()
-}
+};

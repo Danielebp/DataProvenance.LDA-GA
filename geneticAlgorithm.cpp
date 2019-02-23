@@ -1,47 +1,26 @@
 
 #include "geneticAlgorithm.h"
 
-void geneticLogic(int population)
+ResultStatistics geneticLogic(int population, int numberOfDocuments)
 {
-    int POPULATION_COUNT = 6;
-    PopulationConfig[] mInitialPopulation = PopulationConfig.initArray(POPULATION_COUNT);
+    ResultStatistics result();
 
-    boolean maxFitnessFound = false;
+    PopulationConfig* mInitialPopulation = initArray(population);
+
+    bool maxFitnessFound = false;
 
     // populating the initial population
-    for (int i = 0; i < mInitialPopulation.length; i++) {
+    for (int i = 0; i < population; i++) {
         mInitialPopulation[i].random();
     }
     
     int loop_round = 0;
-    while (!maxFitnessFound && isRunning) {
+    while (!maxFitnessFound) {
         ++loop_round;
         clock_t t = clock();
         
-        boolean error = false;
-        // send populations to slaves
-        NetworkManager.getInstance().waitForAllSlaves();
-        mFinishedSlaveCount = 0;
-        for (int iSlave = 0; iSlave < NetworkManager.getInstance().getSlaveCount(); ++iSlave) {
-            PopulationConfig[] subPopulation = new PopulationConfig[THREADS_PER_MACHINE];
-            for (int j = 0; j < THREADS_PER_MACHINE; ++j) {
-                subPopulation[j] = mInitialPopulation[THREADS_PER_MACHINE * (iSlave + 1) + j];
-            }
-            if (!NetworkManager.getInstance().sendProtocol_ProcessSubPopulationNew(iSlave, subPopulation)) {
-                error = true;
-                break;
-            }
-        }
-        if (error) {
-            break;
-        }
-        /**
-         * the total number of documents that are being processed. Put them in a folder
-         * and add the folder path here.
-         */
-        int numberOfDocuments = new File(WikiScrape.ORIGINAL_DATA_DIRECTORY).listFiles().length;
+        bool error = false;
 
-        Thread threads[] = new Thread[THREADS_PER_MACHINE];
         for (int i = 0; i < THREADS_PER_MACHINE; i++) {
             int population_index = THREADS_PER_MACHINE * (NetworkManager.getInstance().getMyMachineID() + 1) + i;
             threads[i] = new Thread(new MyThread(i, mInitialPopulation[population_index], population_index, numberOfDocuments, false));
@@ -50,24 +29,9 @@ void geneticLogic(int population)
             // System.out.println("Thread " + i + " end start...");
         }
 
-        for (int i = 0; i < THREADS_PER_MACHINE; i++) {
-            threads[i].join();
-            // System.out.println("Thread " + i + " joined");
-        }
-        NetworkManager.getInstance().dispatchProtocols();
-
-        // receive populations from slaves
-        while (mFinishedSlaveCount < NetworkManager.getInstance().getSlaveCount() && isRunning) {
-            NetworkManager.getInstance().dispatchProtocols();
-            Thread.sleep(1);
-        }
-        for(int i=0; i<mInitialPopulation.length; ++i)
+        for(int i=0; i<population; ++i)
         {
             result.OnLDAFinish(mInitialPopulation[i]);
-        }
-
-        if (!isRunning) {
-            break;
         }
 
         clock_t paraEndTime = clock() - t;
@@ -78,13 +42,13 @@ void geneticLogic(int population)
         // no sorting code found?(by Xiaolin)
         // We need only the top 1/3rd of the chromosomes with high fitness values -
         // Silhouette coefficient
-        PopulationConfig[] newPopulation = PopulationConfig.initArray(POPULATION_COUNT);
+        PopulationConfig* newPopulation = initArray(population);
         // copy only the top 1/3rd of the population to the new population
-        final int BEST_POPULATION_SIZE = mInitialPopulation.length / 3;
+        int BEST_POPULATION_SIZE = population / 3;
         for (int i = 0; i < BEST_POPULATION_SIZE; i++) {
-            double maxFitness = Integer.MIN_VALUE;
+            double maxFitness = DBL_MIN;
             int maxFitnessChromosome = -1;
-            for (int j = 0; j < mInitialPopulation.length; j++) {
+            for (int j = 0; j < population; j++) {
                 if (mInitialPopulation[j].fitness_value > maxFitness) {
                     maxFitness = mInitialPopulation[j].fitness_value;
 
@@ -101,7 +65,7 @@ void geneticLogic(int population)
                         // create an instance of the topic modelling class
                         TopicModelling tm = new TopicModelling();
                         tm.LDA(mInitialPopulation[j], true, false);
-                        System.out.println("The best distribution is: " + mInitialPopulation[j].to_string());
+                        cout << "The best distribution is: " << mInitialPopulation[j].to_string() << endl;
                         result.cfg = mInitialPopulation[j];
                         result.OnLDAFinish(result.cfg);
                         maxFitnessFound = true;
@@ -138,15 +102,15 @@ void geneticLogic(int population)
                 newPopulation[i].random();
             }
         } else {
-            final double MUTATION_RATIO = 0.5;
+            double MUTATION_RATIO = 0.5;
             for (int i = BEST_POPULATION_SIZE; i < newPopulation.length; ++i) {
                 int iParent = i % BEST_POPULATION_SIZE;
                 newPopulation[i].copy(newPopulation[iParent]);
                 newPopulation[i].fitness_value = 0;
-                if (Math.random() < MUTATION_RATIO) {
+                if (getRandomFloat() < MUTATION_RATIO) {
                     newPopulation[i].random_topic();
                 }
-                if (Math.random() < MUTATION_RATIO) {
+                if (getRandomFloat() < MUTATION_RATIO) {
                     newPopulation[i].random_iteration();
                 }
             }
@@ -166,6 +130,7 @@ void geneticLogic(int population)
          * is repeated. Terminate the loop in predetermined number of iterations.
          */
     }
-    System.out.println("geneticLogic runs " + loop_round + " loops for fitness-threshhold: "+FITNESS_THRESHHOLD+".  "+ NetworkManager.to_string(result.cfg)+"    mInitialPopulation:"+ NetworkManager.to_string(mInitialPopulation));
+    cout << "geneticLogic runs " << loop_round << " loops for fitness-threshhold: " << FITNESS_THRESHHOLD << ".  " 
+    << NetworkManager.to_string(result.cfg) << "    mInitialPopulation:" << NetworkManager.to_string(mInitialPopulation) << endl;
     return result;   
 }
