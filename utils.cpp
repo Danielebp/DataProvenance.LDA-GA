@@ -12,7 +12,7 @@ bool isNumber(string s)
     if(isDigit(s[0]))
     {
         isNumb = true;
-        for (int i=1; i < s.length(); i++) 
+        for (int i=1; i < s.length(); i++)
         {
             if(!isDigit(s[i])) {
                 isNumb = false;

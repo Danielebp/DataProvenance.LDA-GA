@@ -21,8 +21,8 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments)
 
         bool error = false;
 
-        // TO DO:
         for (int i = 0; i < population; i++) {
+          int population_index = i;
             parallelizableStart(i, mInitialPopulation[population_index], population_index, numberOfDocuments, false);
         }
 
