@@ -93,4 +93,65 @@ void LDAAccumulativeModel::AppendAsString(const map<string, int>& word_index_map
   }
 }
 
+int LDAAccumulativeModel::partition (int *arr, int topic, int low, int high)
+{
+    int pivot = topic_distributions_[arr[high]][topic];    // pivot
+    int i = (low - 1);  // Index of smaller element
+    int tmp;
+    for (int j = low; j <= high- 1; j++)
+    {
+        // If current element is smaller than or
+        // equal to pivot
+        if (topic_distributions_[arr[j]][topic] >= pivot)
+        {
+            i++;    // increment index of smaller element
+            tmp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = tmp;
+        }
+    }
+    tmp = arr[i+1];
+    arr[i+1] = arr[high];
+    arr[high] = tmp;
+    return (i + 1);
+}
+
+void LDAAccumulativeModel::sortWords(int * sortedIdx, int topic, int low, int high) {
+
+  if (low < high)
+    {
+        /* pi is partitioning index, arr[p] is now
+           at right place */
+        int pi = partition(sortedIdx, topic, low, high);
+
+        // Separately sort elements before
+        // partition and after partition
+        sortWords(sortedIdx, topic, low, pi - 1);
+        sortWords(sortedIdx, topic, pi + 1, high);
+    }
+
+}
+
+string LDAAccumulativeModel::GetWordsPerTopic(const map<string, int>& word_index_map, int topic, int nWords)  {
+  vector<string> index_word_map(word_index_map.size());
+  for (map<string, int>::const_iterator iter = word_index_map.begin();
+       iter != word_index_map.end(); ++iter) {
+    index_word_map[iter->second] = iter->first;
+  }
+
+  int totWords = topic_distributions_.size();
+  int* sortedIdx = new int[totWords];
+  for(int i=0; i<totWords; i++)
+    sortedIdx[i] = i;
+
+  sortWords(sortedIdx, topic, 0, totWords-1);
+
+  string bestwords = "";
+  for (int i = 0; i < nWords; ++i) {
+    bestwords+= index_word_map[sortedIdx[i]] + ";";
+  }
+
+  return bestwords;
+}
+
 }  // namespace learning_lda

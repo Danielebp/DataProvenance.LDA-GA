@@ -60,6 +60,11 @@ class LDAAccumulativeModel {
   // Output accumulative_topic_distributions_ in human-readable
   // format.
   void AppendAsString(const map<string, int>& word_index_map, std::ostream& out) const;
+  string GetWordsPerTopic(const map<string, int>& word_index_map, int topic, int nWords) ;
+
+  // sorting
+  int partition (int *arr, int topic, int low, int high);
+  void sortWords(int * sortedIdx, int topic, int low, int high);
  private:
   // Increments the topic count for a particular word (or decrements, for
   // negative values of count).  Creates the word distribution if it doesn't
