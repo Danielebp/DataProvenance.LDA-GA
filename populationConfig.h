@@ -34,5 +34,6 @@ class PopulationConfig
 };
 
 PopulationConfig* initArray(int count);
+string to_string(PopulationConfig* population, int count);
 
 #endif

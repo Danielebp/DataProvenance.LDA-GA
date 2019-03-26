@@ -46,3 +46,13 @@ PopulationConfig* initArray(int count) {
 	}
 	return array;
 }
+
+string to_string(PopulationConfig* population, int count) {
+	string result = "";
+
+	for (int i = 0; i < count; i++) {
+		result += " " + population[i].to_string();
+	}
+
+	return result;
+}

@@ -13,9 +13,9 @@ public:
 	long LDA_count;
 	long LDA_time;
 
-	// string to_string(string head) ;
+	string to_string(string head) ;
 
-	// string time_to_str(long milliseconds, long string_min_length) ;
+	string time_to_str(long milliseconds, long string_min_length) ;
 
 	void OnLDAFinish(PopulationConfig cfg) ;
 };
