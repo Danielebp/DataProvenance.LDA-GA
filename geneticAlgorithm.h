@@ -9,11 +9,13 @@
 #include "populationConfig.h"
 #include "resultStatistics.h"
 #include "parallelizables.h"
+#include "TopicModelling.h"
 
 using namespace std;
 
 const double FITNESS_THRESHHOLD = 0.35;
 
 ResultStatistics geneticLogic(int population, int numberOfDocuments);
+void sortInitialPopulation(PopulationConfig* mInitialPopulation, int size);
 
 #endif

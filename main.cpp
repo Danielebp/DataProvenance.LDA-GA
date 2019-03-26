@@ -11,6 +11,7 @@
 #include "document.h"
 #include "utils.h"
 #include "geneticAlgorithm.h"
+
 using namespace std;
 
 bool isStopWord(string s, unordered_map<string,long> stopwords);
@@ -19,32 +20,38 @@ unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, 
 
 #define POPULATION_SIZE 6
 
-int main()
-{
-    clock_t t;
-    string stopWordsFile = "stopwords.txt";
-    unordered_map<string,long> stopWords = loadStopWords(stopWordsFile);
+int main() {
+  clock_t t;
+  string stopWordsFile = "stopwords.txt";
+  unordered_map<string,long> stopWords = loadStopWords(stopWordsFile);
 
-    string dataDir =  "txtData";		// name of the directory that contains the original source data
-    string mirrorDir =  "processedData";		//name of the directory where the modified data is to be stored
+  string dataDir =  "txtData";		// name of the directory that contains the original source data
+  string mirrorDir =  "processedData";		//name of the directory where the modified data is to be stored
 
-    // starts timer for performance measurement
-    t = clock();
+  // starts timer for performance measurement
+  t = clock();
 
-	// tokenize articles
-    unordered_map<string,Document> documentsMap = tokenizeFiles(dataDir, mirrorDir, stopWords);
+  // tokenize articles
+  unordered_map<string,Document> documentsMap = tokenizeFiles(dataDir, mirrorDir, stopWords);
 
-    // Output the time it took to find all article's titles and keywords
-    t = clock() - t;
-    cout << "Preprocessing takes " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms" << endl;
+  // Output the time it took to find all article's titles and keywords
+  t = clock() - t;
+  cout << "Preprocessing takes " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms" << endl;
 
+  // write input file for LDA
+  ofstream outfile ("./input1.txt");
+  for (pair<string, Document> element : documentsMap)
+  {
+    outfile << element.first << "##LDA_DELIMITER##" << (element.second).getKeyWords() << endl;
+  }
+  outfile.close();
 
-	// call genetic logic to perform LDA-GA
-	geneticLogic(POPULATION_SIZE, documentsMap.size());
+  // call genetic logic to perform LDA-GA
+  geneticLogic(POPULATION_SIZE, documentsMap.size());
 
-	// TODO: call cluster on topics
+  // TODO: call cluster on topics
 
-	// TODO: calculate precision
+  // TODO: calculate precision
 }
 
 
@@ -85,8 +92,7 @@ unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, 
         {
             content = "";
             cout<<filename<<endl;
-            filename = sourceDir + "/" + filename;
-            ifstream myfile (filename);
+            ifstream myfile (sourceDir + "/" + filename);
 
             while ( getline (myfile,semitoken, '\n') )
             {
@@ -117,7 +123,7 @@ unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, 
 
             // Write content to the file
             if (content.length() != 0) {
-                ofstream outfile (destDir + "/" + getFileName(filename));
+                ofstream outfile (destDir + "/" + filename);
                 outfile << content;
                 outfile.close();
             }
