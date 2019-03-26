@@ -1,6 +1,3 @@
-processedData/
-txtData/
-
 # Prerequisites
 *.d
 
@@ -33,6 +30,16 @@ txtData/
 *.exe
 *.out
 *.app
+
+# other unwanted files
 ._.DS_Store
 err.txt
 ldaga
+._*
+
+# data directories
+processedData/
+txtData/
+plda/docker/
+plda/testdata/
+plda/tmp/
