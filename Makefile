@@ -1,40 +1,23 @@
-# *****************************************************
-# Variables to control Makefile operation
+CC=g++
 
-CXX = g++
-CXXFLAGS = -std=c++11
+CFLAGS=-std=c++11
+OBJ_PATH = ./obj
 
-# ****************************************************
-# Targets needed to bring the executable up to date
-
-main: main.o document.o utils.o geneticAlgorithm.o resultStatistics.o populationConfig.o scanner.o parallelizables.o
-	$(CXX) $(CXXFLAGS) -o ldaga main.o document.o utils.o geneticAlgorithm.o resultStatistics.o populationConfig.o scanner.o parallelizables.o
-
-# ****************************************************
-# Dependencies
-main.o: main.cpp utils.h document.h geneticAlgorithm.h
-	$(CXX) $(CXXFLAGS) -c main.cpp
-
-document.o: document.h document.cpp
-	$(CXX) $(CXXFLAGS) -c document.cpp
-
-utils.o: utils.h utils.cpp
-	$(CXX) $(CXXFLAGS) -c utils.cpp
-
-scanner.o: scanner.h scanner.cpp
-		$(CXX) $(CXXFLAGS) -c scanner.cpp
-
-geneticAlgorithm.o: geneticAlgorithm.h populationConfig.h resultStatistics.h parallelizables.h
-	$(CXX) $(CXXFLAGS) -c geneticAlgorithm.cpp
-
-resultStatistics.o: resultStatistics.h populationConfig.h
-	$(CXX) $(CXXFLAGS) -c resultStatistics.cpp
-
-populationConfig.o: populationConfig.h utils.h
-	$(CXX) $(CXXFLAGS) -c populationConfig.cpp
-
-parallelizables.o: parallelizables.cpp parallelizables.h populationConfig.h scanner.h
-	$(CXX) $(CXXFLAGS) -c parallelizables.cpp
+all: ldaga
 
 clean:
-	rm *.o ldaga
+	rm -rf $(OBJ_PATH)
+	rm -f ldaga
+
+OBJ_SRCS := document.cpp utils.cpp scanner.cpp geneticAlgorithm.cpp resultStatistics.cpp populationConfig.cpp parallelizables.cpp TopicModelling.cpp
+ALL_OBJ = $(patsubst %.cpp, %.o, $(OBJ_SRCS))
+PLDA_SRCS := cmd_flags.o common.o document.o model.o accumulative_model.o sampler.o
+PLDA_OBJ = $(patsubst %.o, plda/obj/%.o, $(PLDA_SRCS))
+OBJ = $(addprefix $(OBJ_PATH)/, $(ALL_OBJ)) $(PLDA_OBJ)
+
+$(OBJ_PATH)/%.o: %.cpp
+	@ mkdir -p $(OBJ_PATH)
+	$(CC) -c $(CFLAGS) $< -o $@
+
+ldaga: main.cpp $(OBJ)
+	$(CC) $(CFLAGS) $(OBJ) $< -o $@
