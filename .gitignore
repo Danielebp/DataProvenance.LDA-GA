@@ -36,6 +36,8 @@
 err.txt
 ldaga
 ._*
+distribution_*.txt
+model_*.txt
 
 # data directories
 processedData/
