@@ -46,7 +46,7 @@ int TopicModelling::LoadAndInitTrainingCorpus(const string& corpus_file, int num
 
       //convert all the letters to lowercase
       transform(line.begin(), line.end(), line.begin(), ::tolower);
-      int pos = line.find("##LDA_DELIMITER##");
+      int pos = line.find(delimiter);
       line.erase(0, pos + 17);
 
       DocumentWordTopicsPB document;
@@ -78,6 +78,28 @@ int TopicModelling::LoadAndInitTrainingCorpus(const string& corpus_file, int num
   return corpus->size();
 }
 
+void TopicModelling::TrainModel(LDAModel * model, int wordIndexMapSize) {
+    LDAAccumulativeModel accum_model(numberOfTopics, wordIndexMapSize);
+    LDASampler sampler(0.01, 0.01, model, &accum_model);
+
+    sampler.InitModelGivenTopics(corpus);
+
+    for (int iter = 0; iter < numberOfIterations; ++iter) {
+      cout << "Iteration " << iter << " ...\n";
+      // if (flags.compute_likelihood_ == "true") {
+      //   double loglikelihood = 0;
+      //   for (list<LDADocument*>::const_iterator iterator = corpus.begin(); iterator != corpus.end(); ++iterator) {
+      //     loglikelihood += sampler.LogLikelihood(*iterator);
+      //   }
+      //   cout << "Loglikelihood: " << loglikelihood << endl;
+      // }
+      sampler.DoIteration(&corpus, true, iter < burn_in_iterations);
+    }
+    accum_model.AverageModel(numberOfIterations - burn_in_iterations);
+
+    FreeCorpus(&corpus);
+}
+
 void TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, string inputFile, string outputFile, string header, int numberOfIterations, int burn_in_iterations) {
   LDASampler sampler(0.01, 0.01, &model, NULL);
   ifstream fin(inputFile);
@@ -92,7 +114,7 @@ void TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, stri
         line[0] != '#') {       // Skip comment lines.
       DocumentWordTopicsPB document_topics;
 
-      int pos = line.find("##LDA_DELIMITER##");
+      int pos = line.find(delimiter);
       docID = line.substr(0, pos);
       line.erase(0, pos + 17);
 
@@ -143,25 +165,8 @@ void TopicModelling::LDA(int numberOfTopics, int numberOfIterations, bool topicF
   int docCount = LoadAndInitTrainingCorpus(inputFile, numberOfTopics, &word_index_map, &corpus);
 
   LDAModel model(numberOfTopics, word_index_map);
-  LDAAccumulativeModel accum_model(numberOfTopics, word_index_map.size());
-  LDASampler sampler(0.01, 0.01, &model, &accum_model);
 
-  sampler.InitModelGivenTopics(corpus);
-
-  for (int iter = 0; iter < numberOfIterations; ++iter) {
-    cout << "Iteration " << iter << " ...\n";
-    // if (flags.compute_likelihood_ == "true") {
-    //   double loglikelihood = 0;
-    //   for (list<LDADocument*>::const_iterator iterator = corpus.begin(); iterator != corpus.end(); ++iterator) {
-    //     loglikelihood += sampler.LogLikelihood(*iterator);
-    //   }
-    //   cout << "Loglikelihood: " << loglikelihood << endl;
-    // }
-    sampler.DoIteration(&corpus, true, iter < burn_in_iterations);
-  }
-  accum_model.AverageModel(numberOfIterations - burn_in_iterations);
-
-  FreeCorpus(&corpus);
+  TrainModel(&model, word_index_map.size());
 
   ofstream fout("model"+MyCount+".txt");
   accum_model.AppendAsString(word_index_map, fout);

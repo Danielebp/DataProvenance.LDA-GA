@@ -22,6 +22,8 @@ using namespace std;
 using namespace learning_lda;
 
 class TopicModelling {
+private:
+    string delimiter = "##LDA_DELIMITER##";
 
 public:
   TopicModelling(){}
