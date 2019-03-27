@@ -78,7 +78,7 @@ int TopicModelling::LoadAndInitTrainingCorpus(const string& corpus_file, int num
   return corpus->size();
 }
 
-void TopicModelling::TrainModel(LDAModel * model, int wordIndexMapSize) {
+LDAAccumulativeModel TopicModelling::TrainModel(LDAModel * model, LDACorpus & corpus, int wordIndexMapSize, int numberOfTopics, int numberOfIterations, int burn_in_iterations) {
     LDAAccumulativeModel accum_model(numberOfTopics, wordIndexMapSize);
     LDASampler sampler(0.01, 0.01, model, &accum_model);
 
@@ -98,6 +98,8 @@ void TopicModelling::TrainModel(LDAModel * model, int wordIndexMapSize) {
     accum_model.AverageModel(numberOfIterations - burn_in_iterations);
 
     FreeCorpus(&corpus);
+
+    return accum_model;
 }
 
 void TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, string inputFile, string outputFile, string header, int numberOfIterations, int burn_in_iterations) {
@@ -107,6 +109,7 @@ void TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, stri
   out<<header<<endl;
   string line;
   string docID;
+  int docNum = 0;
   while (getline(fin, line)) {  // Each line is a training document.
     if (line.size() > 0 &&      // Skip empty lines.
         line[0] != '\r' &&      // Skip empty lines.
@@ -145,8 +148,8 @@ void TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, stri
 
       out<<docID<<"\t";
       for (int topic = 0; topic < prob_dist.size(); ++topic) {
-        out << prob_dist[topic] /
-              (numberOfIterations - burn_in_iterations)
+        distibution[((docNum++)*numberOfTopics) + topic] = prob_dist[topic] / (numberOfIterations - burn_in_iterations);
+        out << distibution[((docNum++)*prob_dist.size()) + topic]
             << ((topic < prob_dist.size() - 1) ? "\t" : "\n");
       }
     }
@@ -166,7 +169,7 @@ void TopicModelling::LDA(int numberOfTopics, int numberOfIterations, bool topicF
 
   LDAModel model(numberOfTopics, word_index_map);
 
-  TrainModel(&model, word_index_map.size());
+  LDAAccumulativeModel accum_model = TrainModel(&model, corpus, word_index_map.size(), numberOfTopics, numberOfIterations, burn_in_iterations);
 
   ofstream fout("model"+MyCount+".txt");
   accum_model.AppendAsString(word_index_map, fout);

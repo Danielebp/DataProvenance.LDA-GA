@@ -24,9 +24,20 @@ using namespace learning_lda;
 class TopicModelling {
 private:
     string delimiter = "##LDA_DELIMITER##";
+    float *distribution;
+    int numberOfTopics;
+    int numberOfDocuments;
 
 public:
-  TopicModelling(){}
+  TopicModelling(int numberOfTopics, int numberOfDocuments){
+      distibution = new float[numberOfTopics*numberOfDocuments];
+      this->numberOfTopics = numberOfTopics;
+      this->numberOfDocuments = numberOfDocuments;
+  }
+
+  inline float getDistribution(int topic, int docNum) {
+      return distibution[((docNum++)*numberOfTopics) + topic];
+  }
 
   map<string, int> AgrupateTokens (string line) ;
 
@@ -35,6 +46,8 @@ public:
   int LoadAndInitTrainingCorpus(const string& corpus_file, int num_topics, map<string, int>* word_index_map, LDACorpus* corpus) ;
 
   void Infer(LDAModel model, map<string, int> word_index_map, string inputFile, string outputFile, string header, int numberOfIterations, int burn_in_iterations) ;
+
+  LDAAccumulativeModel TrainModel(LDAModel * model, LDACorpus & corpus, int wordIndexMapSize, int numberOfTopics, int numberOfIterations, int burn_in_iterations) ;
 
   void LDA(int numberOfTopics, int numberOfIterations, bool topicFile, string MyCount = "") ;
 
