@@ -11,7 +11,7 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments)
     clock_t t = clock();
 
     // TO DO:
-    TopicModelling tm("stopwords.txt");
+    TopicModelling tm;
     tm.LDA(15, 500, true);
     // cout << "The best distribution is: " << mInitialPopulation[j].to_string() << endl;
     // result.cfg = mInitialPopulation[j];

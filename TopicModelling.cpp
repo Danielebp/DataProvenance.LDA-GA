@@ -4,28 +4,12 @@ using namespace std;
 using namespace learning_lda;
 
 
-TopicModelling::TopicModelling(string stopWordsFile){
-    string line;
-    ifstream myfile (stopWordsFile);
-
-    while ( getline (myfile,line) )
-    {
-        line = trim(line);
-        stopWords.insert(line);
-    }
-    myfile.close();
-  }
-
 map<string, int> TopicModelling::AgrupateTokens (string line) {
   map<string, int> wordCount;
   string word;
   stringstream ss(line);
 
   while (ss >> word) {
-    // TODO: move this to pre-processing of files
-    if(stopWords.find(word)!= stopWords.end())
-      continue;
-
     map<string, int>::const_iterator iter = wordCount.find(word);
     if (iter == wordCount.end()) {
       (wordCount)[word] = 1;

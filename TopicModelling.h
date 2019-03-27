@@ -23,10 +23,8 @@ using namespace learning_lda;
 
 class TopicModelling {
 
-  unordered_set<string> stopWords;
-
 public:
-  TopicModelling(string stopWordsFile);
+  TopicModelling(){}
 
   map<string, int> AgrupateTokens (string line) ;
 

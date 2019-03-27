@@ -11,39 +11,35 @@
 #include "document.h"
 #include "utils.h"
 #include "geneticAlgorithm.h"
+#include "wordFilter.h"
 
 using namespace std;
 
-bool isStopWord(string s, unordered_map<string,long> stopwords);
-unordered_map<string,long> loadStopWords (string filename);
-unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, unordered_map<string,long> stopWords);
+unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, WordFilter wordFilter);
 
 #define POPULATION_SIZE 6
 
 int main() {
   clock_t t;
-  string stopWordsFile = "stopwords.txt";
-  unordered_map<string,long> stopWords = loadStopWords(stopWordsFile);
+  string stopWordsFile  = "stopwords.txt";
+  string ldaInputFile   = "input1.txt";
+  string dataDir        = "txtData";        // name of the directory that contains the original source data
+  string mirrorDir      = "processedData";  // name of the directory where the modified data is to be stored
+  string delimiter      = "##LDA_DELIMITER##";
 
-  string dataDir =  "txtData";		// name of the directory that contains the original source data
-  string mirrorDir =  "processedData";		//name of the directory where the modified data is to be stored
-
-  // starts timer for performance measurement
-  t = clock();
+  WordFilter wordFilter(stopWordsFile);
 
   // tokenize articles
-  unordered_map<string,Document> documentsMap = tokenizeFiles(dataDir, mirrorDir, stopWords);
-
-  // Output the time it took to find all article's titles and keywords
+  t = clock();
+  unordered_map<string,Document> documentsMap = tokenizeFiles(dataDir, mirrorDir, wordFilter);
   t = clock() - t;
+  // Output the time it took to find all article's titles and keywords
   cout << "Preprocessing takes " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms" << endl;
 
   // write input file for LDA
-  ofstream outfile ("./input1.txt");
+  ofstream outfile (ldaInputFile);
   for (pair<string, Document> element : documentsMap)
-  {
-    outfile << element.first << "##LDA_DELIMITER##" << (element.second).getKeyWords() << endl;
-  }
+    outfile << element.first << delimiter << (element.second).getKeyWords() << endl;
   outfile.close();
 
   // call genetic logic to perform LDA-GA
@@ -54,29 +50,9 @@ int main() {
   // TODO: calculate precision
 }
 
-
-unordered_map<string,long> loadStopWords (string filename)
-{
-    unordered_map<string,long> stopWords;
-    string line;
-    ifstream myfile (filename);
-
-    while ( getline (myfile,line) )
-    {
-        line = trim(line);
-        stopWords[line] = 0;
-    }
-    myfile.close();
-
-    return stopWords;
-}
-
-
-unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, unordered_map<string,long> stopWords)
-{
+unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, WordFilter wordFilter) {
     DIR* dirp = opendir(sourceDir.c_str());
     struct dirent* entry;
-    struct stat *buf;
     string filename;
     string semitoken;
     string token;
@@ -84,37 +60,28 @@ unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, 
     vector<Document> documentList;
     unordered_map<string,Document> documentsMap;
 
-
-    while ((entry = readdir(dirp)) != NULL){
+    while ((entry = readdir(dirp)) != NULL) {
         filename = entry->d_name;
 
-        if(filename.length() > 4 && filename.substr(filename.length()-4)==".txt")
-        {
+        if(filename.length() > 4 && filename.substr(filename.length()-4)==".txt") {
             content = "";
             cout<<filename<<endl;
             ifstream myfile (sourceDir + "/" + filename);
 
-            while ( getline (myfile,semitoken, '\n') )
-            {
+            // TODO: improve tokenization
+            while ( getline (myfile,semitoken, '\n') ) {
                 stringstream line(semitoken);
-                while ( getline (line, token, ' ') )
-                {
-                    if(token[0] == '\r')
-                        token = token.substr(1);
+                while ( getline (line, token, ' ') ) {
+                    token = wordFilter.removeLineMarkers (token);
 
-                    if(token[token.length()-1] == '\r')
-                        token = token.substr(0, token.length()-1);
+                    if(wordFilter.isEmpty   (token)) continue;
+                    if(wordFilter.isNumber  (token)) continue;
+                    if(wordFilter.isStopWord(token)) continue;
 
-                    if(token.length()<1) continue;
-
-                    if(isNumber(token)) continue;
-
-                    if(isStopWord(token, stopWords)) continue;
-
-                    content += standardizeToLower(token) + " ";
-
+                    content += wordFilter.standardizeToLower(token) + " ";
                 }
             }
+
             myfile.close();
 
             Document newSource(filename, content);
@@ -132,14 +99,4 @@ unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, 
     closedir(dirp);
 
     return documentsMap;
-}
-
-
-bool isStopWord(string s, unordered_map<string,long> stopwords)
-{
-
-    if (s != "" && s != " " && stopwords.find(s) == stopwords.end())
-        return false;
-
-    return true;
 }
