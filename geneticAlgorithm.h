@@ -5,7 +5,9 @@
 #include <sstream>
 #include <exception>
 #include <float.h>
+#include <math.h>
 
+#include "utils.h"
 #include "populationConfig.h"
 #include "resultStatistics.h"
 #include "parallelizables.h"
