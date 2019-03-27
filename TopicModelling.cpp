@@ -32,7 +32,7 @@ void TopicModelling::FreeCorpus(LDACorpus* corpus) {
   }
 }
 
-int TopicModelling::LoadAndInitTrainingCorpus(const string& corpus_file, int num_topics, map<string, int>* word_index_map, LDACorpus* corpus) {
+int TopicModelling::LoadAndInitTrainingCorpus(const string& corpus_file, map<string, int>* word_index_map, LDACorpus* corpus) {
   corpus->clear();
   word_index_map->clear();
 
@@ -44,8 +44,6 @@ int TopicModelling::LoadAndInitTrainingCorpus(const string& corpus_file, int num
         line[0] != '\n' &&      // Skip empty lines.
         line[0] != '#') {       // Skip comment lines.
 
-      //convert all the letters to lowercase
-      transform(line.begin(), line.end(), line.begin(), ::tolower);
       int pos = line.find(delimiter);
       line.erase(0, pos + 17);
 
@@ -59,7 +57,7 @@ int TopicModelling::LoadAndInitTrainingCorpus(const string& corpus_file, int num
         topics.clear();
 
         for (int i = 0; i < it->second; ++i) {
-          topics.push_back(RandInt(num_topics));
+          topics.push_back(RandInt(numberOfTopics));
         }
 
         map<string, int>::const_iterator iter = word_index_map->find(it->first);
@@ -72,20 +70,21 @@ int TopicModelling::LoadAndInitTrainingCorpus(const string& corpus_file, int num
 
         document.add_wordtopics(it->first, word_index, topics);
       }
-      corpus->push_back(new LDADocument(document, num_topics));
+      corpus->push_back(new LDADocument(document, numberOfTopics));
     }
   }
   return corpus->size();
 }
 
-LDAAccumulativeModel TopicModelling::TrainModel(LDAModel * model, LDACorpus & corpus, int wordIndexMapSize, int numberOfTopics, int numberOfIterations, int burn_in_iterations) {
+LDAAccumulativeModel TopicModelling::TrainModel(LDAModel * model, LDACorpus & corpus, int wordIndexMapSize) {
     LDAAccumulativeModel accum_model(numberOfTopics, wordIndexMapSize);
     LDASampler sampler(0.01, 0.01, model, &accum_model);
 
     sampler.InitModelGivenTopics(corpus);
 
+    cout<<"\tRunning "<<numberOfIterations<<" iterations for "<<numberOfTopics<<" topics..."<<endl;
     for (int iter = 0; iter < numberOfIterations; ++iter) {
-      cout << "Iteration " << iter << " ...\n";
+      // cout << "Iteration " << iter << " ...\n";
       // if (flags.compute_likelihood_ == "true") {
       //   double loglikelihood = 0;
       //   for (list<LDADocument*>::const_iterator iterator = corpus.begin(); iterator != corpus.end(); ++iterator) {
@@ -93,16 +92,16 @@ LDAAccumulativeModel TopicModelling::TrainModel(LDAModel * model, LDACorpus & co
       //   }
       //   cout << "Loglikelihood: " << loglikelihood << endl;
       // }
-      sampler.DoIteration(&corpus, true, iter < burn_in_iterations);
+      sampler.DoIteration(&corpus, true, iter < burnInIterations);
     }
-    accum_model.AverageModel(numberOfIterations - burn_in_iterations);
+    accum_model.AverageModel(numberOfIterations - burnInIterations);
 
     FreeCorpus(&corpus);
 
     return accum_model;
 }
 
-void TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, string inputFile, string outputFile, string header, int numberOfIterations, int burn_in_iterations) {
+void TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, string inputFile, string outputFile, string header) {
   LDASampler sampler(0.01, 0.01, &model, NULL);
   ifstream fin(inputFile);
   ofstream out(outputFile);
@@ -135,9 +134,9 @@ void TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, stri
       }
       LDADocument document(document_topics, model.num_topics());
       TopicProbDistribution prob_dist(model.num_topics(), 0);
-      for (int iter = 0; iter < numberOfIterations; ++iter) {
+      for (int iteration = 0; iteration < numberOfIterations; ++iteration) {
         sampler.SampleNewTopicsForDocument(&document, false);
-        if (iter >= burn_in_iterations) {
+        if (iteration >= burnInIterations) {
           const vector<int64>& document_distribution =
               document.topic_distribution();
           for (int i = 0; i < document_distribution.size(); ++i) {
@@ -148,28 +147,33 @@ void TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, stri
 
       out<<docID<<"\t";
       for (int topic = 0; topic < prob_dist.size(); ++topic) {
-        distibution[((docNum++)*numberOfTopics) + topic] = prob_dist[topic] / (numberOfIterations - burn_in_iterations);
-        out << distibution[((docNum++)*prob_dist.size()) + topic]
+        distribution[((docNum)*numberOfTopics) + topic] = prob_dist[topic] / (numberOfIterations - burnInIterations);
+        out << distribution[((docNum)*numberOfTopics) + topic]
             << ((topic < prob_dist.size() - 1) ? "\t" : "\n");
       }
+      docNum++;
     }
   }
 }
 
-void TopicModelling::LDA(int numberOfTopics, int numberOfIterations, bool topicFile, string MyCount) {
+void TopicModelling::LDA(string MyCount) {
   srand(time(NULL));
   string inputFile = "input1.txt";
   string outputFile = "distribution" + MyCount + ".txt";
   LDACorpus corpus;
   map<string, int> word_index_map;
 
-  // TODO: double check burn in concept
-  int burn_in_iterations = 2*numberOfIterations/3;
-  int docCount = LoadAndInitTrainingCorpus(inputFile, numberOfTopics, &word_index_map, &corpus);
+  int docCount = LoadAndInitTrainingCorpus(inputFile, &word_index_map, &corpus);
+
+  cout<<"Finished Load -> Start Model"<<endl;
 
   LDAModel model(numberOfTopics, word_index_map);
 
-  LDAAccumulativeModel accum_model = TrainModel(&model, corpus, word_index_map.size(), numberOfTopics, numberOfIterations, burn_in_iterations);
+  cout<<"Finished Model -> Start Train"<<endl;
+
+  LDAAccumulativeModel accum_model = TrainModel(&model, corpus, word_index_map.size());
+
+  cout<<"Finished Train -> Write file"<<endl;
 
   ofstream fout("model"+MyCount+".txt");
   accum_model.AppendAsString(word_index_map, fout);
@@ -180,10 +184,25 @@ void TopicModelling::LDA(int numberOfTopics, int numberOfIterations, bool topicF
     header += "\t" + accum_model.GetWordsPerTopic(word_index_map, topic, 10);
   }
 
+  cout<<"Finished Write -> Start Infer"<<endl;
+
   // infers
-  Infer(model, word_index_map, inputFile, outputFile, header, numberOfIterations, burn_in_iterations);
+  Infer(model, word_index_map, inputFile, outputFile, header);
 
+  cout<<"###########################"<<endl;
 
+}
 
+int TopicModelling::getMainTopic(int docNum) {
+    double max = 0.0;
+    int idMax;
 
+    for(int i = 0; i<numberOfTopics; i++) {
+        if(getDistribution (i, docNum) > max) {
+            max = getDistribution (i, docNum);
+            idMax = i;
+        }
+    }
+
+    return idMax;
 }

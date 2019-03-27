@@ -23,33 +23,43 @@ using namespace learning_lda;
 
 class TopicModelling {
 private:
-    string delimiter = "##LDA_DELIMITER##";
-    float *distribution;
+    string delimiter = "##lda_delimiter##";
+    double *distribution;
     int numberOfTopics;
+    int numberOfIterations;
+    int burnInIterations;
     int numberOfDocuments;
 
 public:
-  TopicModelling(int numberOfTopics, int numberOfDocuments){
-      distibution = new float[numberOfTopics*numberOfDocuments];
+  TopicModelling(int numberOfTopics, int numberOfIterations, int numberOfDocuments){
+      distribution = new double[numberOfTopics*numberOfDocuments];
       this->numberOfTopics = numberOfTopics;
+      this->numberOfIterations = numberOfIterations;
+      this->burnInIterations = (2*numberOfIterations)/3;
       this->numberOfDocuments = numberOfDocuments;
   }
 
-  inline float getDistribution(int topic, int docNum) {
-      return distibution[((docNum++)*numberOfTopics) + topic];
+  ~TopicModelling(){
+      delete[] distribution;
   }
+
+  inline double getDistribution(int topic, int docNum) {
+      return distribution[((docNum++)*numberOfTopics) + topic];
+  }
+
+  int getMainTopic(int docNum);
 
   map<string, int> AgrupateTokens (string line) ;
 
   void FreeCorpus(LDACorpus* corpus) ;
 
-  int LoadAndInitTrainingCorpus(const string& corpus_file, int num_topics, map<string, int>* word_index_map, LDACorpus* corpus) ;
+  int LoadAndInitTrainingCorpus(const string& corpus_file, map<string, int>* word_index_map, LDACorpus* corpus) ;
 
-  void Infer(LDAModel model, map<string, int> word_index_map, string inputFile, string outputFile, string header, int numberOfIterations, int burn_in_iterations) ;
+  void Infer(LDAModel model, map<string, int> word_index_map, string inputFile, string outputFile, string header) ;
 
-  LDAAccumulativeModel TrainModel(LDAModel * model, LDACorpus & corpus, int wordIndexMapSize, int numberOfTopics, int numberOfIterations, int burn_in_iterations) ;
+  LDAAccumulativeModel TrainModel(LDAModel * model, LDACorpus & corpus, int wordIndexMapSize) ;
 
-  void LDA(int numberOfTopics, int numberOfIterations, bool topicFile, string MyCount = "") ;
+  void LDA(string MyCount = "") ;
 
 };
 
