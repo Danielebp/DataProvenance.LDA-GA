@@ -17,15 +17,18 @@ using namespace std;
 
 unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, WordFilter wordFilter);
 
-#define POPULATION_SIZE 6
+#define POPULATION_SIZE 10
 
 int main() {
+    // fixing seed for testing purposes
+    srand(1);
+
   clock_t t;
   string stopWordsFile  = "stopwords.txt";
   string ldaInputFile   = "input1.txt";
   string dataDir        = "txtData";        // name of the directory that contains the original source data
   string mirrorDir      = "processedData";  // name of the directory where the modified data is to be stored
-  string delimiter      = "##LDA_DELIMITER##";
+  string delimiter      = "##lda_delimiter##";
 
   WordFilter wordFilter(stopWordsFile);
 
@@ -65,7 +68,6 @@ unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, 
 
         if(filename.length() > 4 && filename.substr(filename.length()-4)==".txt") {
             content = "";
-            cout<<filename<<endl;
             ifstream myfile (sourceDir + "/" + filename);
 
             // TODO: improve tokenization
