@@ -17,11 +17,18 @@ using namespace std;
 
 unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, WordFilter wordFilter);
 
-#define POPULATION_SIZE 10
+// should be multiple of 3
+#define POPULATION_SIZE 9
 
-int main() {
+int main(int argc, char* argv[]) {
     // fixing seed for testing purposes
     srand(1);
+
+    int populationSize = 9;
+    double fitnessThreshold = 1.0;
+
+    if(argc > 1) populationSize = stoi(argv[1]);
+	if(argc > 2) fitnessThreshold = stod(argv[2]);
 
   clock_t t;
   string stopWordsFile  = "stopwords.txt";
@@ -46,7 +53,7 @@ int main() {
   outfile.close();
 
   // call genetic logic to perform LDA-GA
-  geneticLogic(POPULATION_SIZE, documentsMap.size());
+  geneticLogic(populationSize, documentsMap.size(), fitnessThreshold);
 
   // TODO: call cluster on topics
 

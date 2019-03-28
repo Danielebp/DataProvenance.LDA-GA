@@ -15,11 +15,10 @@
 
 using namespace std;
 
-const double FITNESS_THRESHHOLD = 0.75;
 const int MAX_TOPICS = 20;
 const int MAX_ITERATIONS = 1000;
 
-ResultStatistics geneticLogic(int population, int numberOfDocuments);
+ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitnessThreshold);
 void sortInitialPopulation(PopulationConfig* mInitialPopulation, int size);
 
 #endif

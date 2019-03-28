@@ -109,6 +109,7 @@ void TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, stri
   string line;
   string docID;
   int docNum = 0;
+
   while (getline(fin, line)) {  // Each line is a training document.
     if (line.size() > 0 &&      // Skip empty lines.
         line[0] != '\r' &&      // Skip empty lines.
@@ -157,7 +158,7 @@ void TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, stri
 }
 
 void TopicModelling::LDA(string MyCount) {
-  srand(time(NULL));
+    srand(1);
   string inputFile = "input1.txt";
   string outputFile = "distribution" + MyCount + ".txt";
   LDACorpus corpus;
@@ -165,15 +166,15 @@ void TopicModelling::LDA(string MyCount) {
 
   int docCount = LoadAndInitTrainingCorpus(inputFile, &word_index_map, &corpus);
 
-  cout<<"Finished Load -> Start Model"<<endl;
+  // cout<<"Finished Load -> Start Model"<<endl;
 
   LDAModel model(numberOfTopics, word_index_map);
 
-  cout<<"Finished Model -> Start Train"<<endl;
+  // cout<<"Finished Model -> Start Train"<<endl;
 
   LDAAccumulativeModel accum_model = TrainModel(&model, corpus, word_index_map.size());
 
-  cout<<"Finished Train -> Write file"<<endl;
+  // cout<<"Finished Train -> Write file"<<endl;
 
   ofstream fout("model"+MyCount+".txt");
   accum_model.AppendAsString(word_index_map, fout);
@@ -184,12 +185,12 @@ void TopicModelling::LDA(string MyCount) {
     header += "\t" + accum_model.GetWordsPerTopic(word_index_map, topic, 10);
   }
 
-  cout<<"Finished Write -> Start Infer"<<endl;
+  // cout<<"Finished Write -> Start Infer"<<endl;
 
   // infers
   Infer(model, word_index_map, inputFile, outputFile, header);
 
-  cout<<"###########################"<<endl;
+  // cout<<"###########################"<<endl;
 
 }
 
