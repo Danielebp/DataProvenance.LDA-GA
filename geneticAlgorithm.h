@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <exception>
+#include <unordered_map>
 #include <float.h>
 #include <math.h>
 

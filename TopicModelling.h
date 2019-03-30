@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include <unordered_set>
+#include <unordered_map>
 #include <algorithm>
 #include <fstream>
 #include <set>
@@ -25,6 +26,8 @@ class TopicModelling {
 private:
     string delimiter = "##lda_delimiter##";
     double *distribution;
+    unordered_map<int,string> docsMap;
+
     int numberOfTopics;
     int numberOfIterations;
     int burnInIterations;
@@ -45,6 +48,10 @@ public:
 
   inline double getDistribution(int topic, int docNum) {
       return distribution[((docNum++)*numberOfTopics) + topic];
+  }
+
+  inline string getDocNameByNumber(int num){
+      return docsMap[num];
   }
 
   int getMainTopic(int docNum);

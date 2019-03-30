@@ -56,9 +56,9 @@ int TopicModelling::LoadAndInitTrainingCorpus(const string& corpus_file, map<str
       for (map<string, int>::iterator it = wordCount.begin(); it != wordCount.end(); it++ ) {
         topics.clear();
 
-        for (int i = 0; i < it->second; ++i) {
+        // for (int i = 0; i < it->second; ++i) {
           topics.push_back(RandInt(numberOfTopics));
-        }
+        // }
 
         map<string, int>::const_iterator iter = word_index_map->find(it->first);
         if (iter == word_index_map->end()) {
@@ -82,7 +82,6 @@ LDAAccumulativeModel TopicModelling::TrainModel(LDAModel * model, LDACorpus & co
 
     sampler.InitModelGivenTopics(corpus);
 
-    cout<<"\tRunning "<<numberOfIterations<<" iterations for "<<numberOfTopics<<" topics..."<<endl;
     for (int iter = 0; iter < numberOfIterations; ++iter) {
       // cout << "Iteration " << iter << " ...\n";
       // if (flags.compute_likelihood_ == "true") {
@@ -125,9 +124,9 @@ void TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, stri
       map<string, int> wordCount = AgrupateTokens(line);
       for (map<string, int>::iterator it = wordCount.begin(); it != wordCount.end(); it++ ){
         vector<int32> topics;
-        for (int i = 0; i < it->second; ++i) {
+        // for (int i = 0; i < it->second; ++i) {
           topics.push_back(RandInt(model.num_topics()));
-        }
+        // }
         map<string, int>::const_iterator iter = word_index_map.find(it->first);
         if (iter != word_index_map.end()) {
           document_topics.add_wordtopics(it->first, iter->second, topics);
@@ -147,6 +146,7 @@ void TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, stri
       }
 
       out<<docID<<"\t";
+      docsMap[docNum] = docID;
       for (int topic = 0; topic < prob_dist.size(); ++topic) {
         distribution[((docNum)*numberOfTopics) + topic] = prob_dist[topic] / (numberOfIterations - burnInIterations);
         out << distribution[((docNum)*numberOfTopics) + topic]
@@ -158,9 +158,9 @@ void TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, stri
 }
 
 void TopicModelling::LDA(string MyCount) {
-    srand(1);
+    // srand(10);
   string inputFile = "input1.txt";
-  string outputFile = "distribution" + MyCount + ".txt";
+  string outputFile = "results/distribution" + MyCount + ".txt";
   LDACorpus corpus;
   map<string, int> word_index_map;
 
@@ -176,7 +176,7 @@ void TopicModelling::LDA(string MyCount) {
 
   // cout<<"Finished Train -> Write file"<<endl;
 
-  ofstream fout("model"+MyCount+".txt");
+  ofstream fout("results/model"+MyCount+".txt");
   accum_model.AppendAsString(word_index_map, fout);
 
   // Show top 5 words in topics with proportions for the first document
@@ -196,7 +196,7 @@ void TopicModelling::LDA(string MyCount) {
 
 int TopicModelling::getMainTopic(int docNum) {
     double max = 0.0;
-    int idMax;
+    int idMax = -1;
 
     for(int i = 0; i<numberOfTopics; i++) {
         if(getDistribution (i, docNum) > max) {

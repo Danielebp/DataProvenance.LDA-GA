@@ -17,18 +17,25 @@ using namespace std;
 
 unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, WordFilter wordFilter);
 
-// should be multiple of 3
-#define POPULATION_SIZE 9
 
 int main(int argc, char* argv[]) {
     // fixing seed for testing purposes
-    srand(1);
+    srand(time(NULL));
 
+    // should be multiple of 3
     int populationSize = 9;
     double fitnessThreshold = 1.0;
 
-    if(argc > 1) populationSize = stoi(argv[1]);
-	if(argc > 2) fitnessThreshold = stod(argv[2]);
+    for (int i = 1; i < argc; i++) {
+        string s = argv[i];
+        if(s.compare("-p") == 0)
+            populationSize = stoi(argv[++i]);
+        else if(s.compare("-f") == 0)
+            fitnessThreshold = stod(argv[++i]);
+        else
+            cout<<"\tparameter not recognized: "<<argv[i]<<endl;
+    }
+    cout<<endl;
 
   clock_t t;
   string stopWordsFile  = "stopwords.txt";

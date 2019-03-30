@@ -14,20 +14,32 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
     }
 
     double * fitnessValues = new double[population];
+    string * filesToDelete = new string[population];
 
     clock_t t;
 
     bool maxFitnessFound = false;
+    bool checkLowThreshold;
 
     while (!maxFitnessFound){
         // runs population
-        t = clock();
 
+        checkLowThreshold = true;
         for (int i = 0; i<population*2; i+=2){
+            clock_t exTm = clock();
+
+            t = clock();
 
             TopicModelling tm(initialPopulation[i], initialPopulation[i+1], numberOfDocuments);
+            PopulationConfig popCfg;
+            popCfg.number_of_topics = initialPopulation[i];
+    		popCfg.number_of_iterations = initialPopulation[i+1];
 
-            tm.LDA("__"+to_string(i/2)+"__"+to_string(initialPopulation[i])+"x"+to_string(initialPopulation[i+1]));
+            filesToDelete[i/2] = "__"+to_string(i/2)+"__"+to_string(initialPopulation[i])+"x"+to_string(initialPopulation[i+1]);
+            tm.LDA(filesToDelete[i/2]);
+            t = clock() - t;
+
+            popCfg.LDA_execution_milliseconds = ((float)t)/(CLOCKS_PER_SEC/1000);
 
             //number of topics - the first value
             int numberOfTopics = initialPopulation[i];
@@ -37,9 +49,14 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
             // how to calculate clusterCentroids, max/minDistance, etc...
 
             multimap <int, int> clusterMap;
+            int mainTopic;
+            int topicLess = 0;
             for(int d = 0; d < numberOfDocuments; d++){
-                clusterMap.insert(pair<int, int> (tm.getMainTopic(d), d));
+                mainTopic = tm.getMainTopic(d);
+                if(mainTopic>=0)clusterMap.insert(pair<int, int> (mainTopic, d));
+                else topicLess++;
             }
+            cout<<"Documents without topic: "<<topicLess<<endl;
 
             //getting the centroid of each cluster by calculating the average of their cluster distribution
             double* clusterCentroids = new double[numberOfTopics*numberOfTopics];
@@ -105,7 +122,6 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
                     int docNo = itr->second;
                     minDistanceOutsideCluster[docNo] = INT_MAX;
                     for(int z = 0 ; z < numberOfTopics ; z++) {
-
                         //don't calculate the distance to the same cluster
                         if(z == k) {
                             continue;
@@ -125,25 +141,138 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
             //calculate the Silhouette coefficient for each document
             double* silhouetteCoefficient = new double[numberOfDocuments];
             for(int m = 0 ; m < (numberOfDocuments); m++ ) {
-                silhouetteCoefficient[m] = (minDistanceOutsideCluster[m] - maxDistanceInsideCluster[m]) / max(minDistanceOutsideCluster[m],maxDistanceInsideCluster[m]);
+                if(max(minDistanceOutsideCluster[m],maxDistanceInsideCluster[m]) <= 0)
+                    silhouetteCoefficient[m] = 0;
+                else
+                    silhouetteCoefficient[m] = (minDistanceOutsideCluster[m] - maxDistanceInsideCluster[m]) / max(minDistanceOutsideCluster[m],maxDistanceInsideCluster[m]);
             }
-
 
             //find the average of the Silhouette coefficient of all the documents - fitness criteria
             double total = 0;
             for(int m = 0 ; m < (numberOfDocuments); m++ ) {
                 total += silhouetteCoefficient[m];
             }
-            fitnessValues[i/2] = total / (numberOfDocuments - 1);
+            fitnessValues[i/2] = total / (numberOfDocuments - topicLess);
+            popCfg.fitness_value = fitnessValues[i/2];
+
+            // ###########################################################
+            // TODO: finish this par
+            // precision and recalls
+            int topicsWithDocs = clusterMap.size();
+            float precision_total = 0;
+            float recall_total = 0;
+            int validTopics = 0;
+    		if (topicsWithDocs <= 0) {
+    			precision_total = 0;
+                recall_total = 0;
+                exTm = clock() - exTm;
+    		}
+            else {
+                string line;
+                float* precision = new float[topicsWithDocs];
+                float* recall = new float[topicsWithDocs];
+                unordered_map<string,string> truthData;
+                ifstream myfile ("truthfile.txt");
+                int stringCheck;
+
+                while ( getline (myfile,line) ) {
+                    stringCheck = line.find("#");
+                    string split = line.substr(0, stringCheck);
+                    truthData[line.substr(0, stringCheck)] = line.substr(stringCheck+2);
+                }
+
+        		for (int topicIdx = 0; topicIdx < topicsWithDocs; topicIdx++) {
+        			precision[topicIdx] = 0;
+        			recall[topicIdx] = 0;
+
+                    int numOfDocumentsForTopic = clusterMap.count(topicIdx);
+
+                    // topic does not have any document
+                    if(numOfDocumentsForTopic <= 0) continue;
+
+                    // only doing the first?
+                    int counter = numOfDocumentsForTopic;
+                    string currentArticle;
+
+                    int sourceCounter = 0;
+                    int articleCounter = 0;
+
+                    for(multimap <int, int> :: iterator itr = clusterMap.find(topicIdx); counter>0; itr++, counter--){
+                        currentArticle = tm.getDocNameByNumber(itr->second);
+                        stringCheck = currentArticle.find("$AAA$");
+                        if (stringCheck > 0){
+                            sourceCounter = 0;
+                            articleCounter = 0;
+                            int precise_count = 0;
+                            int recall_count = 0;
+                            int counter2 = numOfDocumentsForTopic;
+                            for(multimap <int, int> :: iterator documentPerTopicItr = clusterMap.find(topicIdx); counter2>0; documentPerTopicItr++, counter2--){
+                                string documentPerTopic = tm.getDocNameByNumber(documentPerTopicItr->second);
+                                if (currentArticle.compare(documentPerTopic)==0) continue;
+                                stringCheck = documentPerTopic.find("$AAA$");
+                                if (stringCheck > 0){
+                                    articleCounter++;
+                                    continue;
+                                }
+                                sourceCounter++;
+
+                                stringstream s(truthData[currentArticle]);
+                                string relatedDocument;
+
+                                while (s >> relatedDocument){
+                                    if(relatedDocument.compare(documentPerTopic)==0) {
+                                        precise_count++;
+                                    }
+                                }
+                            }
+
+                            if(sourceCounter <= 0) {
+                                cout<<"Topic["<<topicIdx<<"] does not have sources"<<endl;
+                                precision[topicIdx] = 0;
+                                recall[topicIdx] = 0;
+                                continue;
+                            }
+
+                            precision[topicIdx] += (float) precise_count / (float) sourceCounter;
+
+                            int numberOfRelatedDocs = 0;
+                            stringstream s(truthData[currentArticle]);
+                            string relatedDocument;
+                            while (s >> relatedDocument){
+                                if (currentArticle.compare(relatedDocument)==0) continue;
+                                numberOfRelatedDocs++;
+                                counter2 = numOfDocumentsForTopic;
+                                for(multimap <int, int> :: iterator documentPerTopicItr = clusterMap.find(topicIdx); counter2>0; documentPerTopicItr++, counter2--){
+                                    if(relatedDocument.compare(tm.getDocNameByNumber(documentPerTopicItr->second)) == 0) {
+                                        recall_count++;
+                                    }
+                                }
+                            }
+                            if(numberOfRelatedDocs <= 0){
+                                recall[topicIdx] += 1.0f/(articleCounter+1);
+                            }
+                            else {
+                                recall[topicIdx] += (float) recall_count / (float) numberOfRelatedDocs;
+                            }
+                        }
+                    }
+
+                    if(precision[topicIdx] > 0 && recall[topicIdx] > 0) validTopics++;
+
+        			precision_total  += precision[topicIdx];
+        			if(articleCounter > 0) recall_total     += recall[topicIdx]/articleCounter;
+                }
+                exTm = clock() - exTm;
+            }
+
+            result.cfg = popCfg;
+            result.execution_milliseconds = ((float)exTm)/(CLOCKS_PER_SEC/1000);
+            result.precision_percentage = (float) (precision_total / validTopics) * 100;
+            result.recall_percentage = (float) (recall_total / validTopics) * 100;
+            cout<<result.to_string("")<<endl;
+
         }
 
-        t = clock() - t;
-        cout << "LDA took " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms"<<endl;
-        cout << "\t~" << (((float)t)/(CLOCKS_PER_SEC/1000))/population << "ms per pair"<<endl;
-        cout << "Fitness Levels: " << endl;
-        for (int i = 0; i<population; i++) {
-            cout <<"\t"<< fitnessValues[i] << endl;
-        }
 
         t = clock();
 
@@ -177,6 +306,18 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
                 break;
             }
 
+            if(checkLowThreshold) {
+                // if best is this low, restart from zero
+                if(maxFitness < 0) {
+                    for (int q = 0; q<spanSize*2; q++){
+                        newPopulation[q]   = (int) floor(getRandomFloat()*MAX_TOPICS + 2); // needs at least 2 topics
+                        newPopulation[++q] = (int) floor(getRandomFloat()*MAX_ITERATIONS + 1); // needs at least 1 iteration
+                    }
+                    break;
+                }
+                checkLowThreshold = false;
+            }
+
             //copy the chromosome with high fitness to the next generation
             newPopulation[i] = initialPopulation[maxFitnessChromosome];
             newPopulation[i+1] = initialPopulation[maxFitnessChromosome+1];
@@ -185,6 +326,15 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
 
         if(maxFitnessFound) {
             break;
+        }
+
+        // remove old listFiles
+        for(int i = 0; i<population; i++){
+            int ret_code;
+            ret_code = remove(("results/distribution" + filesToDelete[i] + ".txt").c_str());
+            cout<<"Removing: "<<("distribution" + filesToDelete[i] + ".txt")<<": "<<ret_code<<endl;
+            ret_code = remove(("results/model" + filesToDelete[i] + ".txt").c_str());
+            cout<<"Removing: "<<("model" + filesToDelete[i] + ".txt")<<": "<<ret_code<<endl;
         }
 
 

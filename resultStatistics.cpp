@@ -2,8 +2,8 @@
 
 string ResultStatistics::to_string(string head) {
 	string time = "Execution_time:" + time_to_str(execution_milliseconds, 30);
-	string precision = std::to_string(precision_percentage);
-	string recall = std::to_string(recall_percentage);
+	string precision = "Precision: " + std::to_string(precision_percentage);
+	string recall = "Recall: " + std::to_string(recall_percentage);
 	string lda = std::to_string(LDA_count);
 	if (LDA_count > 0) {
 		lda += "  LDA-average-time:" + time_to_str(LDA_time / LDA_count, 0);
@@ -18,18 +18,18 @@ string ResultStatistics::time_to_str(long milliseconds, long string_min_length) 
 	long minutes = (milliseconds / 1000 / 60) % 60;
 	long seconds = (milliseconds / 1000) % 60;
 	long ms = milliseconds % 1000;
-	string str = std::to_string(milliseconds);
+	string str = std::to_string(milliseconds) + "ms (";
 	if (hours > 0) {
-		str += hours + "h ";
+		str += std::to_string(hours) + "h ";
 	}
 	if (minutes > 0) {
-		str += minutes + "m ";
+		str += std::to_string(minutes) + "m ";
 	}
 	if (seconds > 0) {
-		str += seconds + "s ";
+		str += std::to_string(seconds) + "s ";
 	}
 	if (ms > 0) {
-		str += ms + "ms";
+		str += std::to_string(ms) + "ms";
 	}
 	str += ") ";
 	while (str.length() < string_min_length) {
