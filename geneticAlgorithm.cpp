@@ -15,17 +15,22 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
 
     double * fitnessValues = new double[population];
     string * filesToDelete = new string[population];
+    int GACounter = 0;
+    int LDACounter = 0;
 
     clock_t t;
+    clock_t total_t = clock();
 
     bool maxFitnessFound = false;
     bool checkLowThreshold;
 
     while (!maxFitnessFound){
+        GACounter ++;
         // runs population
 
         checkLowThreshold = true;
         for (int i = 0; i<population*2; i+=2){
+            LDACounter ++;
             clock_t exTm = clock();
 
             t = clock();
@@ -354,6 +359,16 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
         t = clock() - t;
         cout << "GA took " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms"<<endl;
     }
+
+    total_t = clock() - total_t;
+
+    cout<<endl<<"###########################################"<<endl;
+    cout<<"Total LDA-GA time was: " << ((float)total_t)/(CLOCKS_PER_SEC/1000) << "ms" << endl;
+    cout<<"Number of GA iterations: " << GACounter<<endl;
+    cout<<"Number of LDA calls: " << LDACounter<<endl;
+    cout<<"Average LDA time: " << ((float)total_t)/(CLOCKS_PER_SEC/1000)/LDACounter << "ms" << endl;
+    cout<<"###########################################"<<endl;
+
 
     return result;
 }
