@@ -32,12 +32,23 @@ void TopicModelling::FreeCorpus(LDACorpus* corpus) {
   }
 }
 
+void TopicModelling::WriteFiles() {
+
+
+    ofstream out("results/distribution" + outputFile + ".txt");
+    out<<dist;
+
+    ofstream fout("results/model"+outputFile+".txt");
+    fout<<res;
+}
+
 int TopicModelling::LoadAndInitTrainingCorpus(const string& corpus_file, map<string, int>* word_index_map, LDACorpus* corpus) {
   corpus->clear();
   word_index_map->clear();
 
   ifstream fin(corpus_file.c_str());
   string line;
+  // TODO: move reading of files outside, and make the constructor receive the data already
   while (getline(fin, line)) {  // Each line is a training document.
     if (line.size() > 0 &&      // Skip empty lines.
         line[0] != '\r' &&      // Skip empty lines.
@@ -100,15 +111,18 @@ LDAAccumulativeModel TopicModelling::TrainModel(LDAModel * model, LDACorpus & co
     return accum_model;
 }
 
-void TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, string inputFile, string outputFile, string header) {
+long TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, string inputFile, string header) {
   LDASampler sampler(0.01, 0.01, &model, NULL);
   ifstream fin(inputFile);
-  ofstream out(outputFile);
+  stringstream out;
   out<<header<<endl;
   string line;
   string docID;
   int docNum = 0;
+  clock_t t;
+  long time = 0;
 
+  // TODO: move read files outside
   while (getline(fin, line)) {  // Each line is a training document.
     if (line.size() > 0 &&      // Skip empty lines.
         line[0] != '\r' &&      // Skip empty lines.
@@ -122,6 +136,7 @@ void TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, stri
 
       // agrupate tokens with count of repetitions
       map<string, int> wordCount = AgrupateTokens(line);
+
       for (map<string, int>::iterator it = wordCount.begin(); it != wordCount.end(); it++ ){
         vector<int32> topics;
         // for (int i = 0; i < it->second; ++i) {
@@ -132,6 +147,9 @@ void TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, stri
           document_topics.add_wordtopics(it->first, iter->second, topics);
         }
       }
+
+      t = clock();
+
       LDADocument document(document_topics, model.num_topics());
       TopicProbDistribution prob_dist(model.num_topics(), 0);
       for (int iteration = 0; iteration < numberOfIterations; ++iteration) {
@@ -144,6 +162,7 @@ void TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, stri
           }
         }
       }
+      t = clock() - t;
 
       out<<docID<<"\t";
       docsMap[docNum] = docID;
@@ -152,15 +171,23 @@ void TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, stri
         out << distribution[((docNum)*numberOfTopics) + topic]
             << ((topic < prob_dist.size() - 1) ? "\t" : "\n");
       }
+
+      time += ((float)t)/(CLOCKS_PER_SEC/1000);
       docNum++;
     }
   }
+
+  dist = out.str();
+
+  return time;
 }
 
-void TopicModelling::LDA(string MyCount) {
-    // srand(10);
+long TopicModelling::LDA(string MyCount) {
+// srand(10);
+
+    long time = 0;
   string inputFile = "input1.txt";
-  string outputFile = "results/distribution" + MyCount + ".txt";
+  outputFile = MyCount;
   LDACorpus corpus;
   map<string, int> word_index_map;
 
@@ -168,6 +195,7 @@ void TopicModelling::LDA(string MyCount) {
 
   // cout<<"Finished Load -> Start Model"<<endl;
 
+  clock_t t = clock();
   LDAModel model(numberOfTopics, word_index_map);
 
   // cout<<"Finished Model -> Start Train"<<endl;
@@ -176,9 +204,9 @@ void TopicModelling::LDA(string MyCount) {
 
   // cout<<"Finished Train -> Write file"<<endl;
 
-  ofstream fout("results/model"+MyCount+".txt");
+  stringstream fout;
   accum_model.AppendAsString(word_index_map, fout);
-
+  res = fout.str();
   // Show top 5 words in topics with proportions for the first document
   string header = "Document";
   for (int topic = 0; topic < numberOfTopics; topic++) {
@@ -186,12 +214,14 @@ void TopicModelling::LDA(string MyCount) {
   }
 
   // cout<<"Finished Write -> Start Infer"<<endl;
+  t = clock() - t;
+  time = ((float)t)/(CLOCKS_PER_SEC/1000);
 
   // infers
-  Infer(model, word_index_map, inputFile, outputFile, header);
-
+  time += Infer(model, word_index_map, inputFile, header);
   // cout<<"###########################"<<endl;
 
+  return time;
 }
 
 int TopicModelling::getMainTopic(int docNum) {

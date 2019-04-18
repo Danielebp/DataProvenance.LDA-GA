@@ -23,6 +23,8 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
 
     bool maxFitnessFound = false;
     bool checkLowThreshold;
+    long LDATotTime = 0;
+
 
     while (!maxFitnessFound){
         GACounter ++;
@@ -45,7 +47,7 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
             t = clock() - t;
 
             popCfg.LDA_execution_milliseconds = ((float)t)/(CLOCKS_PER_SEC/1000);
-
+            LDATotTime += popCfg.LDA_execution_milliseconds;
             //number of topics - the first value
             int numberOfTopics = initialPopulation[i];
 
@@ -59,7 +61,10 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
             for(int d = 0; d < numberOfDocuments; d++){
                 mainTopic = tm.getMainTopic(d);
                 if(mainTopic>=0)clusterMap.insert(pair<int, int> (mainTopic, d));
-                else topicLess++;
+                else{
+                    topicLess++;
+                    cout<<tm.getDocNameByNumber(d)<<endl;
+                }
             }
             cout<<"Documents without topic: "<<topicLess<<endl;
 
@@ -159,6 +164,10 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
             }
             fitnessValues[i/2] = total / (numberOfDocuments - topicLess);
             popCfg.fitness_value = fitnessValues[i/2];
+            if(popCfg.fitness_value > fitnessThreshold) {
+                tm.WriteFiles();
+            }
+
 
             // ###########################################################
             // TODO: finish this par
@@ -333,15 +342,6 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
             break;
         }
 
-        // remove old listFiles
-        for(int i = 0; i<population; i++){
-            int ret_code;
-            ret_code = remove(("results/distribution" + filesToDelete[i] + ".txt").c_str());
-            cout<<"Removing: "<<("distribution" + filesToDelete[i] + ".txt")<<": "<<ret_code<<endl;
-            ret_code = remove(("results/model" + filesToDelete[i] + ".txt").c_str());
-            cout<<"Removing: "<<("model" + filesToDelete[i] + ".txt")<<": "<<ret_code<<endl;
-        }
-
 
         //perform crossover - to fill the rest of the 2/3rd of the initial Population
         for(int i = 0 ; i < 2*spanSize  ; i+=2 ) {
@@ -366,7 +366,7 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
     cout<<"Total LDA-GA time was: " << ((float)total_t)/(CLOCKS_PER_SEC/1000) << "ms" << endl;
     cout<<"Number of GA iterations: " << GACounter<<endl;
     cout<<"Number of LDA calls: " << LDACounter<<endl;
-    cout<<"Average LDA time: " << ((float)total_t)/(CLOCKS_PER_SEC/1000)/LDACounter << "ms" << endl;
+    cout<<"Average LDA time: " << LDATotTime/LDACounter << "ms" << endl;
     cout<<"###########################################"<<endl;
 
 

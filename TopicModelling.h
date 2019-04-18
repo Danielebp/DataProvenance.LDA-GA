@@ -25,6 +25,9 @@ using namespace learning_lda;
 class TopicModelling {
 private:
     string delimiter = "##lda_delimiter##";
+    string outputFile;
+    string res;
+    string dist;
     double *distribution;
     unordered_map<int,string> docsMap;
 
@@ -40,6 +43,7 @@ public:
       this->numberOfIterations = numberOfIterations;
       this->burnInIterations = (2*numberOfIterations)/3;
       this->numberOfDocuments = numberOfDocuments;
+
   }
 
   ~TopicModelling(){
@@ -54,6 +58,8 @@ public:
       return docsMap[num];
   }
 
+  void WriteFiles() ;
+
   int getMainTopic(int docNum);
 
   map<string, int> AgrupateTokens (string line) ;
@@ -62,11 +68,11 @@ public:
 
   int LoadAndInitTrainingCorpus(const string& corpus_file, map<string, int>* word_index_map, LDACorpus* corpus) ;
 
-  void Infer(LDAModel model, map<string, int> word_index_map, string inputFile, string outputFile, string header) ;
+  long Infer(LDAModel model, map<string, int> word_index_map, string inputFile, string header) ;
 
   LDAAccumulativeModel TrainModel(LDAModel * model, LDACorpus & corpus, int wordIndexMapSize) ;
 
-  void LDA(string MyCount = "") ;
+  long LDA(string MyCount = "") ;
 
 };
 

@@ -16,7 +16,7 @@
 using namespace std;
 
 unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, WordFilter wordFilter);
-
+void CheckLDAPerformance(int numberOfDocuments);
 
 int main(int argc, char* argv[]) {
     // fixing seed for testing purposes
@@ -25,6 +25,7 @@ int main(int argc, char* argv[]) {
     // should be multiple of 3
     int populationSize = 9;
     double fitnessThreshold = 1.0;
+    bool metrics = false;
 
     for (int i = 1; i < argc; i++) {
         string s = argv[i];
@@ -32,6 +33,8 @@ int main(int argc, char* argv[]) {
             populationSize = stoi(argv[++i]);
         else if(s.compare("-f") == 0)
             fitnessThreshold = stod(argv[++i]);
+        else if(s.compare("-metrics") == 0)
+            metrics = true;
         else
             cout<<"\tparameter not recognized: "<<argv[i]<<endl;
     }
@@ -59,12 +62,40 @@ int main(int argc, char* argv[]) {
     outfile << element.first << delimiter << (element.second).getKeyWords() << endl;
   outfile.close();
 
-  // call genetic logic to perform LDA-GA
-  geneticLogic(populationSize, documentsMap.size(), fitnessThreshold);
+  if(metrics) {
+      CheckLDAPerformance(documentsMap.size());
+  }
+  else{
+      // call genetic logic to perform LDA-GA
+      geneticLogic(populationSize, documentsMap.size(), fitnessThreshold);
+    }
+}
 
-  // TODO: call cluster on topics
+void CheckLDAPerformance(int numberOfDocuments) {
+    int TEST_COUNT = 3;
+    long LDATotTime = 0;
+    string line;
+    int tpcs[] = {20};
 
-  // TODO: calculate precision
+
+    for (int i = 0; i <= 3; i++) {
+        int number_of_topics = tpcs[i];
+		for (int number_of_iterations = 100; number_of_iterations <= 1000; number_of_iterations +=100) {
+            PopulationConfig popCfg;
+            popCfg.number_of_topics = number_of_topics;
+            popCfg.number_of_iterations = number_of_iterations;
+            LDATotTime = 0;
+
+            for (int i = 0; i < TEST_COUNT; ++i) {
+                TopicModelling tm(number_of_topics, number_of_iterations, numberOfDocuments);
+                string id = "__"+to_string(i/2)+"__"+to_string(number_of_topics)+"x"+to_string(number_of_iterations);
+
+                LDATotTime += tm.LDA(id);
+            }
+            popCfg.LDA_execution_milliseconds = ((double)LDATotTime/TEST_COUNT);
+            cout<< number_of_topics<<"x"<<number_of_iterations<<": " + to_string(popCfg.LDA_execution_milliseconds)<<endl;
+        }
+    }
 }
 
 unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, WordFilter wordFilter) {
