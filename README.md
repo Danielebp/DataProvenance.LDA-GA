@@ -2,8 +2,9 @@
 Version of the LDA-GA algorithm for data provenance in C++
 
 ## Building
-To build the project use the makefile by incoking the command 'make' on the root directory
+To build the project use the makefile by incoking the command 'make' on the root directory.
 After building the project a execution file named 'ldaga' should be created. 
+
 To clean the last build invoke make clean
 
 ## Running
