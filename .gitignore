@@ -35,6 +35,7 @@
 ._.DS_Store
 err.txt
 ldaga
+test
 ._*
 distribution_*.txt
 model_*.txt
