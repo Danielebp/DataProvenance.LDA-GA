@@ -29,6 +29,7 @@ private:
     string res;
     string dist;
     double *distribution;
+    double *topicDistribution;
     unordered_map<int,string> docsMap;
 
     int numberOfTopics;
@@ -39,6 +40,7 @@ private:
 public:
   TopicModelling(int numberOfTopics, int numberOfIterations, int numberOfDocuments){
       distribution = new double[numberOfTopics*numberOfDocuments];
+      topicDistribution = new double[numberOfTopics];
       this->numberOfTopics = numberOfTopics;
       this->numberOfIterations = numberOfIterations;
       this->burnInIterations = (2*numberOfIterations)/3;
@@ -48,6 +50,7 @@ public:
 
   ~TopicModelling(){
       delete[] distribution;
+      delete[] topicDistribution;
   }
 
   inline double getDistribution(int topic, int docNum) {

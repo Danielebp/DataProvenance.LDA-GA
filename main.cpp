@@ -65,10 +65,47 @@ int main(int argc, char* argv[]) {
   if(metrics) {
       CheckLDAPerformance(documentsMap.size());
   }
-  else{
+  else {
       // call genetic logic to perform LDA-GA
       geneticLogic(populationSize, documentsMap.size(), fitnessThreshold);
-    }
+
+      // vector<Cluster> clusters = ClusterManager::createClusters();
+      // unordered_map<string, Article> articlesMap;
+      // unordered_map<string, SourceFile> sourceFileMap;
+      //
+      // ifstream myfile("input.txt");
+      // string line;
+      // while(getline (myfile, line, '\n')) {
+      //     string filename = line.substr(0, line.find("\tX"));
+      //     string keywords = line.substr(line.find("\tX\t")+3);
+      //     if(filename.find("$AAA$") != string::npos){
+      //         articlesMap[filename] = Article(filename, keywords); // needs real values for testing
+      //     }
+      //     else{
+      //         sourceFileMap[filename] = SourceFile(filename, keywords); // needs real values for testing
+      //     }
+      // }
+      //
+      // clusters = ClusterManager::cleanCluster(clusters, articlesMap, sourceFileMap);
+      // clusters = ClusterManager::cleanSourceFileCluster(clusters, sourceFileMap);
+      //
+      // for(int i = 0; i<clusters.size(); i++) {
+      //     cout<<"This is cluster: "<<clusters[i].clusterNo<<"\t";
+      //     cout<<endl<<">>>keywords<<< ";
+      //     for ( auto keywords = clusters[i].keywords.begin(); keywords != clusters[i].keywords.end(); ++keywords ) {
+      //         cout << *keywords <<";";
+      //     }
+      //     cout<<endl<<">>>articles<<< ";
+      //     for(int j=0; j<clusters[i].articles.size(); j++) {
+      //         cout<<clusters[i].articles[j]<<";";
+      //     }
+      //     cout<<endl<<">>>sourceFiles<<< ";
+      //     for(int j=0; j<clusters[i].sourceFiles.size(); j++) {
+      //         cout<<clusters[i].sourceFiles[j]<<";";
+      //     }
+      //     cout<<endl;
+      // }
+  }
 }
 
 void CheckLDAPerformance(int numberOfDocuments) {

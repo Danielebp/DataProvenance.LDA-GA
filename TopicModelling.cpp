@@ -176,17 +176,32 @@ long TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, stri
       docNum++;
     }
   }
-
   dist = out.str();
+
+
+  double total = 0;
+  for (int i = 0; i < numberOfTopics; i++) {
+      topicDistribution[i] = 0;
+      for (int j = 0; j < numberOfDocuments; j++) {
+          topicDistribution[i] += distribution[((j)*numberOfTopics) + i];
+          total += distribution[((j)*numberOfTopics) + i];
+      }
+  }
+  for (int i = 0; i < numberOfTopics; i++) {
+      topicDistribution[i] = topicDistribution[i]/total;
+  }
+
 
   return time;
 }
 
+
+// should write distribution.txt and topics.txt
 long TopicModelling::LDA(string MyCount) {
 // srand(10);
 
     long time = 0;
-  string inputFile = "input1.txt";
+  string inputFile = "input.txt";
   outputFile = MyCount;
   LDACorpus corpus;
   map<string, int> word_index_map;
@@ -220,6 +235,14 @@ long TopicModelling::LDA(string MyCount) {
   // infers
   time += Infer(model, word_index_map, inputFile, header);
   // cout<<"###########################"<<endl;
+
+  // write topic.txt
+  stringstream outTop;
+  outTop<<"topic\tdist\twords"<<endl;
+  for (int i = 0; i < numberOfTopics; i++) {
+      outTop<<i<<"\t"<<topicDistribution[i]<<"\t"<<accum_model.GetWordsPerTopic(word_index_map, topic, 10)<<endl;
+  }
+
 
   return time;
 }

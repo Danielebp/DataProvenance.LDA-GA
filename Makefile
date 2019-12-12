@@ -9,7 +9,7 @@ clean:
 	rm -rf $(OBJ_PATH)
 	rm -f ldaga
 
-OBJ_SRCS := document.cpp utils.cpp scanner.cpp geneticAlgorithm.cpp resultStatistics.cpp populationConfig.cpp parallelizables.cpp TopicModelling.cpp wordFilter.cpp
+OBJ_SRCS := document.cpp cluster.cpp utils.cpp scanner.cpp geneticAlgorithm.cpp resultStatistics.cpp populationConfig.cpp parallelizables.cpp TopicModelling.cpp wordFilter.cpp
 ALL_OBJ = $(patsubst %.cpp, %.o, $(OBJ_SRCS))
 PLDA_SRCS := cmd_flags.o common.o document.o model.o accumulative_model.o sampler.o
 PLDA_OBJ = $(patsubst %.o, plda/obj/%.o, $(PLDA_SRCS))
@@ -21,3 +21,15 @@ $(OBJ_PATH)/%.o: %.cpp
 
 ldaga: main.cpp $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $< -o $@
+
+TESTOBJ_PATH = ./test
+TESTOBJ_SRCS := scanner.cpp cluster.cpp document.cpp utils.cpp
+TESTALL_OBJ = $(patsubst %.cpp, %.o, $(TESTOBJ_SRCS))
+TESTOBJ = $(addprefix $(TESTOBJ_PATH)/, $(TESTALL_OBJ))
+
+$(TESTOBJ_PATH)/%.o: %.cpp
+	@ mkdir -p $(TESTOBJ_PATH)
+	$(CC) -c $(CFLAGS) $< -o $@
+
+test: test.cpp $(TESTALL_OBJ)
+	$(CC) $(CFLAGS) $(TESTALL_OBJ) $< -o $@

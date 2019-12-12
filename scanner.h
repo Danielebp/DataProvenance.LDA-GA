@@ -1,24 +1,36 @@
 #ifndef __scanner_h__
 #define __scanner_h__
 
-#include <iostream>
-#include <sstream>
 #include <string>
+#include <iostream>
+#include <time.h>
+#include <fstream>
+#include <sstream>
+#include <unordered_map>
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <vector>
 
 using namespace std;
 
 class Scanner {
 
+  ifstream myfile;
   stringstream ss;
-  int found;
-  double dfound;
 
 public:
-
-  Scanner (string str) ;
+  Scanner ();
+  Scanner (string filename) ;
+  void open (string filename) ;
+  bool nextLine();
+  bool hasNextLine();
+  void close();
 
   int nextInt();
   double nextDouble();
+  string nextWord();
 
 };
 

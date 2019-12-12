@@ -13,6 +13,7 @@
 #include "resultStatistics.h"
 #include "parallelizables.h"
 #include "TopicModelling.h"
+#include "cluster.h"
 
 using namespace std;
 
