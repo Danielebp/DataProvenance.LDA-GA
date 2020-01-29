@@ -132,7 +132,7 @@ void LDAAccumulativeModel::sortWords(int * sortedIdx, int topic, int low, int hi
 
 }
 
-string LDAAccumulativeModel::GetWordsPerTopic(const map<string, int>& word_index_map, int topic, int nWords)  {
+string LDAAccumulativeModel::GetWordsPerTopic(const map<string, int>& word_index_map, int topic, int nWords, string delimiter)  {
   vector<string> index_word_map(word_index_map.size());
   for (map<string, int>::const_iterator iter = word_index_map.begin();
        iter != word_index_map.end(); ++iter) {
@@ -148,7 +148,7 @@ string LDAAccumulativeModel::GetWordsPerTopic(const map<string, int>& word_index
 
   string bestwords = "";
   for (int i = 0; i < nWords; ++i) {
-    bestwords+= index_word_map[sortedIdx[i]] + ";";
+    bestwords+= index_word_map[sortedIdx[i]] + delimiter;
   }
 
   return bestwords;

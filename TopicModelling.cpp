@@ -94,7 +94,7 @@ LDAAccumulativeModel TopicModelling::TrainModel(LDAModel * model, LDACorpus & co
     sampler.InitModelGivenTopics(corpus);
 
     for (int iter = 0; iter < numberOfIterations; ++iter) {
-      // cout << "Iteration " << iter << " ...\n";
+      if(debug) cout << "Iteration " << iter << " ...\n";
       // if (flags.compute_likelihood_ == "true") {
       //   double loglikelihood = 0;
       //   for (list<LDADocument*>::const_iterator iterator = corpus.begin(); iterator != corpus.end(); ++iterator) {
@@ -111,6 +111,7 @@ LDAAccumulativeModel TopicModelling::TrainModel(LDAModel * model, LDACorpus & co
     return accum_model;
 }
 
+// TODO: crashing here
 long TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, string inputFile, string header) {
   LDASampler sampler(0.01, 0.01, &model, NULL);
   ifstream fin(inputFile);
@@ -121,21 +122,25 @@ long TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, stri
   int docNum = 0;
   clock_t t;
   long time = 0;
-
   // TODO: move read files outside
   while (getline(fin, line)) {  // Each line is a training document.
+    if(debug) cout<<"Read line"<<endl;
     if (line.size() > 0 &&      // Skip empty lines.
         line[0] != '\r' &&      // Skip empty lines.
         line[0] != '\n' &&      // Skip empty lines.
         line[0] != '#') {       // Skip comment lines.
+
+      if(debug) cout<<"Line not empty"<<endl;
       DocumentWordTopicsPB document_topics;
 
       int pos = line.find(delimiter);
       docID = line.substr(0, pos);
       line.erase(0, pos + 17);
+      if(debug) cout<<"Remove delimiter"<<endl;
 
       // agrupate tokens with count of repetitions
       map<string, int> wordCount = AgrupateTokens(line);
+      if(debug) cout<<"Aggrupate tokens"<<endl;
 
       for (map<string, int>::iterator it = wordCount.begin(); it != wordCount.end(); it++ ){
         vector<int32> topics;
@@ -147,6 +152,7 @@ long TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, stri
           document_topics.add_wordtopics(it->first, iter->second, topics);
         }
       }
+      if(debug) cout<<"Assigned topics?"<<endl;
 
       t = clock();
 
@@ -162,22 +168,26 @@ long TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, stri
           }
         }
       }
+      if(debug) cout<<"Ran iterations"<<endl;
+
       t = clock() - t;
 
       out<<docID<<"\t";
       docsMap[docNum] = docID;
       for (int topic = 0; topic < prob_dist.size(); ++topic) {
         distribution[((docNum)*numberOfTopics) + topic] = prob_dist[topic] / (numberOfIterations - burnInIterations);
-        out << distribution[((docNum)*numberOfTopics) + topic]
+        out << topic << "\t" << distribution[((docNum)*numberOfTopics) + topic]
             << ((topic < prob_dist.size() - 1) ? "\t" : "\n");
       }
+      if(debug) cout<<"Save distributions"<<endl;
 
       time += ((float)t)/(CLOCKS_PER_SEC/1000);
       docNum++;
     }
   }
-  dist = out.str();
+  if(debug) cout<<"Finished reading file"<<endl;
 
+  dist = out.str();
 
   double total = 0;
   for (int i = 0; i < numberOfTopics; i++) {
@@ -190,7 +200,7 @@ long TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, stri
   for (int i = 0; i < numberOfTopics; i++) {
       topicDistribution[i] = topicDistribution[i]/total;
   }
-
+  if(debug) cout<<"Wrote total distribution"<<endl;
 
   return time;
 }
@@ -199,50 +209,51 @@ long TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, stri
 // should write distribution.txt and topics.txt
 long TopicModelling::LDA(string MyCount) {
 // srand(10);
-
-    long time = 0;
-  string inputFile = "input.txt";
+  if(debug) cout<<"#### Starting LDA ####"<<endl;
+  long time = 0;
+  string inputFile = "input1.txt";
   outputFile = MyCount;
   LDACorpus corpus;
   map<string, int> word_index_map;
 
   int docCount = LoadAndInitTrainingCorpus(inputFile, &word_index_map, &corpus);
 
-  // cout<<"Finished Load -> Start Model"<<endl;
+  if(debug) cout<<"Finished Load -> Start Model"<<endl;
 
   clock_t t = clock();
   LDAModel model(numberOfTopics, word_index_map);
 
-  // cout<<"Finished Model -> Start Train"<<endl;
+  if(debug) cout<<"Finished Model -> Start Train"<<endl;
 
   LDAAccumulativeModel accum_model = TrainModel(&model, corpus, word_index_map.size());
 
-  // cout<<"Finished Train -> Write file"<<endl;
+  if(debug) cout<<"Finished Train -> Write file"<<endl;
 
   stringstream fout;
   accum_model.AppendAsString(word_index_map, fout);
   res = fout.str();
   // Show top 5 words in topics with proportions for the first document
-  string header = "Document";
-  for (int topic = 0; topic < numberOfTopics; topic++) {
-    header += "\t" + accum_model.GetWordsPerTopic(word_index_map, topic, 10);
-  }
+  string header = "Document\tTopic\tTopic Proportion\t...";
 
-  // cout<<"Finished Write -> Start Infer"<<endl;
+  if(debug) cout<<"Finished Write -> Start Infer"<<endl;
   t = clock() - t;
   time = ((float)t)/(CLOCKS_PER_SEC/1000);
-
   // infers
   time += Infer(model, word_index_map, inputFile, header);
-  // cout<<"###########################"<<endl;
+  if(debug) cout<<"###########################"<<endl;
+
+  if(debug) cout<<"#### Writing LDA ####"<<endl;
 
   // write topic.txt
-  stringstream outTop;
+  ofstream outTop;
+  outTop.open ("results/topic.txt");
   outTop<<"topic\tdist\twords"<<endl;
-  for (int i = 0; i < numberOfTopics; i++) {
-      outTop<<i<<"\t"<<topicDistribution[i]<<"\t"<<accum_model.GetWordsPerTopic(word_index_map, topic, 10)<<endl;
+  for (int topic = 0; topic < numberOfTopics; topic++) {
+      outTop<<topic<<"\t"<<topicDistribution[topic]<<"\t"<<accum_model.GetWordsPerTopic(word_index_map, topic, 20, " ")<<endl;
   }
+  outTop.close();
 
+  if(debug) cout<<"#### Ending LDA ####"<<endl;
 
   return time;
 }

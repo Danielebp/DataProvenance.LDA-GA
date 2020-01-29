@@ -20,7 +20,7 @@ using namespace std;
 const int MAX_TOPICS = 20;
 const int MAX_ITERATIONS = 1000;
 
-ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitnessThreshold);
+ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitnessThreshold, bool debug, bool progress);
 void sortInitialPopulation(PopulationConfig* mInitialPopulation, int size);
 
 #endif

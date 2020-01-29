@@ -32,20 +32,21 @@ private:
     double *topicDistribution;
     unordered_map<int,string> docsMap;
 
+    bool debug;
     int numberOfTopics;
     int numberOfIterations;
     int burnInIterations;
     int numberOfDocuments;
 
 public:
-  TopicModelling(int numberOfTopics, int numberOfIterations, int numberOfDocuments){
+  TopicModelling(int numberOfTopics, int numberOfIterations, int numberOfDocuments, bool debug){
       distribution = new double[numberOfTopics*numberOfDocuments];
       topicDistribution = new double[numberOfTopics];
       this->numberOfTopics = numberOfTopics;
       this->numberOfIterations = numberOfIterations;
       this->burnInIterations = (2*numberOfIterations)/3;
       this->numberOfDocuments = numberOfDocuments;
-
+      this->debug = debug;
   }
 
   ~TopicModelling(){

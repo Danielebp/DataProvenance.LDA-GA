@@ -23,26 +23,25 @@ using namespace std;
 
 struct Cluster
 {
+    // each cluster is supposed to have one article and a number of source files
+	// associated with it
+	/// there might be some clusters which have 2 articles
+	// these clusters will have to be split into smaller clusters
+    vector<string> articles;
+    vector<string> sourceFiles;
 
-        // each cluster is supposed to have one article and a number of source files
-    	// associated with it
-    	/// there might be some clusters which have 2 articles
-    	// these clusters will have to be split into smaller clusters
-        vector<string> articles;
-        vector<string> sourceFiles;
+	// the keywords that are associated with this cluster
+	// these keywords are to be read from the topic.txt
+    unordered_set<string> keywords;
 
-    	// the keywords that are associated with this cluster
-    	// these keywords are to be read from the topic.txt
-        unordered_set<string> keywords;
-
-    	// each topic will and cluster will also be given a cluster/topicno
-    	string clusterNo;
+	// each topic will and cluster will also be given a cluster/topicno
+	string clusterNo;
 };
 
 class ClusterManager{
 
 public:
-
+    static const bool debug = false;
     // reads the data from the topic.txt and distribution.txt
 	// create cluster for each topic
 	// assigns the keywords to the appropraite topic

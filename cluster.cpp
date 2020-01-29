@@ -1,7 +1,6 @@
 #include "cluster.h"
 
 vector<Cluster> ClusterManager::createClusters() {
-
 	vector<Cluster> clusters;
 
 	// read the topic.txt to identify the number of clusters and the number
@@ -9,7 +8,7 @@ vector<Cluster> ClusterManager::createClusters() {
 	Scanner sc;
 	try {
 
-		sc.open("topic.txt");
+		sc.open("results/topic.txt");
 
 
 		// for every topic create a cluster, read the topic no and the
@@ -31,11 +30,13 @@ vector<Cluster> ClusterManager::createClusters() {
 	}
     sc.close();
 
+    if(debug) cout<<"Finished reading topic.txt"<<endl;
+
 	// System.out.println("Successfully scanned the file");
 	// read the distribution.txt to find which file belongs to which topic
 	try {
 
-		sc.open("distribution.txt");
+		sc.open("results/distribution.txt");
 
 
 		// in every row there is a document and there is the proportional distribution
@@ -43,7 +44,7 @@ vector<Cluster> ClusterManager::createClusters() {
 		// The first topic number is the topic the document belongs to
 		while (sc.nextLine()) {
 			// read the third string or int which is the topic number
-			sc.nextInt();
+			// sc.nextInt();
 			string name = sc.nextWord(); // the document name
 			int topicNo = sc.nextInt(); // he topic it belongs to
 
@@ -60,6 +61,7 @@ vector<Cluster> ClusterManager::createClusters() {
         cout<<e.what()<<endl;
 	}
     sc.close();
+    if(debug) cout<<"Finished reading distribution.txt"<<endl;
 
 	// System.out.println("returning clusters");
 	return clusters;
@@ -163,7 +165,7 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 
 			// get each cluster
 			Cluster cluster = clusters[clusterNo];
-            cout<<"Checking cluster "<<cluster.clusterNo<<endl;
+            if(debug) cout<<"Checking cluster "<<cluster.clusterNo<<endl;
 
 			// check if the cluster has 1 article or more than 1 article
 			if (cluster.articles.size() <= 1) {
@@ -178,7 +180,7 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 				for (int i = 0; i < cluster.articles.size(); i++) {
                     if(articleMap.find(cluster.articles[i]) == articleMap.end()){
                         // this should never happen if clusters were generated from same articlesMap
-                        cout<<"Article not found"<<endl;
+                        cout<<"Article not found: "<<cluster.articles[i]<<endl;
                     }
                     else {
 	                    articlesInCluster.push_back(articleMap[cluster.articles[i]]);
@@ -255,8 +257,7 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 				for (int i = 0; i < cluster.sourceFiles.size(); i++) {
                     if(sourceFileMap.find(cluster.sourceFiles[i]) == sourceFileMap.end()){
                         // this should never happen if clusters were generated from same sourceFiles
-                        cout<<"SourceFile not found"<<endl;
-                        cout<<cluster.sourceFiles[i]<<endl;
+                        cout<<"SourceFile not found: "<<cluster.sourceFiles[i]<<endl;
                     }
                     else {
     					SourceFile source = sourceFileMap[cluster.sourceFiles[i]];

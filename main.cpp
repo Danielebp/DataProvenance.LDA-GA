@@ -16,7 +16,7 @@
 using namespace std;
 
 unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, WordFilter wordFilter);
-void CheckLDAPerformance(int numberOfDocuments);
+void CheckLDAPerformance(int numberOfDocuments, bool debug);
 
 int main(int argc, char* argv[]) {
     // fixing seed for testing purposes
@@ -24,8 +24,10 @@ int main(int argc, char* argv[]) {
 
     // should be multiple of 3
     int populationSize = 9;
-    double fitnessThreshold = 1.0;
+    double fitnessThreshold = 0.9;
     bool metrics = false;
+    bool debug = false;
+    bool progress = false;
 
     for (int i = 1; i < argc; i++) {
         string s = argv[i];
@@ -35,6 +37,10 @@ int main(int argc, char* argv[]) {
             fitnessThreshold = stod(argv[++i]);
         else if(s.compare("-metrics") == 0)
             metrics = true;
+        else if(s.compare("-debug") == 0)
+            debug = true;
+        else if(s.compare("-progress") == 0)
+            progress = true;
         else
             cout<<"\tparameter not recognized: "<<argv[i]<<endl;
     }
@@ -63,11 +69,11 @@ int main(int argc, char* argv[]) {
   outfile.close();
 
   if(metrics) {
-      CheckLDAPerformance(documentsMap.size());
+      CheckLDAPerformance(documentsMap.size(), debug);
   }
   else {
       // call genetic logic to perform LDA-GA
-      geneticLogic(populationSize, documentsMap.size(), fitnessThreshold);
+      geneticLogic(populationSize, documentsMap.size(), fitnessThreshold, debug, progress);
 
       // vector<Cluster> clusters = ClusterManager::createClusters();
       // unordered_map<string, Article> articlesMap;
@@ -108,7 +114,7 @@ int main(int argc, char* argv[]) {
   }
 }
 
-void CheckLDAPerformance(int numberOfDocuments) {
+void CheckLDAPerformance(int numberOfDocuments, bool debug) {
     int TEST_COUNT = 3;
     long LDATotTime = 0;
     string line;
@@ -124,7 +130,7 @@ void CheckLDAPerformance(int numberOfDocuments) {
             LDATotTime = 0;
 
             for (int i = 0; i < TEST_COUNT; ++i) {
-                TopicModelling tm(number_of_topics, number_of_iterations, numberOfDocuments);
+                TopicModelling tm(number_of_topics, number_of_iterations, numberOfDocuments, debug);
                 string id = "__"+to_string(i/2)+"__"+to_string(number_of_topics)+"x"+to_string(number_of_iterations);
 
                 LDATotTime += tm.LDA(id);

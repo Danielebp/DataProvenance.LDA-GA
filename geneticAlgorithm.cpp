@@ -2,7 +2,7 @@
 #include "geneticAlgorithm.h"
 
 
-ResultStatistics calculatePrecisionRecall(ResultStatistics result, vector<Cluster> clusters) {
+ResultStatistics calculatePrecisionRecall(ResultStatistics result, vector<Cluster> clusters, bool debug) {
 
 	if (clusters.size() <= 0) {
         result.precision_percentage = 0;
@@ -21,9 +21,10 @@ ResultStatistics calculatePrecisionRecall(ResultStatistics result, vector<Cluste
         string split = line.substr(0, stringCheck);
         truthData[line.substr(0, stringCheck)] = line.substr(stringCheck+2);
     }
-
+    if(debug) cout<<"Finished reading truthfile"<<endl;
 
 	for (int i = 0; i < clusters.size(); i++) {
+        if(debug) cout<<"Cluster "<<i<<endl;
 		precision[i] = 0;
 		recall[i] = 0;
 
@@ -39,6 +40,7 @@ ResultStatistics calculatePrecisionRecall(ResultStatistics result, vector<Cluste
 			continue;
 		}
 		vector<string> trueSourceSplit = split(trueSource, ' ');
+        if(debug) cout<<"Done with split"<<endl;
 
 		// calculating precision
 		if (sources.size() != 0) {
@@ -50,13 +52,16 @@ ResultStatistics calculatePrecisionRecall(ResultStatistics result, vector<Cluste
 			}
 			precision[i] = (float) precise_count / (float) sources.size();
 		}
+        if(debug) cout<<"Done with precision"<<endl;
 
 		// calculate recall
 		// convert the list of source files to a set
 		unordered_set<string> sourceSet;
 		for (int j = 0; j<sources.size(); j++) {
-			sourceSet.insert(sources[i]);
+			sourceSet.insert(sources[j]);
 		}
+        if(debug) cout<<"Done converting"<<endl;
+
 		if (trueSourceSplit.size() <= 0) {
 			if (sourceSet.find(trueSource) != sourceSet.end()) {
 				recall[i] = 1;
@@ -70,7 +75,9 @@ ResultStatistics calculatePrecisionRecall(ResultStatistics result, vector<Cluste
 			}
 			recall[i] = (float) recall_count / (float) trueSourceSplit.size();
 		}
+        if(debug) cout<<"Done with recall"<<endl;
 	}
+    if(debug) cout<<"Finished calculating partials"<<endl;
 
 	// calculating the average precision and recall
 	float precision_total = 0.0;
@@ -80,6 +87,7 @@ ResultStatistics calculatePrecisionRecall(ResultStatistics result, vector<Cluste
 		precision_total = precision_total + precision[i];
 		recall_total = recall_total + recall[i];
 	}
+    if(debug) cout<<"Finished calculating totals"<<endl;
 
 	result.precision_percentage = (precision_total / clusters.size()) * 100;
 	result.recall_percentage = (recall_total / clusters.size()) * 100;
@@ -88,17 +96,17 @@ ResultStatistics calculatePrecisionRecall(ResultStatistics result, vector<Cluste
 }
 
 
-ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitnessThreshold) {
+ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitnessThreshold, bool debug, bool progress) {
     ResultStatistics result;
 
     unordered_map<string, Article> articlesMap;
     unordered_map<string, SourceFile> sourceFileMap;
 
-    ifstream myfile("input.txt");
+    ifstream myfile("input1.txt");
     string line;
     while(getline (myfile, line, '\n')) {
-        string filename = line.substr(0, line.find("\tX"));
-        string keywords = line.substr(line.find("\tX\t")+3);
+        string filename = line.substr(0, line.find("##lda_delimiter##"));
+        string keywords = line.substr(line.find("##lda_delimiter##")+17);
         if(filename.find("$AAA$") != string::npos){
             articlesMap[filename] = Article(filename, keywords); // needs real values for testing
         }
@@ -107,8 +115,8 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
         }
     }
 
-    cout<<"Starting GA"<<endl;
-    cout<<"###########################"<<endl;
+    if(debug) cout<<"Starting GA"<<endl;
+    if(debug) cout<<"###########################"<<endl;
     clock_t preprocessEndTime = clock();
 
     int *initialPopulation = new int[population*2];
@@ -133,6 +141,7 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
     while (!maxFitnessFound){
         GACounter ++;
         // runs population
+        if(progress) cout<<"GA Attempt: "<<GACounter<< " - Fitness Threshold: " << fitnessThreshold <<endl;
 
         checkLowThreshold = true;
         for (int i = 0; i<population*2; i+=2){
@@ -140,7 +149,7 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
 
             t = clock();
 
-            TopicModelling tm(initialPopulation[i], initialPopulation[i+1], numberOfDocuments);
+            TopicModelling tm(initialPopulation[i], initialPopulation[i+1], numberOfDocuments, debug);
             PopulationConfig popCfg;
             popCfg.number_of_topics = initialPopulation[i];
     		popCfg.number_of_iterations = initialPopulation[i+1];
@@ -166,10 +175,10 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
                 if(mainTopic>=0)clusterMap.insert(pair<int, int> (mainTopic, d));
                 else{
                     topicLess++;
-                    cout<<tm.getDocNameByNumber(d)<<endl;
+                    if(debug) cout<<tm.getDocNameByNumber(d)<<endl;
                 }
             }
-            cout<<"Documents without topic: "<<topicLess<<endl;
+            if(debug) cout<<"Documents without topic: "<<topicLess<<endl;
 
             //getting the centroid of each cluster by calculating the average of their cluster distribution
             double* clusterCentroids = new double[numberOfTopics*numberOfTopics];
@@ -267,11 +276,12 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
             }
             fitnessValues[i/2] = total / (numberOfDocuments - topicLess);
             popCfg.fitness_value = fitnessValues[i/2];
-            if(popCfg.fitness_value > fitnessThreshold) {
+            if(progress) cout<<"LDA Attempt: "<<LDACounter<<" - Fitness: "<<popCfg.fitness_value<<endl;
+
+            if(popCfg.fitness_value >= fitnessThreshold) {
                 tm.WriteFiles();
+                break;
             }
-
-
 
         }
 
@@ -292,10 +302,10 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
                     maxFitness = fitnessValues[j/2];
 
                     // when maxFitness satisfies the requirement, stop running GA
-                    if(maxFitness > fitnessThreshold) {
+                    if(maxFitness >= fitnessThreshold) {
 
                         // TODO: running the LDA again, which is not such a great idea, see if it can be removed
-                        TopicModelling tm(initialPopulation[j], initialPopulation[j+1], numberOfDocuments);
+                        TopicModelling tm(initialPopulation[j], initialPopulation[j+1], numberOfDocuments, debug);
                         tm.LDA("");
                         tm.WriteFiles();
 
@@ -329,41 +339,7 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
             newPopulation[i+1] = initialPopulation[maxFitnessChromosome+1];
             fitnessValues[maxFitnessChromosome/2] = INT_MIN;
 
-            // ######################## HERE #############################
-            // TODO: finish this part
-            // Outputs the time it took to finish the genetic algorithm
-            clock_t geneticEndTime = clock();
-    		cout<<"Genetic algorithm takes " << (geneticEndTime - preprocessEndTime) << "ms";
 
-            // needs to implement cluster file methods
-            // create clusters based on the distribution.txt
-            //clusterMap woulb be the clusters variable
-			vector<Cluster> clusters = ClusterManager::createClusters();
-
-			// by cleaning the clusters
-			// we got through the obtained list of clusters
-			// check for conditions where there are more than 2 articles in the same cluster
-			// perform the job of splitting the cluster into 2
-			clusters = ClusterManager::cleanCluster(clusters, articlesMap, sourceFileMap);
-
-			//System.out.println("clusters before cleaning source file \n \n ");
-			//printOutput(clusters);
-
-			// there might be some clusters with no article in them but all source files
-			// to handle that we use the following technique/function
-			clusters = ClusterManager::cleanSourceFileCluster(clusters, sourceFileMap);
-			//System.out.println("Clusters after cleaning the source file");
-			//printOutput(clusters);
-
-			clock_t clusteringEndTime = clock();
-			cout<<"Clustering takes " << (clusteringEndTime - geneticEndTime) << "ms"<<endl;
-
-            result = calculatePrecisionRecall(result, clusters);
-
-            exTm = clock() - exTm;
-
-            result.execution_milliseconds = ((float)exTm)/(CLOCKS_PER_SEC/1000);
-            cout<<result.to_string("")<<endl;
         }
 
         if(maxFitnessFound) {
@@ -387,6 +363,48 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
         t = clock() - t;
         cout << "GA took " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms"<<endl;
     }
+
+    // ######################## HERE #############################
+    // TODO: finish this part
+    // Outputs the time it took to finish the genetic algorithm
+    clock_t geneticEndTime = clock();
+    cout<<"Genetic algorithm takes " << (geneticEndTime - preprocessEndTime) << "ms"<<endl;
+
+    // problem: trying to read distribution file before it was written
+    // needs to implement cluster file methods
+    // create clusters based on the distribution.txt
+    //clusterMap woulb be the clusters variable
+	vector<Cluster> clusters = ClusterManager::createClusters();
+    if(debug) cout<<"Cluster created"<<endl;
+
+	// by cleaning the clusters
+	// we got through the obtained list of clusters
+	// check for conditions where there are more than 2 articles in the same cluster
+	// perform the job of splitting the cluster into 2
+	clusters = ClusterManager::cleanCluster(clusters, articlesMap, sourceFileMap);
+    if(debug) cout<<"Cluster Cleaned"<<endl;
+
+	//System.out.println("clusters before cleaning source file \n \n ");
+	//printOutput(clusters);
+
+	// there might be some clusters with no article in them but all source files
+	// to handle that we use the following technique/function
+	clusters = ClusterManager::cleanSourceFileCluster(clusters, sourceFileMap);
+    if(debug) cout<<"Cluster Sources cleaned"<<endl;
+
+	//System.out.println("Clusters after cleaning the source file");
+	//printOutput(clusters);
+
+	clock_t clusteringEndTime = clock();
+	cout<<"Clustering takes " << (clusteringEndTime - geneticEndTime) << "ms"<<endl;
+
+    result = calculatePrecisionRecall(result, clusters, debug);
+    if(debug) cout<<"Calculated precision & recall"<<endl;
+
+    exTm = clock() - exTm;
+
+    result.execution_milliseconds = ((float)exTm)/(CLOCKS_PER_SEC/1000);
+    cout<<result.to_string("")<<endl;
 
     total_t = clock() - total_t;
 
