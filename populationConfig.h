@@ -7,10 +7,10 @@
 class PopulationConfig
 {
 	public:
-		static const long MIN_TOPIC_COUNT = 2;
-		static const long MAX_TOPIC_COUNT = 15;
-		static const long MIN_ITERATION_COUNT = 1;
-		static const long MAX_ITERATION_COUNT = 1000;
+		long MIN_TOPIC_COUNT = 2;
+		long MAX_TOPIC_COUNT = 15;
+		long MIN_ITERATION_COUNT = 1;
+		long MAX_ITERATION_COUNT = 1000;
 
 		int number_of_topics;
 		int number_of_iterations;
@@ -19,6 +19,10 @@ class PopulationConfig
 
 		PopulationConfig() {}
 
+        void set_max(int max_topic, int max_iteration){
+            this->MAX_TOPIC_COUNT = max_topic;
+            this->MAX_ITERATION_COUNT = max_iteration;
+        }
 
 		void copy(PopulationConfig rhs) ;
 

@@ -10,6 +10,7 @@ public:
 	double recall_percentage;
 	long execution_milliseconds;
 
+    long GA_count;
 	long LDA_count;
 	long LDA_time;
 

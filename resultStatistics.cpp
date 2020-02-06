@@ -1,15 +1,24 @@
 #include "resultStatistics.h"
 
 string ResultStatistics::to_string(string head) {
-	string time = "Execution_time:" + time_to_str(execution_milliseconds, 30);
+	string time = "Execution Time:" + time_to_str(execution_milliseconds, 30);
 	string precision = "Precision: " + std::to_string(precision_percentage);
 	string recall = "Recall: " + std::to_string(recall_percentage);
-	string lda = std::to_string(LDA_count);
+    string gaCalls = "Number of GA calls" + std::to_string(GA_count);
+	string ldaCalls = "Number of LDA calls" + std::to_string(LDA_count);
+    string ldaTime = "";
 	if (LDA_count > 0) {
-		lda += "  LDA-average-time:" + time_to_str(LDA_time / LDA_count, 0);
+		ldaTime = "LDA-average-time:" + time_to_str(LDA_time / LDA_count, 0);
 	}
 
-	string str = head + "  " + time + "  " + precision + "  " + recall + "  " + cfg.to_string() + "  " + lda;
+	string str = head + "\n" +
+                    time + "\n" +
+                    precision + "\n" +
+                    recall + "\n" +
+                    cfg.to_string() + "\n" +
+                    gaCalls + "\n" +
+                    ldaCalls + "\n" +
+                    ldaTime;
 	return str;
 }
 

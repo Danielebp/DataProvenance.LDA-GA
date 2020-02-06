@@ -55,7 +55,7 @@ public:
   }
 
   inline double getDistribution(int topic, int docNum) {
-      return distribution[((docNum++)*numberOfTopics) + topic];
+      return distribution[((docNum)*numberOfTopics) + topic];
   }
 
   inline string getDocNameByNumber(int num){

@@ -43,12 +43,14 @@ void TopicModelling::WriteFiles() {
 }
 
 int TopicModelling::LoadAndInitTrainingCorpus(const string& corpus_file, map<string, int>* word_index_map, LDACorpus* corpus) {
+    if(debug) cout<<"Restart corpus"<<endl;
   corpus->clear();
   word_index_map->clear();
 
   ifstream fin(corpus_file.c_str());
   string line;
   // TODO: move reading of files outside, and make the constructor receive the data already
+  if(debug) cout<<"Staring to read input file"<<endl;
   while (getline(fin, line)) {  // Each line is a training document.
     if (line.size() > 0 &&      // Skip empty lines.
         line[0] != '\r' &&      // Skip empty lines.
@@ -56,6 +58,8 @@ int TopicModelling::LoadAndInitTrainingCorpus(const string& corpus_file, map<str
         line[0] != '#') {       // Skip comment lines.
 
       int pos = line.find(delimiter);
+      if(pos >= line.size()) cout<<"Delimiter not found"<<endl;
+      if(debug) cout<<"Read line: "<< line.substr(0, pos)<<endl;
       line.erase(0, pos + 17);
 
       DocumentWordTopicsPB document;
@@ -111,7 +115,7 @@ LDAAccumulativeModel TopicModelling::TrainModel(LDAModel * model, LDACorpus & co
     return accum_model;
 }
 
-// TODO: crashing here
+// TODO: distribution is wrong
 long TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, string inputFile, string header) {
   LDASampler sampler(0.01, 0.01, &model, NULL);
   ifstream fin(inputFile);

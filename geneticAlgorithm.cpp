@@ -30,6 +30,7 @@ ResultStatistics calculatePrecisionRecall(ResultStatistics result, vector<Cluste
 
 		Cluster cl = clusters[i];
 
+        // at this point there should be only one article per cluster
 		string name = cl.articles[0];
 		vector<string> sources = cl.sourceFiles;
 
@@ -84,8 +85,8 @@ ResultStatistics calculatePrecisionRecall(ResultStatistics result, vector<Cluste
 	float recall_total = 0.0;
 
 	for (int i = 0; i < clusters.size(); i++) {
-		precision_total = precision_total + precision[i];
-		recall_total = recall_total + recall[i];
+		precision_total += precision[i];
+		recall_total += recall[i];
 	}
     if(debug) cout<<"Finished calculating totals"<<endl;
 
@@ -96,9 +97,9 @@ ResultStatistics calculatePrecisionRecall(ResultStatistics result, vector<Cluste
 }
 
 
-ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitnessThreshold, bool debug, bool progress) {
+ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, double fitnessThreshold, bool debug, bool progress) {
     ResultStatistics result;
-    PopulationConfig* cfgs = new PopulationConfig[population];
+    PopulationConfig* population = new PopulationConfig[populationSize];
 
     unordered_map<string, Article> articlesMap;
     unordered_map<string, SourceFile> sourceFileMap;
@@ -120,14 +121,12 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
     if(debug) cout<<"###########################"<<endl;
     clock_t preprocessEndTime = clock();
 
-    // int *initialPopulation = new int[population*2];
-    for (int i = 0; i<population; i++){
-        cfgs[i].number_of_topics = (int) floor(getRandomFloat()*MAX_TOPICS + 2); // needs at least 2 topics
-        cfgs[i].number_of_iterations = (int) floor(getRandomFloat()*MAX_ITERATIONS + 1); // needs at least 1 iteration
+    // initialize population
+    for (int i = 0; i<populationSize; i++){
+        population[i].set_max(MAX_TOPICS, MAX_ITERATIONS); // define max of topics and iterations
+        population[i].random(); // generate random number of topics and iterations
     }
 
-    // double * fitnessValues = new double[population];
-    string * filesToDelete = new string[population];
     int GACounter = 0;
     int LDACounter = 0;
 
@@ -135,7 +134,6 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
     clock_t total_t = clock();
 
     bool maxFitnessFound = false;
-    bool checkLowThreshold;
     long LDATotTime = 0;
 
     clock_t exTm = clock();
@@ -144,21 +142,21 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
         // runs population
         if(progress) cout<<"GA Attempt: "<<GACounter<< " - Fitness Threshold: " << fitnessThreshold <<endl;
 
-        checkLowThreshold = true;
-        for (int i = 0; i<population; i++){
+        bool checkLowThreshold = true;
+        for (int i = 0; i<populationSize; i++){
             LDACounter ++;
 
             t = clock();
 
-            TopicModelling tm(cfgs[i].number_of_topics, cfgs[i].number_of_iterations, numberOfDocuments, debug);
+            TopicModelling tm(population[i].number_of_topics, population[i].number_of_iterations, numberOfDocuments, debug);
 
-            filesToDelete[i/2] = "__"+to_string(i/2)+"__"+to_string(cfgs[i].number_of_topics)+"x"+to_string(cfgs[i].number_of_topics);
-            tm.LDA(filesToDelete[i/2]);
+            string fileToDelete = "__"+to_string(i)+"__"+to_string(population[i].number_of_topics)+"x"+to_string(population[i].number_of_topics);
+            tm.LDA(fileToDelete);
             t = clock() - t;
 
-            cfgs[i].LDA_execution_milliseconds = ((float)t)/(CLOCKS_PER_SEC/1000);
-            LDATotTime += cfgs[i].LDA_execution_milliseconds;
-            int numberOfTopics = cfgs[i].number_of_topics;
+            population[i].LDA_execution_milliseconds = ((float)t)/(CLOCKS_PER_SEC/1000);
+            LDATotTime += population[i].LDA_execution_milliseconds;
+            int numberOfTopics = population[i].number_of_topics;
 
             // ********************** BREAKPOINT *********************************
             // TODO: still trying to understand it from here
@@ -271,11 +269,10 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
             for(int m = 0 ; m < (numberOfDocuments); m++ ) {
                 total += silhouetteCoefficient[m];
             }
-            cfgs[i].fitness_value = total / (numberOfDocuments - topicLess);
-            if(progress) cout<<"LDA Attempt: "<<LDACounter<<" - Fitness: "<<cfgs[i].fitness_value<<endl;
+            population[i].fitness_value = total / (numberOfDocuments - topicLess);
+            if(progress) cout<<"LDA Attempt: "<<LDACounter<<" - Fitness: "<<population[i].fitness_value<<endl;
 
-            if(cfgs[i].fitness_value >= fitnessThreshold) {
-                // TODO: probably not the best place to make this copy
+            if(population[i].fitness_value >= fitnessThreshold) {
                 tm.WriteFiles();
                 break;
             }
@@ -288,29 +285,28 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
         //ranking and ordering the chromosomes based on the fitness function.
         //no sorting code found?(by Xiaolin)
         //We need only the top 1/3rd of the chromosomes with high fitness values - Silhouette coefficient
-        //int* newPopulation = new int[population*2];
-        PopulationConfig* newPopulation = new PopulationConfig[population];
-        int spanSize = population/3;
+        PopulationConfig* newPopulation = new PopulationConfig[populationSize];
+        int spanSize = populationSize/3;
         //copy only the top 1/3rd of the chromosomes to the new population
         for(int i = 0 ; i < spanSize ; i++) {
             double maxFitness = INT_MIN;
             int maxFitnessChromosome = -1;
-            for(int j = 0 ; j < population ; j++) {
-                if(cfgs[j].fitness_value > maxFitness) {
-                    maxFitness = cfgs[j].fitness_value;
+            for(int j = 0 ; j < populationSize ; j++) {
+                if(population[j].fitness_value > maxFitness) {
+                    maxFitness = population[j].fitness_value;
 
                     // when maxFitness satisfies the requirement, stop running GA
                     if(maxFitness >= fitnessThreshold) {
 
                         // TODO: running the LDA again, which is not such a great idea, see if it can be removed
-                        TopicModelling tm(cfgs[j].number_of_topics, cfgs[j].number_of_iterations, numberOfDocuments, debug);
+                        TopicModelling tm(population[j].number_of_topics, population[j].number_of_iterations, numberOfDocuments, debug);
                         tm.LDA("");
                         tm.WriteFiles();
 
                         //run the function again to get the words in each topic
-                        cout<<"the best distribution is "<<cfgs[j].number_of_topics<<" topics and "<<cfgs[j].number_of_iterations<<" iterations and fitness is "<<maxFitness<<endl;
+                        cout<<"the best distribution is "<<population[j].number_of_topics<<" topics and "<<population[j].number_of_iterations<<" iterations and fitness is "<<maxFitness<<endl;
                         maxFitnessFound = true;
-                        result.cfg.copy(cfgs[j]);
+                        result.cfg.copy(population[j]);
                         break;
                     }
                     maxFitnessChromosome = j;
@@ -325,8 +321,8 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
                 // if best is this low, restart from zero
                 if(maxFitness < 0) {
                     for (int q = 0; q<spanSize; q++){
-                        newPopulation[q].number_of_topics = (int) floor(getRandomFloat()*MAX_TOPICS + 2); // needs at least 2 topics
-                        newPopulation[q].number_of_iterations = (int) floor(getRandomFloat()*MAX_ITERATIONS + 1); // needs at least 1 iteration
+                        newPopulation[q].set_max(MAX_TOPICS, MAX_ITERATIONS);
+                        newPopulation[q].random(); // needs at least 1 iteration
                     }
                     break;
                 }
@@ -334,8 +330,8 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
             }
 
             //copy the chromosome with high fitness to the next generation
-            newPopulation[i].copy(cfgs[maxFitnessChromosome]);
-            cfgs[maxFitnessChromosome].fitness_value = INT_MIN;
+            newPopulation[i].copy(population[maxFitnessChromosome]);
+            population[maxFitnessChromosome].fitness_value = INT_MIN;
 
 
         }
@@ -347,16 +343,19 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
 
         //perform crossover - to fill the rest of the 2/3rd of the initial Population
         for(int i = 0 ; i < spanSize  ; i++ ) {
-            newPopulation[spanSize+i].number_of_topics = cfgs[i].number_of_topics;
-            newPopulation[spanSize+i].number_of_iterations = (int) floor(getRandomFloat()*MAX_ITERATIONS + 1);
+            newPopulation[spanSize+i].set_max(MAX_TOPICS, MAX_ITERATIONS);
+            newPopulation[2*spanSize+i].set_max(MAX_TOPICS, MAX_ITERATIONS);
 
-            newPopulation[2*spanSize+i].number_of_topics = (int) floor(getRandomFloat()*MAX_TOPICS + 2);
-            newPopulation[2*spanSize+i].number_of_iterations = cfgs[i].number_of_iterations;
+            newPopulation[spanSize+i].number_of_topics = population[i].number_of_topics;
+            newPopulation[spanSize+i].random_iteration();
+
+            newPopulation[2*spanSize+i].random_topic();
+            newPopulation[2*spanSize+i].number_of_iterations = population[i].number_of_iterations;
         }
 
         //substitute the initial population with the new population and continue
-        delete[] cfgs;
-        cfgs = newPopulation;
+        delete[] population;
+        population = newPopulation;
 
         t = clock() - t;
         cout << "GA took " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms"<<endl;
@@ -368,10 +367,7 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
     clock_t geneticEndTime = clock();
     cout<<"Genetic algorithm takes " << (geneticEndTime - preprocessEndTime) << "ms"<<endl;
 
-    // problem: trying to read distribution file before it was written
-    // needs to implement cluster file methods
     // create clusters based on the distribution.txt
-    //clusterMap woulb be the clusters variable
 	vector<Cluster> clusters = ClusterManager::createClusters();
     if(debug) cout<<"Cluster created"<<endl;
 
@@ -382,16 +378,12 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
 	clusters = ClusterManager::cleanCluster(clusters, articlesMap, sourceFileMap);
     if(debug) cout<<"Cluster Cleaned"<<endl;
 
-	//System.out.println("clusters before cleaning source file \n \n ");
-	//printOutput(clusters);
 
 	// there might be some clusters with no article in them but all source files
 	// to handle that we use the following technique/function
 	clusters = ClusterManager::cleanSourceFileCluster(clusters, sourceFileMap);
     if(debug) cout<<"Cluster Sources cleaned"<<endl;
 
-	//System.out.println("Clusters after cleaning the source file");
-	//printOutput(clusters);
 
 	clock_t clusteringEndTime = clock();
 	cout<<"Clustering takes " << (clusteringEndTime - geneticEndTime) << "ms"<<endl;
@@ -401,6 +393,7 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
 
     exTm = clock() - exTm;
 
+    result.GA_count = GACounter;
     result.LDA_count = LDACounter;
 	result.LDA_time = LDATotTime;
     result.execution_milliseconds = ((float)exTm)/(CLOCKS_PER_SEC/1000);
@@ -409,11 +402,7 @@ ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitn
     total_t = clock() - total_t;
 
     cout<<endl<<"###########################################"<<endl;
-    cout<<"Total LDA-GA time was: " << ((float)total_t)/(CLOCKS_PER_SEC/1000) << "ms" << endl;
     cout<<"Number of GA iterations: " << GACounter<<endl;
-    cout<<"Number of LDA calls: " << LDACounter<<endl;
-    cout<<"Average LDA time: " << LDATotTime/LDACounter << "ms" << endl;
-    cout<<"###########################################"<<endl;
 
     // ###########################################################
 
