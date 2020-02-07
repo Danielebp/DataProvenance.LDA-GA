@@ -13,14 +13,17 @@ OBJ_SRCS := document.cpp cluster.cpp utils.cpp scanner.cpp geneticAlgorithm.cpp 
 ALL_OBJ = $(patsubst %.cpp, %.o, $(OBJ_SRCS))
 PLDA_SRCS := cmd_flags.o common.o document.o model.o accumulative_model.o sampler.o
 PLDA_OBJ = $(patsubst %.o, plda/obj/%.o, $(PLDA_SRCS))
-OBJ = $(addprefix $(OBJ_PATH)/, $(ALL_OBJ)) $(PLDA_OBJ)
+LDA_SRCS := lda-data.o lda-estimate.o lda-model.o lda-inference.o utils.o cokus.o lda-alpha.o
+LDA_OBJ = $(patsubst %.o, lda/%.o, $(LDA_SRCS))
+OBJ = $(addprefix $(OBJ_PATH)/, $(ALL_OBJ)) $(PLDA_OBJ) $(LDA_OBJ)
+
 
 $(OBJ_PATH)/%.o: %.cpp
 	@ mkdir -p $(OBJ_PATH)
 	$(CC) -c $(CFLAGS) $< -o $@
 
 ldaga: main.cpp $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) $< -o $@
+	$(CC) $(CFLAGS) $(OBJ) $< -o $@ -lm
 
 TESTOBJ_PATH = ./test
 TESTOBJ_SRCS := scanner.cpp cluster.cpp document.cpp utils.cpp
