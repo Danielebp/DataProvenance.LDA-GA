@@ -12,15 +12,9 @@
 #include <map>
 
 #include "utils.h"
-#include "plda/common.h"
-#include "plda/document.h"
-#include "plda/model.h"
-#include "plda/accumulative_model.h"
-#include "plda/sampler.h"
-#include "plda/cmd_flags.h"
+#include "lda/lda-estimate.h"
 
 using namespace std;
-using namespace learning_lda;
 
 class TopicModelling {
 private:
@@ -68,13 +62,13 @@ public:
 
   map<string, int> AgrupateTokens (string line) ;
 
-  void FreeCorpus(LDACorpus* corpus) ;
+  //void FreeCorpus(LDACorpus* corpus) ;
 
-  int LoadAndInitTrainingCorpus(const string& corpus_file, map<string, int>* word_index_map, LDACorpus* corpus) ;
+  int LoadAndInitTrainingCorpus(const string& corpus_file, map<string, int>* word_index_map, corpus& c) ;
 
-  long Infer(LDAModel model, map<string, int> word_index_map, string inputFile, string header) ;
+  //long Infer(LDAModel model, map<string, int> word_index_map, string inputFile, string header) ;
 
-  LDAAccumulativeModel TrainModel(LDAModel * model, LDACorpus & corpus, int wordIndexMapSize) ;
+  //LDAAccumulativeModel TrainModel(LDAModel * model, LDACorpus & corpus, int wordIndexMapSize) ;
 
   long LDA(string MyCount = "") ;
 

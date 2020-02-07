@@ -1,7 +1,6 @@
 #include "TopicModelling.h"
 
 using namespace std;
-using namespace learning_lda;
 
 
 map<string, int> TopicModelling::AgrupateTokens (string line) {
@@ -21,7 +20,7 @@ map<string, int> TopicModelling::AgrupateTokens (string line) {
   return wordCount;
 }
 
-void TopicModelling::FreeCorpus(LDACorpus* corpus) {
+/*void TopicModelling::FreeCorpus(LDACorpus* corpus) {
   for (list<LDADocument*>::iterator iter = corpus->begin();
        iter != corpus->end();
        ++iter) {
@@ -30,7 +29,7 @@ void TopicModelling::FreeCorpus(LDACorpus* corpus) {
       *iter = NULL;
     }
   }
-}
+}*/
 
 void TopicModelling::WriteFiles() {
 
@@ -42,13 +41,17 @@ void TopicModelling::WriteFiles() {
     fout<<res;
 }
 
-int TopicModelling::LoadAndInitTrainingCorpus(const string& corpus_file, map<string, int>* word_index_map, LDACorpus* corpus) {
-    if(debug) cout<<"Restart corpus"<<endl;
-  corpus->clear();
-  word_index_map->clear();
+// Creates corpus of documents, where each document becomes a list of pairs wordIdx:count
+int TopicModelling::LoadAndInitTrainingCorpus(const string& corpus_file, map<string, int>* word_index_map, corpus& c) {
 
   ifstream fin(corpus_file.c_str());
   string line;
+  int nd = 0;
+
+  c.docs = 0;
+  c.num_terms = 0;
+  c.num_docs = 0;
+
   // TODO: move reading of files outside, and make the constructor receive the data already
   if(debug) cout<<"Staring to read input file"<<endl;
   while (getline(fin, line)) {  // Each line is a training document.
@@ -57,41 +60,56 @@ int TopicModelling::LoadAndInitTrainingCorpus(const string& corpus_file, map<str
         line[0] != '\n' &&      // Skip empty lines.
         line[0] != '#') {       // Skip comment lines.
 
-      int pos = line.find(delimiter);
-      if(pos >= line.size()) cout<<"Delimiter not found"<<endl;
-      if(debug) cout<<"Read line: "<< line.substr(0, pos)<<endl;
-      line.erase(0, pos + 17);
+        c.docs = (document*) realloc(c.docs, sizeof(document)*(nd+1));
 
-      DocumentWordTopicsPB document;
-      vector<int32> topics;
-      int word_index;
+        int pos = line.find(delimiter);
+        if(pos >= line.size()) cout<<"Delimiter not found"<<endl;
+        if(debug) cout<<"Read line: "<< line.substr(0, pos)<<endl;
+        line.erase(0, pos + 17);
 
-      // agrupate tokens with count of repetitions
-      map<string, int> wordCount = AgrupateTokens(line);
-      for (map<string, int>::iterator it = wordCount.begin(); it != wordCount.end(); it++ ) {
-        topics.clear();
+        // agrupate tokens on doc with count of repetitions
+        map<string, int> wordCount = AgrupateTokens(line);
 
-        // for (int i = 0; i < it->second; ++i) {
-          topics.push_back(RandInt(numberOfTopics));
-        // }
+        // add initial doc information to corpus
+        int numWords = wordCount.size();
+        c.docs[nd].length = numWords;
+        c.docs[nd].total = 0;
+        c.docs[nd].words = (int*)malloc(sizeof(int)*numWords);
+        c.docs[nd].counts = (int*)malloc(sizeof(int)*numWords);
 
-        map<string, int>::const_iterator iter = word_index_map->find(it->first);
-        if (iter == word_index_map->end()) {
-          word_index = word_index_map->size();
-          (*word_index_map)[it->first] = word_index;
-        } else {
-          word_index = iter->second;
+        int n =0;
+        for (map<string, int>::iterator wordCountIt = wordCount.begin();
+                        wordCountIt != wordCount.end(); wordCountIt++ , n++) {
+
+            // get word and count from map
+            string word = wordCountIt->first;
+            int count = wordCountIt->second;
+
+            // makes sure word is on index map, if not add it
+            map<string, int>::const_iterator idxIter = word_index_map->find(word);
+            if (idxIter == word_index_map->end()) {
+                (*word_index_map)[word] = word_index_map->size();
+            }
+
+            // add word idx to doc[nd]
+            c.docs[nd].words[n] = (*word_index_map)[word];
+
+            // add word count to doc[nd]
+            c.docs[nd].counts[n] = count;
+            c.docs[nd].total += count;
         }
-
-        document.add_wordtopics(it->first, word_index, topics);
-      }
-      corpus->push_back(new LDADocument(document, numberOfTopics));
+        nd++;
     }
   }
-  return corpus->size();
+
+
+  c.num_docs = nd;
+  c.num_terms = word_index_map->size();
+
+  return nd;
 }
 
-LDAAccumulativeModel TopicModelling::TrainModel(LDAModel * model, LDACorpus & corpus, int wordIndexMapSize) {
+/*LDAAccumulativeModel TopicModelling::TrainModel(LDAModel * model, LDACorpus & corpus, int wordIndexMapSize) {
     LDAAccumulativeModel accum_model(numberOfTopics, wordIndexMapSize);
     LDASampler sampler(0.01, 0.01, model, &accum_model);
 
@@ -114,9 +132,9 @@ LDAAccumulativeModel TopicModelling::TrainModel(LDAModel * model, LDACorpus & co
 
     return accum_model;
 }
-
+*/
 // TODO: distribution is wrong
-long TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, string inputFile, string header) {
+/*long TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, string inputFile, string header) {
   LDASampler sampler(0.01, 0.01, &model, NULL);
   ifstream fin(inputFile);
   stringstream out;
@@ -208,7 +226,7 @@ long TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, stri
 
   return time;
 }
-
+*/
 
 // should write distribution.txt and topics.txt
 long TopicModelling::LDA(string MyCount) {
@@ -217,43 +235,31 @@ long TopicModelling::LDA(string MyCount) {
   long time = 0;
   string inputFile = "input1.txt";
   outputFile = MyCount;
-  LDACorpus corpus;
+  corpus corpus;
   map<string, int> word_index_map;
+  LDA_Estimate ldaRunner;
 
-  int docCount = LoadAndInitTrainingCorpus(inputFile, &word_index_map, &corpus);
+  int docCount = LoadAndInitTrainingCorpus(inputFile, &word_index_map, corpus);
 
-  if(debug) cout<<"Finished Load -> Start Model"<<endl;
+  if(debug) cout<<"Finished Loading "<<docCount<<"docs  -> Start Model"<<endl;
 
   clock_t t = clock();
-  LDAModel model(numberOfTopics, word_index_map);
 
-  if(debug) cout<<"Finished Model -> Start Train"<<endl;
+  char* settingsFile="settings.txt";
+  int modelCount = ldaRunner.runLDA(&corpus, numberOfTopics, 0.5f);
 
-  LDAAccumulativeModel accum_model = TrainModel(&model, corpus, word_index_map.size());
-
-  if(debug) cout<<"Finished Train -> Write file"<<endl;
-
-  stringstream fout;
-  accum_model.AppendAsString(word_index_map, fout);
-  res = fout.str();
-  // Show top 5 words in topics with proportions for the first document
-  string header = "Document\tTopic\tTopic Proportion\t...";
-
-  if(debug) cout<<"Finished Write -> Start Infer"<<endl;
   t = clock() - t;
   time = ((float)t)/(CLOCKS_PER_SEC/1000);
   // infers
-  time += Infer(model, word_index_map, inputFile, header);
-  if(debug) cout<<"###########################"<<endl;
 
   if(debug) cout<<"#### Writing LDA ####"<<endl;
-
+  cin>>inputFile;
   // write topic.txt
   ofstream outTop;
   outTop.open ("results/topic.txt");
   outTop<<"topic\tdist\twords"<<endl;
   for (int topic = 0; topic < numberOfTopics; topic++) {
-      outTop<<topic<<"\t"<<topicDistribution[topic]<<"\t"<<accum_model.GetWordsPerTopic(word_index_map, topic, 20, " ")<<endl;
+      //outTop<<topic<<"\t"<<topicDistribution[topic]<<"\t"<<accum_model.GetWordsPerTopic(word_index_map, topic, 20, " ")<<endl;
   }
   outTop.close();
 
