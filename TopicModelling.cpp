@@ -58,10 +58,10 @@ void TopicModelling::WriteFiles() {
 long TopicModelling::LDA(string MyCount) {
 // srand(10);
   if(debug) cout<<"#### Starting LDA with "<<numberOfTopics<<" topics and "<<numberOfIterations<<" iterations ####"<<endl;
-  long time = 0;
   string inputFile = "./tempData/input1.txt";
   outputFile = MyCount;
 
+  clock_t t = clock();
   char* args[] = {(char*)"lda", (char*)"-est",
                 (char*)"-ntopics", const_cast<char*>(std::to_string(numberOfTopics).c_str()),
                 (char*)"-niters", const_cast<char*>(std::to_string(numberOfIterations).c_str()),
@@ -75,7 +75,6 @@ long TopicModelling::LDA(string MyCount) {
   this->ldaModel.init(16, args);
   this->ldaModel.estimate();
 
-
   // write topic.txt
   ofstream outTop;
   outTop.open ("./tempData/topic.txt");
@@ -85,7 +84,8 @@ long TopicModelling::LDA(string MyCount) {
   }
 
   outTop.close();
-
+  t = clock() - t;
+  long time = (((float)t)/(CLOCKS_PER_SEC/1000));
 
   if(debug) cout<<"#### Ending LDA ####"<<endl;
 

@@ -778,8 +778,6 @@ void model::estimate() {
 	dataset::read_wordmap(dir + wordmapfile, &id2word);
     }
 
-    printf("Sampling %d iterations!\n", niters);
-
     int last_iter = liter;
     for (liter = last_iter + 1; liter <= niters + last_iter; liter++) {
     	//printf("Iteration %d ...\n", liter);
@@ -805,8 +803,8 @@ void model::estimate() {
     	}
     }
 
-    printf("Gibbs sampling completed!\n");
-    printf("Saving the final model!\n");
+//    printf("Gibbs sampling completed!\n");
+//    printf("Saving the final model!\n");
     compute_theta();
     compute_phi();
     liter--;

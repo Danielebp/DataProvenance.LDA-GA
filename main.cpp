@@ -79,7 +79,7 @@ void CheckLDAPerformance(int numberOfDocuments, bool debug) {
                 LDATotTime += tm.LDA(id);
             }
             popCfg.LDA_execution_milliseconds = ((double)LDATotTime/TEST_COUNT);
-            cout<< number_of_topics<<"x"<<number_of_iterations<<": " + to_string(popCfg.LDA_execution_milliseconds)<<endl;
+            cout<< number_of_topics<<"x"<<number_of_iterations<<": " + to_string(popCfg.LDA_execution_milliseconds)<<"ms"<<endl;
         }
     }
 }

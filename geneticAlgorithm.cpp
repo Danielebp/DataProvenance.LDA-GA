@@ -173,18 +173,16 @@ ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, double 
         // runs LDA for each pair on the population
         for (int i = 0; i<populationSize; i++){
             LDACounter ++;
-            t = clock();
 
             // creates temporary files for each LDA run
             string tempFileID = "__"+to_string(i)+"__"+to_string(population[i].number_of_topics)+"x"+to_string(population[i].number_of_topics);
 
             // creates TopicModelling obj and runs lda for pair i
             TopicModelling tm(population[i].number_of_topics, population[i].number_of_iterations, numberOfDocuments, debug);
-            tm.LDA(tempFileID);
+            long ldaTime = tm.LDA(tempFileID);
 
             // updates times
-            t = clock() - t;
-            population[i].LDA_execution_milliseconds = ((float)t)/(CLOCKS_PER_SEC/1000);
+            population[i].LDA_execution_milliseconds = ldaTime;
             LDATotTime += population[i].LDA_execution_milliseconds;
 
             // calculates fitness value to determine wether to stop or try next pair
