@@ -51,7 +51,6 @@ public:
 
   inline double getDistribution(int topic, int docNum) {
       return this->ldaModel.getDistribution(docNum, topic);
-      //return distribution[((docNum)*numberOfTopics) + topic];
   }
 
   inline string getDocNameByNumber(int num){
@@ -65,12 +64,6 @@ public:
   //map<string, int> AgrupateTokens (string line) ;
 
   //void FreeCorpus(LDACorpus* corpus) ;
-
-  //int LoadAndInitTrainingCorpus(const string& corpus_file, map<string, int>* word_index_map, LDACorpus* corpus) ;
-
-  //long Infer(LDAModel model, map<string, int> word_index_map, string inputFile, string header) ;
-
-  //LDAAccumulativeModel TrainModel(LDAModel * model, LDACorpus & corpus, int wordIndexMapSize) ;
 
   long LDA(string MyCount = "") ;
 
