@@ -292,7 +292,6 @@ int model::load_model(string model_name) {
 }
 
 int model::save_model(string model_name) {
-    cout<<"Starting to save "<<model_name<<" on dir "<< dir <<endl;
     if (save_model_tassign(dir + model_name + tassign_suffix)) {
 	return 1;
     }

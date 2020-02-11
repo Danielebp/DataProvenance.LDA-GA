@@ -160,7 +160,7 @@ int dataset::read_trndata(string dfile, string wordmapfile, int ndocs) {
     	int length = strtok.count_tokens();
 
     	if (length <= 0) {
-    	    printf("Invalid (empty) document!\n");
+    	    printf("Found a invalid (empty) document!\n");
     	    M--;
             i--;
             continue;

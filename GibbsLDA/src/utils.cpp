@@ -139,8 +139,6 @@ int utils::parse_args(int argc, char ** argv, model * pmodel) {
 	} else {
 	    pmodel->dir = dfile.substr(0, idx + 1);
 	    pmodel->dfile = dfile.substr(idx + 1, dfile.size() - pmodel->dir.size());
-	    printf("dir = %s\n", pmodel->dir.c_str());
-	    printf("dfile = %s\n", pmodel->dfile.c_str());
 	}
     }
 
