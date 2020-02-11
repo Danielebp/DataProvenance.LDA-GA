@@ -11,8 +11,8 @@ clean:
 
 OBJ_SRCS := document.cpp cluster.cpp utils.cpp scanner.cpp geneticAlgorithm.cpp resultStatistics.cpp populationConfig.cpp parallelizables.cpp TopicModelling.cpp wordFilter.cpp
 ALL_OBJ = $(patsubst %.cpp, %.o, $(OBJ_SRCS))
-PLDA_SRCS := cmd_flags.o common.o document.o model.o accumulative_model.o sampler.o
-PLDA_OBJ = $(patsubst %.o, plda/obj/%.o, $(PLDA_SRCS))
+PLDA_SRCS := dataset.o model.o strtokenizer.o utils.o
+PLDA_OBJ = $(patsubst %.o, GibbsLDA/src/%.o, $(PLDA_SRCS))
 OBJ = $(addprefix $(OBJ_PATH)/, $(ALL_OBJ)) $(PLDA_OBJ)
 
 $(OBJ_PATH)/%.o: %.cpp

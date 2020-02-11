@@ -1,9 +1,8 @@
 #include "TopicModelling.h"
 
 using namespace std;
-using namespace learning_lda;
 
-
+/*
 map<string, int> TopicModelling::AgrupateTokens (string line) {
   map<string, int> wordCount;
   string word;
@@ -31,17 +30,30 @@ void TopicModelling::FreeCorpus(LDACorpus* corpus) {
     }
   }
 }
-
+*/
 void TopicModelling::WriteFiles() {
 
 
-    ofstream out("results/distribution" + outputFile + ".txt");
-    out<<dist;
+    ofstream fout("./tempData/distribution" + outputFile + ".txt");
+    stringstream out;
+    out<<"docID\ttopic\tdist\t..."<<endl;
+    for(int docID = 0; docID<this->ldaModel.ptrndata->M; docID++){
+        string name = this->ldaModel.ptrndata->docs[docID]->name;
+        out<<name<<"\t";
+        vector<pair<int, double> > topicsDistribution = this->ldaModel.getDocDistributions(docID);
+        int count = 0;
+        for(auto t=topicsDistribution.begin(); t!=topicsDistribution.end(); ++t){
+          out << t->first << "\t" << t->second
+              << ((count < topicsDistribution.size() - 1) ? "\t" : "\n");
+          count++;
+        }
+    }
+    fout<<out.str();;
 
-    ofstream fout("results/model"+outputFile+".txt");
-    fout<<res;
+    //ofstream fout("./tempData/model"+outputFile+".txt");
+    //fout<<res;
 }
-
+/*
 int TopicModelling::LoadAndInitTrainingCorpus(const string& corpus_file, map<string, int>* word_index_map, LDACorpus* corpus) {
     if(debug) cout<<"Restart corpus"<<endl;
   corpus->clear();
@@ -208,54 +220,40 @@ long TopicModelling::Infer(LDAModel model, map<string, int> word_index_map, stri
 
   return time;
 }
-
+*/
 
 // should write distribution.txt and topics.txt
 long TopicModelling::LDA(string MyCount) {
 // srand(10);
-  if(debug) cout<<"#### Starting LDA ####"<<endl;
+  if(debug) cout<<"#### Starting LDA with "<<numberOfTopics<<" topics and "<<numberOfIterations<<" iterations ####"<<endl;
   long time = 0;
-  string inputFile = "input1.txt";
+  string inputFile = "./tempData/input1.txt";
   outputFile = MyCount;
-  LDACorpus corpus;
-  map<string, int> word_index_map;
 
-  int docCount = LoadAndInitTrainingCorpus(inputFile, &word_index_map, &corpus);
+  char* args[] = {(char*)"lda", (char*)"-est",
+                (char*)"-ntopics", const_cast<char*>(std::to_string(numberOfTopics).c_str()),
+                (char*)"-niters", const_cast<char*>(std::to_string(numberOfIterations).c_str()),
+                (char*)"-twords", (char*)"20",
+                (char*)"-dfile", const_cast<char*>(inputFile.c_str()),
+                (char*)"-ndocs", (char*)"131",
+                (char*)"-savestep", (char*)"0",
+                (char*)"-dir", (char*)"./tempData/",
+                NULL};
 
-  if(debug) cout<<"Finished Load -> Start Model"<<endl;
+  this->ldaModel.init(16, args);
+  this->ldaModel.estimate();
 
-  clock_t t = clock();
-  LDAModel model(numberOfTopics, word_index_map);
-
-  if(debug) cout<<"Finished Model -> Start Train"<<endl;
-
-  LDAAccumulativeModel accum_model = TrainModel(&model, corpus, word_index_map.size());
-
-  if(debug) cout<<"Finished Train -> Write file"<<endl;
-
-  stringstream fout;
-  accum_model.AppendAsString(word_index_map, fout);
-  res = fout.str();
-  // Show top 5 words in topics with proportions for the first document
-  string header = "Document\tTopic\tTopic Proportion\t...";
-
-  if(debug) cout<<"Finished Write -> Start Infer"<<endl;
-  t = clock() - t;
-  time = ((float)t)/(CLOCKS_PER_SEC/1000);
-  // infers
-  time += Infer(model, word_index_map, inputFile, header);
-  if(debug) cout<<"###########################"<<endl;
-
-  if(debug) cout<<"#### Writing LDA ####"<<endl;
 
   // write topic.txt
   ofstream outTop;
-  outTop.open ("results/topic.txt");
+  outTop.open ("./tempData/topic.txt");
   outTop<<"topic\tdist\twords"<<endl;
   for (int topic = 0; topic < numberOfTopics; topic++) {
-      outTop<<topic<<"\t"<<topicDistribution[topic]<<"\t"<<accum_model.GetWordsPerTopic(word_index_map, topic, 20, " ")<<endl;
+      outTop<<topic<<"\t"<<this->ldaModel.getTopicDistribution(topic)<<"\t"<<this->ldaModel.maptopic2Words[topic]<<endl;
   }
+
   outTop.close();
+
 
   if(debug) cout<<"#### Ending LDA ####"<<endl;
 

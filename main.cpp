@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
 
     // should be multiple of 3
     int populationSize = 9;
-    double fitnessThreshold = 0.9;
+    double fitnessThreshold = 0.85;
     bool metrics = false;
     bool debug = false;
     bool progress = false;
@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
 
   clock_t t;
   string stopWordsFile  = "stopwords.txt";
-  string ldaInputFile   = "input1.txt";
+  string ldaInputFile   = "./tempData/input1.txt";
   string dataDir        = "txtData";        // name of the directory that contains the original source data
   string mirrorDir      = "processedData";  // name of the directory where the modified data is to be stored
   string delimiter      = "##lda_delimiter##";

@@ -96,6 +96,126 @@ ResultStatistics calculatePrecisionRecall(ResultStatistics result, vector<Cluste
     return result;
 }
 
+//getting the centroid of each cluster by calculating the average of their cluster distribution
+bool calculateCentroids(double* clusterCentroids, multimap <int, int>* clusterMap, TopicModelling* tm, int numberOfTopics){
+    for(int k = 0; k<numberOfTopics; k++){
+        int docsOfK = clusterMap->count(k);
+        // topic does not have any document
+        if(docsOfK <= 0) continue;
+
+        int counter = docsOfK;
+
+        for(multimap <int, int> :: iterator itr = clusterMap->find(k); counter>0; itr++, counter--){
+            for (int t = 0; t<numberOfTopics; t++) {
+                clusterCentroids[(k*numberOfTopics)+t] += tm->getDistribution(t, itr->second);
+            }
+        }
+        for (int t = 0; t<numberOfTopics; t++) {
+            clusterCentroids[(k*numberOfTopics)+t] /= docsOfK;
+        }
+    }
+    return true;
+}
+
+// finding the distance of each documents in each cluster
+// finding max distance from other documents in the same cluster
+bool getMaxDistancesInsideClusters(double* maxDistanceInsideCluster,
+                                        multimap <int, int>* clusterMap,
+                                        TopicModelling* tm,
+                                        int numberOfTopics){
+
+    for(int k = 0; k<numberOfTopics; k++){
+        int docsOfK = clusterMap->count(k);
+        // topic does not have any document
+        if(docsOfK <= 0) continue;
+
+        int counter = docsOfK;
+        for(multimap <int, int> :: iterator itr = clusterMap->find(k); counter>0; itr++, counter--){
+            int docNo = itr->second;
+            maxDistanceInsideCluster[docNo] = 0;
+
+            int counter2 = docsOfK;
+            for(multimap <int, int> :: iterator itr2 = clusterMap->find(k); counter2>0; itr2++, counter2--){
+                int otherDocNo = itr2->second;
+                if(otherDocNo == docNo){
+                    continue;
+                }
+
+                //finding euclidean distance between the two points/docuemnts
+                double distance = 0;
+                for(int h = 0 ; h < numberOfTopics ; h++) {
+                    distance += pow((tm->getDistribution(h, otherDocNo) - tm->getDistribution(h, docNo)), 2);
+                }
+                distance = sqrt(distance);
+                if (distance > maxDistanceInsideCluster[docNo]){
+                    maxDistanceInsideCluster[docNo] = distance;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+//finding each documents minimum distance to the centroids of other clusters
+bool getMinDistancesOutsideClusters(double* minDistanceOutsideCluster,
+                                        multimap <int, int>* clusterMap,
+                                        TopicModelling* tm,
+                                        int numberOfTopics){
+    // first calculates centroids
+    double* clusterCentroids = new double[numberOfTopics*numberOfTopics];
+    if(!calculateCentroids(clusterCentroids, clusterMap, tm, numberOfTopics))
+        cout<<"Error getting centroids"<<endl;
+
+    for(int k = 0; k<numberOfTopics; k++){
+        int docsOfK = clusterMap->count(k);
+        // topic does not have any document
+        if(docsOfK <= 0) continue;
+
+        int counter = docsOfK;
+        for(multimap <int, int> :: iterator itr = clusterMap->find(k); counter>0; itr++, counter--){
+            int docNo = itr->second;
+            minDistanceOutsideCluster[docNo] = INT_MAX;
+            for(int z = 0 ; z < numberOfTopics ; z++) {
+                //don't calculate the distance to the same cluster
+                if(z == k) {
+                    continue;
+                }
+                double distance = 0;
+                for(int h = 0 ; h < numberOfTopics ; h++) {
+                    distance += pow((clusterCentroids[(z*numberOfTopics)+h] - tm->getDistribution(h, docNo)), 2);
+                }
+                distance = sqrt(distance);
+                if (distance < minDistanceOutsideCluster[docNo]){
+                    minDistanceOutsideCluster[docNo] = distance;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+vector<Cluster> performClustering(unordered_map<string, Article> articlesMap,
+                        unordered_map<string, SourceFile> sourceFileMap, bool debug, bool progress){
+    // create clusters based on the distribution.txt
+	vector<Cluster> clusters = ClusterManager::createClusters();
+    if(debug) cout<<"Cluster created"<<endl;
+
+	// by cleaning the clusters
+	// we got through the obtained list of clusters
+	// check for conditions where there are more than 2 articles in the same cluster
+	// perform the job of splitting the cluster into 2
+	clusters = ClusterManager::cleanCluster(clusters, articlesMap, sourceFileMap);
+    if(debug) cout<<"Cluster Cleaned"<<endl;
+
+
+	// there might be some clusters with no article in them but all source files
+	// to handle that we use the following technique/function
+	clusters = ClusterManager::cleanSourceFileCluster(clusters, sourceFileMap);
+    if(debug) cout<<"Cluster Sources cleaned"<<endl;
+
+    return clusters;
+}
 
 ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, double fitnessThreshold, bool debug, bool progress) {
     ResultStatistics result;
@@ -104,7 +224,7 @@ ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, double 
     unordered_map<string, Article> articlesMap;
     unordered_map<string, SourceFile> sourceFileMap;
 
-    ifstream myfile("input1.txt");
+    ifstream myfile("./tempData/input1.txt");
     string line;
     while(getline (myfile, line, '\n')) {
         string filename = line.substr(0, line.find("##lda_delimiter##"));
@@ -170,90 +290,21 @@ ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, double 
                 if(mainTopic>=0)clusterMap.insert(pair<int, int> (mainTopic, d));
                 else{
                     topicLess++;
-                    if(debug) cout<<tm.getDocNameByNumber(d)<<endl;
+                    //if(debug) cout<<tm.getDocNameByNumber(d)<<endl;
                 }
             }
+
             if(debug) cout<<"Documents without topic: "<<topicLess<<endl;
 
-            //getting the centroid of each cluster by calculating the average of their cluster distribution
-            double* clusterCentroids = new double[numberOfTopics*numberOfTopics];
-            for(int k = 0; k<numberOfTopics; k++){
-                int docsOfK = clusterMap.count(k);
-                // topic does not have any document
-                if(docsOfK <= 0) continue;
-
-                int counter = docsOfK;
-                for(multimap <int, int> :: iterator itr = clusterMap.find(k); counter>0; itr++, counter--){
-                    for (int t = 0; t<numberOfTopics; t++) {
-                        clusterCentroids[(k*numberOfTopics)+t] += tm.getDistribution(t, itr->second);
-                    }
-                }
-                for (int t = 0; t<numberOfTopics; t++) {
-                    clusterCentroids[(k*numberOfTopics)+t] /= docsOfK;
-                }
-            }
 
             double* maxDistanceInsideCluster = new double[numberOfDocuments];
+            if(!getMaxDistancesInsideClusters(maxDistanceInsideCluster, &clusterMap, &tm, numberOfTopics))
+                cout<<"Error getting distances inside cluster"<<endl;
+
             double* minDistanceOutsideCluster = new double[numberOfDocuments];
+            if(!getMinDistancesOutsideClusters(minDistanceOutsideCluster, &clusterMap, &tm, numberOfTopics))
+                cout<<"Error getting distances outside cluster"<<endl;
 
-            // finding the distance of each documents in each cluster
-            // finding max distance from other documents in the same cluster
-            for(int k = 0; k<numberOfTopics; k++){
-                int docsOfK = clusterMap.count(k);
-                // topic does not have any document
-                if(docsOfK <= 0) continue;
-
-                int counter = docsOfK;
-                for(multimap <int, int> :: iterator itr = clusterMap.find(k); counter>0; itr++, counter--){
-                    int docNo = itr->second;
-                    maxDistanceInsideCluster[docNo] = 0;
-
-                    int counter2 = docsOfK;
-                    for(multimap <int, int> :: iterator itr2 = clusterMap.find(k); counter2>0; itr2++, counter2--){
-                        int otherDocNo = itr2->second;
-                        if(otherDocNo == docNo){
-                            continue;
-                        }
-
-                        //finding euclidean distance between the two points/docuemnts
-                        double distance = 0;
-                        for(int h = 0 ; h < numberOfTopics ; h++) {
-                            distance += pow((tm.getDistribution(h, otherDocNo) - tm.getDistribution(h, docNo)), 2);
-                        }
-                        distance = sqrt(distance);
-                        if (distance > maxDistanceInsideCluster[docNo]){
-                            maxDistanceInsideCluster[docNo] = distance;
-                        }
-                    }
-                }
-            }
-
-            //finding each documents minimum distance to the centroids of other clusters
-            for(int k = 0; k<numberOfTopics; k++){
-                int docsOfK = clusterMap.count(k);
-                // topic does not have any document
-                if(docsOfK <= 0) continue;
-
-                int counter = docsOfK;
-                for(multimap <int, int> :: iterator itr = clusterMap.find(k); counter>0; itr++, counter--){
-                    int docNo = itr->second;
-                    minDistanceOutsideCluster[docNo] = INT_MAX;
-                    for(int z = 0 ; z < numberOfTopics ; z++) {
-                        //don't calculate the distance to the same cluster
-                        if(z == k) {
-                            continue;
-                        }
-                        double distance = 0;
-                        for(int h = 0 ; h < numberOfTopics ; h++) {
-                            distance += pow((clusterCentroids[(z*numberOfTopics)+h] - tm.getDistribution(h, docNo)), 2);
-                        }
-                        distance = sqrt(distance);
-                        if (distance < minDistanceOutsideCluster[docNo]){
-                            minDistanceOutsideCluster[docNo] = distance;
-                        }
-                    }
-                }
-            }
 
             //calculate the Silhouette coefficient for each document
             double* silhouetteCoefficient = new double[numberOfDocuments];
@@ -272,7 +323,9 @@ ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, double 
             population[i].fitness_value = total / (numberOfDocuments - topicLess);
             if(progress) cout<<"LDA Attempt: "<<LDACounter<<" - Fitness: "<<population[i].fitness_value<<endl;
 
+
             if(population[i].fitness_value >= fitnessThreshold) {
+                cout<<"Achieved fitness"<<endl;
                 tm.WriteFiles();
                 break;
             }
@@ -297,16 +350,21 @@ ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, double 
 
                     // when maxFitness satisfies the requirement, stop running GA
                     if(maxFitness >= fitnessThreshold) {
-
+                        if(debug)cout<<"Re-run LDA"<<endl;
                         // TODO: running the LDA again, which is not such a great idea, see if it can be removed
                         TopicModelling tm(population[j].number_of_topics, population[j].number_of_iterations, numberOfDocuments, debug);
                         tm.LDA("");
+                        if(debug)cout<<"Ran LDA"<<endl;
+
                         tm.WriteFiles();
+                        if(debug)cout<<"Wrote files"<<endl;
 
                         //run the function again to get the words in each topic
                         cout<<"the best distribution is "<<population[j].number_of_topics<<" topics and "<<population[j].number_of_iterations<<" iterations and fitness is "<<maxFitness<<endl;
                         maxFitnessFound = true;
                         result.cfg.copy(population[j]);
+                        if(debug)cout<<"Copied population"<<endl;
+
                         break;
                     }
                     maxFitnessChromosome = j;
@@ -368,22 +426,7 @@ ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, double 
     cout<<"Genetic algorithm takes " << (geneticEndTime - preprocessEndTime) << "ms"<<endl;
 
     // create clusters based on the distribution.txt
-	vector<Cluster> clusters = ClusterManager::createClusters();
-    if(debug) cout<<"Cluster created"<<endl;
-
-	// by cleaning the clusters
-	// we got through the obtained list of clusters
-	// check for conditions where there are more than 2 articles in the same cluster
-	// perform the job of splitting the cluster into 2
-	clusters = ClusterManager::cleanCluster(clusters, articlesMap, sourceFileMap);
-    if(debug) cout<<"Cluster Cleaned"<<endl;
-
-
-	// there might be some clusters with no article in them but all source files
-	// to handle that we use the following technique/function
-	clusters = ClusterManager::cleanSourceFileCluster(clusters, sourceFileMap);
-    if(debug) cout<<"Cluster Sources cleaned"<<endl;
-
+	vector<Cluster> clusters = performClustering(articlesMap, sourceFileMap, debug, progress);
 
 	clock_t clusteringEndTime = clock();
 	cout<<"Clustering takes " << (clusteringEndTime - geneticEndTime) << "ms"<<endl;

@@ -15,16 +15,17 @@ void Scanner::open (string filename) {
     string line;
     myfile.open(filename);
     getline (myfile, line, '\n');
-    ss<<line;
+    ss.str(line);
 }
 
 bool Scanner::nextLine() {
     string line;
+    stringstream().swap(ss);
     if(getline (myfile, line, '\n')) {
         ss.str(line);
         return true;
     }
-    ss<<"";
+    ss.str("");
     return false;
 }
 
@@ -48,8 +49,9 @@ int Scanner::nextInt(){
         ss >> temp;
 
         /* Checking the given word is integer or not */
-        if (stringstream(temp) >> found)
+        if (stringstream(temp) >> found){
             return found;
+        }
 
         /* To save from space at the end of string */
         temp = "";
@@ -66,8 +68,9 @@ double Scanner::nextDouble(){
         ss >> temp;
 
         /* Checking the given word is integer or not */
-        if (stringstream(temp) >> dfound)
+        if (stringstream(temp) >> dfound){
             return dfound;
+        }
 
         /* To save from space at the end of string */
         temp = "";
@@ -83,8 +86,9 @@ string Scanner::nextWord(){
         ss >> word;
 
         /* Checking the given word is integer or not */
-        if (!word.empty())
+        if (!word.empty()){
             return word;
+        }
 
         /* To save from space at the end of string */
         word = "";

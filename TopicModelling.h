@@ -12,15 +12,9 @@
 #include <map>
 
 #include "utils.h"
-#include "plda/common.h"
-#include "plda/document.h"
-#include "plda/model.h"
-#include "plda/accumulative_model.h"
-#include "plda/sampler.h"
-#include "plda/cmd_flags.h"
+#include "GibbsLDA/src/model.h"
 
 using namespace std;
-using namespace learning_lda;
 
 class TopicModelling {
 private:
@@ -37,6 +31,7 @@ private:
     int numberOfIterations;
     int burnInIterations;
     int numberOfDocuments;
+    model ldaModel;
 
 public:
   TopicModelling(int numberOfTopics, int numberOfIterations, int numberOfDocuments, bool debug){
@@ -55,7 +50,8 @@ public:
   }
 
   inline double getDistribution(int topic, int docNum) {
-      return distribution[((docNum)*numberOfTopics) + topic];
+      return this->ldaModel.getDistribution(docNum, topic);
+      //return distribution[((docNum)*numberOfTopics) + topic];
   }
 
   inline string getDocNameByNumber(int num){
@@ -66,15 +62,15 @@ public:
 
   int getMainTopic(int docNum);
 
-  map<string, int> AgrupateTokens (string line) ;
+  //map<string, int> AgrupateTokens (string line) ;
 
-  void FreeCorpus(LDACorpus* corpus) ;
+  //void FreeCorpus(LDACorpus* corpus) ;
 
-  int LoadAndInitTrainingCorpus(const string& corpus_file, map<string, int>* word_index_map, LDACorpus* corpus) ;
+  //int LoadAndInitTrainingCorpus(const string& corpus_file, map<string, int>* word_index_map, LDACorpus* corpus) ;
 
-  long Infer(LDAModel model, map<string, int> word_index_map, string inputFile, string header) ;
+  //long Infer(LDAModel model, map<string, int> word_index_map, string inputFile, string header) ;
 
-  LDAAccumulativeModel TrainModel(LDAModel * model, LDACorpus & corpus, int wordIndexMapSize) ;
+  //LDAAccumulativeModel TrainModel(LDAModel * model, LDACorpus & corpus, int wordIndexMapSize) ;
 
   long LDA(string MyCount = "") ;
 
