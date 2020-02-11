@@ -99,6 +99,51 @@ bool getMinDistancesOutsideClusters(double* minDistanceOutsideCluster,
     return true;
 }
 
+double calculateFitness(TopicModelling* tm, int numberOfTopics, int numberOfDocuments, bool debug) {
+
+    multimap <int, int> clusterMap;
+    int mainTopic;
+    int topicLess = 0;
+
+    // cluster docs by main topic to calculate fitness
+    for(int d = 0; d < numberOfDocuments; d++){
+        mainTopic = tm->getMainTopic(d);
+        if(mainTopic>=0)clusterMap.insert(pair<int, int> (mainTopic, d));
+        else{
+            topicLess++;
+        }
+    }
+
+    if(debug) cout<<"Documents without topic: "<<topicLess<<endl;
+
+
+    double* maxDistanceInsideCluster = new double[numberOfDocuments];
+    if(!getMaxDistancesInsideClusters(maxDistanceInsideCluster, &clusterMap, tm, numberOfTopics))
+        cout<<"Error getting distances inside cluster"<<endl;
+
+    double* minDistanceOutsideCluster = new double[numberOfDocuments];
+    if(!getMinDistancesOutsideClusters(minDistanceOutsideCluster, &clusterMap, tm, numberOfTopics))
+        cout<<"Error getting distances outside cluster"<<endl;
+
+
+    //calculate the Silhouette coefficient for each document
+    double* silhouetteCoefficient = new double[numberOfDocuments];
+    for(int m = 0 ; m < (numberOfDocuments); m++ ) {
+        if(max(minDistanceOutsideCluster[m],maxDistanceInsideCluster[m]) <= 0)
+            silhouetteCoefficient[m] = 0;
+        else
+            silhouetteCoefficient[m] = (minDistanceOutsideCluster[m] - maxDistanceInsideCluster[m]) / max(minDistanceOutsideCluster[m],maxDistanceInsideCluster[m]);
+    }
+
+    //find the average of the Silhouette coefficient of all the documents - fitness criteria
+    double total = 0;
+    for(int m = 0 ; m < (numberOfDocuments); m++ ) {
+        total += silhouetteCoefficient[m];
+    }
+
+    return (total / (numberOfDocuments - topicLess));
+}
+
 ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, double fitnessThreshold, bool debug, bool progress) {
 
     ResultStatistics result;
@@ -115,92 +160,48 @@ ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, double 
 
     int GACounter = 0;
     int LDACounter = 0;
+    long LDATotTime = 0;
 
     clock_t t;
 
-    bool maxFitnessFound = false;
-    long LDATotTime = 0;
-
-    while (!maxFitnessFound){
+    // add a limit of 1000 GA iterations, it should not run infinitly
+    while (GACounter<1000){
         GACounter ++;
-        // runs population
-        if(progress) cout<<"GA Attempt: "<<GACounter<< " - Fitness Threshold: " << fitnessThreshold <<endl;
-
+        if(progress) cout<<"GA Attempt: "<<GACounter<<endl;
         bool checkLowThreshold = true;
+
+        // runs LDA for each pair on the population
         for (int i = 0; i<populationSize; i++){
             LDACounter ++;
-
             t = clock();
 
+            // creates temporary files for each LDA run
+            string tempFileID = "__"+to_string(i)+"__"+to_string(population[i].number_of_topics)+"x"+to_string(population[i].number_of_topics);
+
+            // creates TopicModelling obj and runs lda for pair i
             TopicModelling tm(population[i].number_of_topics, population[i].number_of_iterations, numberOfDocuments, debug);
+            tm.LDA(tempFileID);
 
-            string fileToDelete = "__"+to_string(i)+"__"+to_string(population[i].number_of_topics)+"x"+to_string(population[i].number_of_topics);
-            tm.LDA(fileToDelete);
+            // updates times
             t = clock() - t;
-
             population[i].LDA_execution_milliseconds = ((float)t)/(CLOCKS_PER_SEC/1000);
             LDATotTime += population[i].LDA_execution_milliseconds;
-            int numberOfTopics = population[i].number_of_topics;
 
-            // ********************** BREAKPOINT *********************************
-            // TODO: still trying to understand it from here
-            // how to calculate clusterCentroids, max/minDistance, etc...
-
-            multimap <int, int> clusterMap;
-            int mainTopic;
-            int topicLess = 0;
-            for(int d = 0; d < numberOfDocuments; d++){
-                mainTopic = tm.getMainTopic(d);
-                if(mainTopic>=0)clusterMap.insert(pair<int, int> (mainTopic, d));
-                else{
-                    topicLess++;
-                    //if(debug) cout<<tm.getDocNameByNumber(d)<<endl;
-                }
-            }
-
-            if(debug) cout<<"Documents without topic: "<<topicLess<<endl;
-
-
-            double* maxDistanceInsideCluster = new double[numberOfDocuments];
-            if(!getMaxDistancesInsideClusters(maxDistanceInsideCluster, &clusterMap, &tm, numberOfTopics))
-                cout<<"Error getting distances inside cluster"<<endl;
-
-            double* minDistanceOutsideCluster = new double[numberOfDocuments];
-            if(!getMinDistancesOutsideClusters(minDistanceOutsideCluster, &clusterMap, &tm, numberOfTopics))
-                cout<<"Error getting distances outside cluster"<<endl;
-
-
-            //calculate the Silhouette coefficient for each document
-            double* silhouetteCoefficient = new double[numberOfDocuments];
-            for(int m = 0 ; m < (numberOfDocuments); m++ ) {
-                if(max(minDistanceOutsideCluster[m],maxDistanceInsideCluster[m]) <= 0)
-                    silhouetteCoefficient[m] = 0;
-                else
-                    silhouetteCoefficient[m] = (minDistanceOutsideCluster[m] - maxDistanceInsideCluster[m]) / max(minDistanceOutsideCluster[m],maxDistanceInsideCluster[m]);
-            }
-
-            //find the average of the Silhouette coefficient of all the documents - fitness criteria
-            double total = 0;
-            for(int m = 0 ; m < (numberOfDocuments); m++ ) {
-                total += silhouetteCoefficient[m];
-            }
-            population[i].fitness_value = total / (numberOfDocuments - topicLess);
+            // calculates fitness value to determine wether to stop or try next pair
+            population[i].fitness_value = calculateFitness(&tm, population[i].number_of_topics, numberOfDocuments, debug);
             if(progress) cout<<"LDA Attempt: "<<LDACounter<<" - Fitness: "<<population[i].fitness_value<<endl;
-
-
             if(population[i].fitness_value >= fitnessThreshold) {
                 cout<<"Achieved fitness"<<endl;
+                // if fitness was achieved write dist files
                 tm.WriteFiles();
                 break;
             }
 
         }
 
-
         t = clock();
 
         //ranking and ordering the chromosomes based on the fitness function.
-        //no sorting code found?(by Xiaolin)
         //We need only the top 1/3rd of the chromosomes with high fitness values - Silhouette coefficient
         PopulationConfig* newPopulation = new PopulationConfig[populationSize];
         int spanSize = populationSize/3;
@@ -214,29 +215,28 @@ ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, double 
 
                     // when maxFitness satisfies the requirement, stop running GA
                     if(maxFitness >= fitnessThreshold) {
-                        if(debug)cout<<"Re-run LDA"<<endl;
                         // TODO: running the LDA again, which is not such a great idea, see if it can be removed
+                        if(debug)cout<<"Re-run LDA"<<endl;
                         TopicModelling tm(population[j].number_of_topics, population[j].number_of_iterations, numberOfDocuments, debug);
                         tm.LDA("");
                         if(debug)cout<<"Ran LDA"<<endl;
-
                         tm.WriteFiles();
                         if(debug)cout<<"Wrote files"<<endl;
 
                         //run the function again to get the words in each topic
                         cout<<"the best distribution is "<<population[j].number_of_topics<<" topics and "<<population[j].number_of_iterations<<" iterations and fitness is "<<maxFitness<<endl;
-                        maxFitnessFound = true;
                         result.cfg.copy(population[j]);
                         if(debug)cout<<"Copied population"<<endl;
 
-                        break;
+                        result.GA_count = GACounter;
+                        result.LDA_count = LDACounter;
+                        result.LDA_time = LDATotTime;
+
+                        // stops GA
+                        return result;
                     }
                     maxFitnessChromosome = j;
                 }
-            }
-
-            if(maxFitnessFound) {
-                break;
             }
 
             if(checkLowThreshold) {
@@ -255,13 +255,7 @@ ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, double 
             newPopulation[i].copy(population[maxFitnessChromosome]);
             population[maxFitnessChromosome].fitness_value = INT_MIN;
 
-
         }
-
-        if(maxFitnessFound) {
-            break;
-        }
-
 
         //perform crossover - to fill the rest of the 2/3rd of the initial Population
         for(int i = 0 ; i < spanSize  ; i++ ) {
@@ -283,15 +277,9 @@ ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, double 
         cout << "GA took " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms"<<endl;
     }
 
-    // ######################## HERE #############################
-    // TODO: finish this part
-    // Outputs the time it took to finish the genetic algorithm
-
     result.GA_count = GACounter;
     result.LDA_count = LDACounter;
 	result.LDA_time = LDATotTime;
-
-    // ###########################################################
 
     return result;
 }
