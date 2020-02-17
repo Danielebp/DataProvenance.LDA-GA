@@ -20,7 +20,8 @@ void Scanner::open (string filename) {
 
 bool Scanner::nextLine() {
     string line;
-    stringstream().swap(ss);
+    ss.str(std::string());
+    ss.clear();
     if(getline (myfile, line, '\n')) {
         ss.str(line);
         return true;

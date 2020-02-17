@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <vector>
 #include <math.h>
+#include <limits.h>
 #include "utils.h"
 #include "scanner.h"
 #include "sourceFile.h"
