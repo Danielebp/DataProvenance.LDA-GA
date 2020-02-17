@@ -42,7 +42,6 @@ model_*.txt
 
 # data directories
 processedData/
-txtData/
 plda/docker/
 plda/testdata/
 plda/tmp/
