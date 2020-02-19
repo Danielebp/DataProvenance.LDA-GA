@@ -780,7 +780,7 @@ void model::estimate() {
 
     int last_iter = liter;
     for (liter = last_iter + 1; liter <= niters + last_iter; liter++) {
-    	//printf("Iteration %d ...\n", liter);
+    	//if(liter%100==0)printf("Iteration %d / %d...\n", (liter-last_iter), niters);
 
     	// for all z_i
     	for (int m = 0; m < M; m++) {
@@ -803,8 +803,8 @@ void model::estimate() {
     	}
     }
 
-//    printf("Gibbs sampling completed!\n");
-//    printf("Saving the final model!\n");
+    //printf("Gibbs sampling completed!\n");
+    //printf("Saving the final model!\n");
     compute_theta();
     compute_phi();
     liter--;

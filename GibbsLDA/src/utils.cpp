@@ -45,6 +45,7 @@ int utils::parse_args(int argc, char ** argv, model * pmodel) {
     int withrawdata = 0;
 
     int i = 0;
+
     while (i < argc) {
 	string arg = argv[i];
 
@@ -62,7 +63,6 @@ int utils::parse_args(int argc, char ** argv, model * pmodel) {
 
 	} else if (arg == "-dfile") {
 	    dfile = argv[++i];
-
 	} else if (arg == "-model") {
 	    model_name = argv[++i];
 
@@ -74,12 +74,12 @@ int utils::parse_args(int argc, char ** argv, model * pmodel) {
 
 	} else if (arg == "-ntopics") {
 	    K = atoi(argv[++i]);
-
+       
 	} else if (arg == "-ndocs") {
 	    pmodel->ndocs = atoi(argv[++i]);
 
 	} else if (arg == "-niters") {
-	    niters = atoi(argv[++i]);
+            niters = atoi(argv[++i]);
 
 	} else if (arg == "-savestep") {
 	    savestep = atoi(argv[++i]);

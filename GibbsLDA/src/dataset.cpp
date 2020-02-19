@@ -186,7 +186,8 @@ int dataset::read_trndata(string dfile, string wordmapfile, int ndocs) {
     }
 
     fclose(fin);
-
+    //printf("Finished reading input file!\n");
+    
     // write word map to file
     if (write_wordmap(wordmapfile, &word2id)) {
 	return 1;

@@ -62,18 +62,23 @@ long TopicModelling::LDA(string MyCount) {
   outputFile = MyCount;
 
   clock_t t = clock();
+
+  string ntopics = to_string(numberOfTopics);
+  string niters = to_string(numberOfIterations);
+
   char* args[] = {(char*)"lda", (char*)"-est",
-                (char*)"-ntopics", const_cast<char*>(std::to_string(numberOfTopics).c_str()),
-                (char*)"-niters", const_cast<char*>(std::to_string(numberOfIterations).c_str()),
+                (char*)"-ntopics", (char*)(ntopics.c_str()),
+                (char*)"-niters", (char*)(niters.c_str()),
                 (char*)"-twords", (char*)"20",
                 (char*)"-dfile", const_cast<char*>(inputFile.c_str()),
                 (char*)"-ndocs", (char*)"131",
                 (char*)"-savestep", (char*)"0",
                 (char*)"-dir", (char*)"./tempData/",
                 NULL};
-
   this->ldaModel.init(16, args);
+  if(debug) cout<<"GLDA setup completed. Starting estimate"<<endl;
   this->ldaModel.estimate();
+  if(debug) cout<<"GLDA estimate completed"<<endl;
 
   // write topic.txt
   ofstream outTop;

@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
 
     // should be multiple of 3
     int populationSize = 9;
-    double fitnessThreshold = 0.85;
+    double fitnessThreshold = 0.7;
     bool metrics = false;
     bool debug = false;
     bool progress = false;
@@ -61,12 +61,13 @@ void CheckLDAPerformance(int numberOfDocuments, bool debug) {
     int TEST_COUNT = 3;
     long LDATotTime = 0;
     string line;
-    int tpcs[] = {20};
+    int tpcs[] = {2, 4, 6, 8, 10};
+    int times[5][5];
 
-
-    for (int i = 0; i <= 3; i++) {
+    for (int i = 0; i < 5; i++) {
         int number_of_topics = tpcs[i];
-		for (int number_of_iterations = 100; number_of_iterations <= 1000; number_of_iterations +=100) {
+		for (int j = 0; j <5; j++) {
+            int number_of_iterations = (j+1)*100;
             PopulationConfig popCfg;
             popCfg.number_of_topics = number_of_topics;
             popCfg.number_of_iterations = number_of_iterations;
@@ -79,7 +80,19 @@ void CheckLDAPerformance(int numberOfDocuments, bool debug) {
                 LDATotTime += tm.LDA(id);
             }
             popCfg.LDA_execution_milliseconds = ((double)LDATotTime/TEST_COUNT);
+            times[i][j] = popCfg.LDA_execution_milliseconds;
             cout<< number_of_topics<<"x"<<number_of_iterations<<": " + to_string(popCfg.LDA_execution_milliseconds)<<"ms"<<endl;
         }
     }
+    cout<<"topics\t";
+    for(int i=100; i<=500; i+=100){
+      cout<<i<<(i==500 ? "\n" : "\t");
+}
+    for(int i=0; i<5; i++){
+      cout<<tpcs[i]<<"\t";
+      for(int j=0; j<5; j++){
+        cout<<times[i][j]<<(j==4 ? "\n":"\t");
+}
+}
+
 }
