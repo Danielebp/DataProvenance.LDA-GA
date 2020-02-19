@@ -353,6 +353,39 @@ int model::save_model_phi(string filename) {
     return 0;
 }
 
+double model::getDistribution(int doc, int topic){
+    if(doc<M && topic<K)
+        return theta[doc][topic];
+
+    return -1;
+}
+vector<pair<int, double> > model::getDocDistributions(int doc){
+    vector<pair<int, double> > topics_probs;
+    pair<int, double> topic_prob;
+    for (int k = 0; k < K; k++) {
+        topic_prob.first = k;
+        topic_prob.second = theta[doc][k];
+        topics_probs.push_back(topic_prob);
+    }
+
+        // quick sort to sort word-topic probability
+    utils::quicksort(topics_probs, 0, topics_probs.size() - 1);
+
+    return topics_probs;
+}
+double model::getTopicDistribution(int topic){
+    if(topic<K){
+        float dist = 0;
+        for(int d = 0; d<M; d++){
+            dist += theta[d][topic];
+        }
+        dist /= M;
+        return dist;
+    }
+
+    return -1;
+}
+
 int model::save_model_others(string filename) {
     FILE * fout = fopen(filename.c_str(), "w");
     if (!fout) {
@@ -383,6 +416,7 @@ int model::save_model_twords(string filename) {
         twords = V;
     }
     mapid2word::iterator it;
+    string topicTwords;
 
     for (int k = 0; k < K; k++) {
         vector<pair<int, double> > words_probs;
@@ -397,12 +431,15 @@ int model::save_model_twords(string filename) {
         utils::quicksort(words_probs, 0, words_probs.size() - 1);
 
         fprintf(fout, "Topic %dth:\n", k);
+        topicTwords = "";
         for (int i = 0; i < twords; i++) {
             it = id2word.find(words_probs[i].first);
             if (it != id2word.end()) {
                 fprintf(fout, "\t%s   %f\n", (it->second).c_str(), words_probs[i].second);
+                topicTwords += it->second + ((i<twords-1) ? " " : "");
             }
         }
+        maptopic2Words.insert(pair<int, string>(k, topicTwords));
     }
 
     fclose(fout);
@@ -617,7 +654,7 @@ int model::init_est() {
 #if DEBUG_LEVEL == DEBUG_ALL
             assert(topic >= 0 && topic < K);
 #endif
-            
+
             z[m][n] = topic;
 
             // number of instances of word i assigned to topic j
@@ -685,7 +722,7 @@ int model::init_estc() {
     for (m = 0; m < ptrndata->M; m++) {
         int N = ptrndata->docs[m]->length;
 
-        // assign values for nw, nd, nwsum, and ndsum	
+        // assign values for nw, nd, nwsum, and ndsum
         for (n = 0; n < N; n++) {
             int w = ptrndata->docs[m]->words[n];
             int topic = z[m][n];
@@ -909,7 +946,7 @@ int model::init_inf() {
     for (m = 0; m < ptrndata->M; m++) {
         int N = ptrndata->docs[m]->length;
 
-        // assign values for nw, nd, nwsum, and ndsum	
+        // assign values for nw, nd, nwsum, and ndsum
         for (n = 0; n < N; n++) {
             int w = ptrndata->docs[m]->words[n];
             int topic = z[m][n];
@@ -974,7 +1011,7 @@ int model::init_inf() {
         int N = pnewdata->docs[m]->length;
         newz[m] = new int[N];
 
-        // assign values for nw, nd, nwsum, and ndsum	
+        // assign values for nw, nd, nwsum, and ndsum
         for (n = 0; n < N; n++) {
             int w = pnewdata->docs[m]->words[n];
             int _w = pnewdata->_docs[m]->words[n];
@@ -1148,4 +1185,3 @@ void model::compute_newphi() {
         }
     }
 }
-
