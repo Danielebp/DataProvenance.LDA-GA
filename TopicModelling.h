@@ -12,7 +12,7 @@
 #include <map>
 
 #include "utils.h"
-#include "GibbsLDA/src/model.h"
+#include "gldaCuda/src/model.h"
 
 using namespace std;
 
