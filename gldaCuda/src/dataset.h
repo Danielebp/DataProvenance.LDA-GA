@@ -17,11 +17,11 @@ class document {
 public:
     int * words;
     string rawstr;
+    string name;
     int length;
 
     document() {
 	words = NULL;
-    string name;
 	rawstr = "";
 	length = 0;
     }

@@ -1113,7 +1113,7 @@ double model::compute_perplexity() {
                 }
                 if (p == 0)
                     printf("fds");
-                if (isnan(p))
+                if (::isnan(p))
                     printf("nan ");
                 perp += log(p);
             }
