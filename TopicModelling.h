@@ -27,6 +27,7 @@ private:
     unordered_map<int,string> docsMap;
 
     bool debug;
+    bool cuda;
     int numberOfTopics;
     int numberOfIterations;
     int burnInIterations;
@@ -34,13 +35,14 @@ private:
     model ldaModel;
 
 public:
-  TopicModelling(int numberOfTopics, int numberOfIterations, int numberOfDocuments, bool debug){
+  TopicModelling(int numberOfTopics, int numberOfIterations, int numberOfDocuments, bool cuda,  bool debug){
       distribution = new double[numberOfTopics*numberOfDocuments];
       topicDistribution = new double[numberOfTopics];
       this->numberOfTopics = numberOfTopics;
       this->numberOfIterations = numberOfIterations;
       this->burnInIterations = (2*numberOfIterations)/3;
       this->numberOfDocuments = numberOfDocuments;
+      this->cuda = cuda;
       this->debug = debug;
   }
 

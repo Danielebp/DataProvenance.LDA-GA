@@ -15,7 +15,7 @@
 
 using namespace std;
 
-void CheckLDAPerformance(int numberOfDocuments, bool debug);
+void CheckLDAPerformance(int numberOfDocuments, bool cuda, bool debug);
 
 int main(int argc, char* argv[]) {
     // fixing seed for testing purposes
@@ -27,6 +27,7 @@ int main(int argc, char* argv[]) {
     bool metrics = false;
     bool debug = false;
     bool progress = false;
+    bool cuda = false;
 
     for (int i = 1; i < argc; i++) {
         string s = argv[i];
@@ -34,6 +35,8 @@ int main(int argc, char* argv[]) {
             populationSize = stoi(argv[++i]);
         else if(s.compare("-f") == 0)
             fitnessThreshold = stod(argv[++i]);
+        else if(s.compare("-cuda") == 0)
+            cuda = true;
         else if(s.compare("-metrics") == 0)
             metrics = true;
         else if(s.compare("-debug") == 0)
@@ -48,16 +51,16 @@ int main(int argc, char* argv[]) {
     unordered_map<string, Document> documentsMap = preProcess();
 
     if(metrics) {
-      CheckLDAPerformance(documentsMap.size(), debug);
+      CheckLDAPerformance(documentsMap.size(), cuda, debug);
     }
     else {
       // call genetic logic to perform LDA-GA
-      reconstructProvenance(populationSize, documentsMap.size(), fitnessThreshold, debug, progress);
+      reconstructProvenance(populationSize, documentsMap.size(), fitnessThreshold, cuda, debug, progress);
 
     }
 }
 
-void CheckLDAPerformance(int numberOfDocuments, bool debug) {
+void CheckLDAPerformance(int numberOfDocuments, bool cuda, bool debug) {
     int TEST_COUNT = 3;
     long LDATotTime = 0;
     string line;
@@ -74,7 +77,7 @@ void CheckLDAPerformance(int numberOfDocuments, bool debug) {
             LDATotTime = 0;
 
             for (int i = 0; i < TEST_COUNT; ++i) {
-                TopicModelling tm(number_of_topics, number_of_iterations, numberOfDocuments, debug);
+                TopicModelling tm(number_of_topics, number_of_iterations, numberOfDocuments, cuda, debug);
                 string id = "__"+to_string(i/2)+"__"+to_string(number_of_topics)+"x"+to_string(number_of_iterations);
 
                 LDATotTime += tm.LDA(id);

@@ -122,7 +122,7 @@ vector<Cluster> performClustering(unordered_map<string, Article> articlesMap,
 
 
 
-ResultStatistics reconstructProvenance(int populationSize, int numberOfDocuments, double fitnessThreshold, bool debug, bool progress) {
+ResultStatistics reconstructProvenance(int populationSize, int numberOfDocuments, double fitnessThreshold, bool cuda, bool debug, bool progress) {
     ResultStatistics result;
 
     unordered_map<string, Article> articlesMap;
@@ -142,7 +142,7 @@ ResultStatistics reconstructProvenance(int populationSize, int numberOfDocuments
     }
     clock_t exTm = clock();
 
-    result = geneticLogic(populationSize, numberOfDocuments, fitnessThreshold, debug, progress);
+    result = geneticLogic(populationSize, numberOfDocuments, fitnessThreshold, cuda, debug, progress);
     clock_t geneticEndTime = clock();
     cout<<"Genetic algorithm takes " << (geneticEndTime - exTm) << "ms"<<endl;
 

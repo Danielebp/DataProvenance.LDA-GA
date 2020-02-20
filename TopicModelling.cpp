@@ -77,7 +77,10 @@ long TopicModelling::LDA(string MyCount) {
                 NULL};
   this->ldaModel.init(16, args);
   if(debug) cout<<"GLDA setup completed. Starting estimate"<<endl;
-  this->ldaModel.cuda_estimate();
+  
+  if(cuda) this->ldaModel.cuda_estimate();
+  else this->ldaModel.estimate();
+  
   if(debug) cout<<"GLDA estimate completed"<<endl;
 
   // write topic.txt

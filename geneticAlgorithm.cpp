@@ -144,7 +144,7 @@ double calculateFitness(TopicModelling* tm, int numberOfTopics, int numberOfDocu
     return (total / (numberOfDocuments - topicLess));
 }
 
-ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, double fitnessThreshold, bool debug, bool progress) {
+ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, double fitnessThreshold, bool cuda, bool debug, bool progress) {
 
     ResultStatistics result;
     PopulationConfig* population = new PopulationConfig[populationSize];
@@ -178,7 +178,7 @@ ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, double 
             string tempFileID = "__"+to_string(i)+"__"+to_string(population[i].number_of_topics)+"x"+to_string(population[i].number_of_topics);
 
             // creates TopicModelling obj and runs lda for pair i
-            TopicModelling tm(population[i].number_of_topics, population[i].number_of_iterations, numberOfDocuments, debug);
+            TopicModelling tm(population[i].number_of_topics, population[i].number_of_iterations, numberOfDocuments, cuda, debug);
             long ldaTime = tm.LDA(tempFileID);
 
             // updates times
@@ -215,7 +215,7 @@ ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, double 
                     if(maxFitness >= fitnessThreshold) {
                         // TODO: running the LDA again, which is not such a great idea, see if it can be removed
                         if(debug)cout<<"Re-run LDA"<<endl;
-                        TopicModelling tm(population[j].number_of_topics, population[j].number_of_iterations, numberOfDocuments, debug);
+                        TopicModelling tm(population[j].number_of_topics, population[j].number_of_iterations, numberOfDocuments, cuda, debug);
                         tm.LDA("");
                         if(debug)cout<<"Ran LDA"<<endl;
                         tm.WriteFiles();

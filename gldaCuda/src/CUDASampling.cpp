@@ -259,7 +259,7 @@ CUDASampling::~CUDASampling() {
 }
 
 void CUDASampling::run() {
-    cout << "numKernelLaunch: " << _numKernelLaunch << endl;
+    //cout << "numKernelLaunch: " << _numKernelLaunch << endl;
 
     //generate random numbers
     cuda_random(_d_random, _numTotalWord);
@@ -338,13 +338,13 @@ unsigned int CUDASampling::computeNumThread(const model& lda) const {
             break;
         }
     }
-    if (!found) {
+    /*if (!found) {
         cout << "lda.K: " << lda.K << endl;
         throw std::runtime_error(ERR_MSG("invalid K"));
         exit(EXIT_FAILURE);
-    }
+    }*/
 
-    const unsigned int numThread = (lda.K)/4;
+    const unsigned int numThread = lda.K>4 ? (lda.K)/4 : 1;
     
     return numThread;
 }
