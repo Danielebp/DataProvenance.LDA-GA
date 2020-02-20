@@ -147,7 +147,7 @@ public:
     static int read_wordmap(string wordmapfile, mapword2id * pword2id);
     static int read_wordmap(string wordmapfile, mapid2word * pid2word);
 
-    int read_trndata(string dfile, string wordmapfile);
+    int read_trndata(string dfile, string wordmapfile, int ndocs = 0);
     int read_newdata(string dfile, string wordmapfile);
     int read_newdata_withrawstrs(string dfile, string wordmapfile);
 };

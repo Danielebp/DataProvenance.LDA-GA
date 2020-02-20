@@ -12,6 +12,7 @@
 #include "model.h"
 #include "CUDASampling.h"
 #include "cuda_util.h"
+#include <iostream>
 
 using namespace std;
 using namespace CUDAUtil;
@@ -136,7 +137,7 @@ void model::set_default_values() {
     others_suffix = ".others";
     twords_suffix = ".twords";
 
-    dir = "./";
+    dir = "./results/";
     dfile = "trndocs.dat";
     model_name = "model-final";
     model_status = MODEL_STATUS_UNKNOWN;
@@ -151,7 +152,7 @@ void model::set_default_values() {
     beta = 0.1;
     niters = 2000;
     liter = 0;
-    savestep = 200;
+    savestep = 0;
     twords = 0;
     withrawstrs = 0;
 
@@ -604,7 +605,7 @@ int model::init_est() {
 
     // + read training data
     ptrndata = new dataset;
-    if (ptrndata->read_trndata(dir + dfile, dir + wordmapfile)) {
+    if (ptrndata->read_trndata(dir + dfile, dir + wordmapfile, ndocs)) {
         printf("Fail to read training data!\n");
         return 1;
     }
@@ -757,14 +758,14 @@ void model::cuda_estimate() {
         dataset::read_wordmap(dir + wordmapfile, &id2word);
     }
 
-    printf("Sampling %d iterations (CUDA)!\n", niters);
+    //printf("Sampling %d iterations (CUDA)!\n", niters);
 
-    cout << "#doc: " << M << endl;
+    //cout << "#doc: " << M << endl;
 
     int numBlock = 1024;
     const unsigned int device = 0;
     CUDATimer timer;
-    cout << "\tnumBlock: " << numBlock << ", device: " << device << endl;
+    //cout << "\tnumBlock: " << numBlock << ", device: " << device << endl;
 
 
     //GoldSampling sample(*this, numBlock);
@@ -772,13 +773,13 @@ void model::cuda_estimate() {
 
     int last_iter = liter;
     for (liter = last_iter + 1; liter <= niters + last_iter; liter++) {
-        printf("Iteration %d ...\n", liter);
+        //printf("Iteration %d ...\n", liter);
 
         timer.reset();
         timer.go();
         sample.run();
         timer.stop();
-        cout << "\tTime: " << timer.report() << endl;
+        //cout << "\tTime: " << timer.report() << endl;
 
 
         if (savestep > 0) {
@@ -794,8 +795,8 @@ void model::cuda_estimate() {
     }
 
 
-    printf("Gibbs sampling completed!\n");
-    printf("Saving the final model!\n");
+    //printf("Gibbs sampling completed!\n");
+    //printf("Saving the final model!\n");
     sample.copyBack();
     compute_theta();
     compute_phi();
@@ -810,13 +811,13 @@ void model::estimate() {
         dataset::read_wordmap(dir + wordmapfile, &id2word);
     }
 
-    printf("Sampling %d iterations (CPU, serial)!\n", niters);
+    //printf("Sampling %d iterations (CPU, serial)!\n", niters);
 
     CPUTimer timer;
 
     int last_iter = liter;
     for (liter = last_iter + 1; liter <= niters + last_iter; liter++) {
-        printf("Iteration %d ...\n", liter);
+        //printf("Iteration %d ...\n", liter);
 
         timer.reset();
         timer.go();
@@ -830,7 +831,7 @@ void model::estimate() {
             }
         }
         timer.stop();
-        cout << "\tTime: " << timer.report() << endl;
+        //cout << "\tTime: " << timer.report() << endl;
 
         if (savestep > 0) {
             if (liter % savestep == 0) {
@@ -843,8 +844,8 @@ void model::estimate() {
         }
     }
 
-    printf("Gibbs sampling completed!\n");
-    printf("Saving the final model!\n");
+    //printf("Gibbs sampling completed!\n");
+    //printf("Saving the final model!\n");
     compute_theta();
     compute_phi();
     liter--;

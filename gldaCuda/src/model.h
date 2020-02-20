@@ -22,6 +22,7 @@ public:
 
     string dir;			// model directory
     string dfile;		// data file
+    int ndocs;
     string model_name;		// model name
     int model_status;		// model status:
 				// MODEL_STATUS_UNKNOWN: unknown status

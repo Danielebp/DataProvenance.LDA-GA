@@ -1,5 +1,6 @@
 
 
+#include<iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include "constants.h"
@@ -90,7 +91,7 @@ int dataset::read_wordmap(string wordmapfile, mapid2word * pid2word) {
     return 0;
 }
 
-int dataset::read_trndata(string dfile, string wordmapfile) {
+int dataset::read_trndata(string dfile, string wordmapfile, int ndocs) {
     mapword2id word2id;
 
     FILE * fin = fopen(dfile.c_str(), "r");
@@ -104,11 +105,16 @@ int dataset::read_trndata(string dfile, string wordmapfile) {
     string line;
 
     // get the number of documents
-    fgets(buff, BUFF_SIZE_LONG - 1, fin);
-    M = atoi(buff);
-    if (M <= 0) {
-	printf("No document available!\n");
-	return 1;
+    if(ndocs <= 0){
+        fgets(buff, BUFF_SIZE_LONG - 1, fin);
+        M = atoi(buff);
+        if (M <= 0) {
+    	printf("No document available!\n");
+    	return 1;
+        }
+    }
+    else{
+        M = ndocs;
     }
 
     // allocate memory for corpus
@@ -135,9 +141,9 @@ int dataset::read_trndata(string dfile, string wordmapfile) {
 
 	if (length <= 0) {
 	    printf("Invalid (empty) document!\n");
-	    deallocate();
-	    M = V = 0;
-	    return 1;
+	    M--;
+        i--;
+        continue;
 	}
 
 	// allocate new document
