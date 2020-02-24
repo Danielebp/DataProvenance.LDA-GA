@@ -12,8 +12,13 @@
 
 ConfigOptions::ConfigOptions(string filename){
     ifstream inputFile(filename);
+    if(inputFile.good()){
     json j;
     inputFile >> j;
+
+    logLevel = j["logLevel"];
+    runType = j["runType"];
+    perfType = j["perfType"];
 
     populationSize      = j["populationSize"];
     fitnessThreshold    = j["fitnessThreshold"];
@@ -25,6 +30,22 @@ ConfigOptions::ConfigOptions(string filename){
     stopWordsFile = j["stopWordsFile"];
     ldaInputFile  = j["ldaInputFile"];
     delimiter     = j["delimiter"];
+    } else {
 
+    logLevel = error;
+    runType = train;
+    perfType = cpu;
 
+    populationSize      = 9;
+    fitnessThreshold    = 0.8;
+
+    dataDir     = "txtData";
+    mirrorDir   = "processedData";
+    outputDir   = "tempData";
+
+    stopWordsFile = "stopwords.txt";
+    ldaInputFile  = "input1.txt";
+    delimiter     = "##lda_delimiter##";
+    }
 }
+

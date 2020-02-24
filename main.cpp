@@ -21,50 +21,41 @@ void CheckLDAPerformance(int numberOfDocuments, bool cuda, bool debug);
 int main(int argc, char* argv[]) {
     // fixing seed for testing purposes
     srand(time(NULL));
-
-    ConfigOptions cfg("config.json");
-    cout<<cfg.dataDir<<" "<<
-        cfg.mirrorDir<<" "<<
-        cfg.outputDir<<" "<<
-        cfg.stopWordsFile<<" "<<
-        cfg.ldaInputFile<<" "<<
-        cfg.delimiter<<" "<<
-        cfg.populationSize<<" "<<
-        cfg.fitnessThreshold<<" "<<endl;
-
+    string configFile = "";
+    
     // should be multiple of 3
-    int populationSize = 9;
-    double fitnessThreshold = 0.7;
-    bool metrics = false;
-    bool debug = false;
-    bool progress = false;
-    bool cuda = false;
-
-    return -1;
-
-    for (int i = 1; i < argc; i++) {
-        string s = argv[i];
-        if(s.compare("-p") == 0)
-            populationSize = stoi(argv[++i]);
-        else if(s.compare("-f") == 0)
-            fitnessThreshold = stod(argv[++i]);
-        else if(s.compare("-cuda") == 0)
-            cuda = true;
-        else if(s.compare("-metrics") == 0)
-            metrics = true;
-        else if(s.compare("-debug") == 0)
-            debug = true;
-        else if(s.compare("-progress") == 0)
-            progress = true;
-        else
-            cout<<"\tparameter not recognized: "<<argv[i]<<endl;
+    int arg=1;
+    if(argc == 2){
+        configFile = argv[arg++];
     }
+    ConfigOptions cfg(configFile);
+    
+    for (; arg < argc; arg++) {
+        string s = argv[arg];
+        if(s.compare("-p") == 0)
+            cfg.populationSize = stoi(argv[++arg]);
+        else if(s.compare("-f") == 0)
+            cfg.fitnessThreshold = stod(argv[++arg]);
+        else if(s.compare("-cuda") == 0)
+            cfg.perfType = cuda;
+        else if(s.compare("-metrics") == 0)
+            cfg.runType = metric;
+        else if(s.compare("-debug") == 0)
+            cfg.logLevel = debug;
+        else if(s.compare("-info") == 0)
+          cfg.logLevel = info;
+        else
+            cout<<"\tparameter not recognized: "<<argv[arg]<<endl;
+    }
+
+    cout<<cfg.delimiter<<endl;
+
     cout<<endl;
 
     unordered_map<string, Document> documentsMap = preProcess();
 
-    if(metrics) {
-      CheckLDAPerformance(documentsMap.size(), cuda, debug);
+    if(cfg.runType == metric) {
+      CheckLDAPerformance(documentsMap.size(), cfg);
     }
     else {
       // call genetic logic to perform LDA-GA
@@ -73,7 +64,7 @@ int main(int argc, char* argv[]) {
     }
 }
 
-void CheckLDAPerformance(int numberOfDocuments, bool cuda, bool debug) {
+void CheckLDAPerformance(int numberOfDocuments, ConfigOptions cfg) {
     int TEST_COUNT = 3;
     long LDATotTime = 0;
     string line;

@@ -1,4 +1,10 @@
 {
+
+
+    "logLevel": "debug",
+    "runType": "train",
+    "perfType": "cpu",
+
     "populationSize": 9,
     "fitnessThreshold": 0.85,
 
