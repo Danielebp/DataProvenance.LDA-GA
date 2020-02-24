@@ -39,8 +39,10 @@ test
 ._*
 distribution_*.txt
 model_*.txt
+truthfile.txt
 
 # data directories
+txtData/
 processedData/
 plda/docker/
 plda/testdata/
