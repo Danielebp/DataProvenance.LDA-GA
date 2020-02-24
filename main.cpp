@@ -12,6 +12,7 @@
 #include "utils.h"
 #include "dataProvenance.h"
 #include "preProcessing.h"
+#include "config.h"
 
 using namespace std;
 
@@ -21,6 +22,16 @@ int main(int argc, char* argv[]) {
     // fixing seed for testing purposes
     srand(time(NULL));
 
+    ConfigOptions cfg("config.json");
+    cout<<cfg.dataDir<<" "<<
+        cfg.mirrorDir<<" "<<
+        cfg.outputDir<<" "<<
+        cfg.stopWordsFile<<" "<<
+        cfg.ldaInputFile<<" "<<
+        cfg.delimiter<<" "<<
+        cfg.populationSize<<" "<<
+        cfg.fitnessThreshold<<" "<<endl;
+
     // should be multiple of 3
     int populationSize = 9;
     double fitnessThreshold = 0.7;
@@ -28,6 +39,8 @@ int main(int argc, char* argv[]) {
     bool debug = false;
     bool progress = false;
     bool cuda = false;
+
+    return -1;
 
     for (int i = 1; i < argc; i++) {
         string s = argv[i];

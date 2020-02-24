@@ -1,0 +1,12 @@
+{
+    "populationSize": 9,
+    "fitnessThreshold": 0.85,
+
+    "dataDir":"txtData",
+    "mirrorDir":"processedData",
+    "outputDir":"tempData",
+
+    "stopWordsFile":"stopwords.txt",
+    "ldaInputFile":"input1.txt",
+    "delimiter":"##lda_delimiter##"
+}
