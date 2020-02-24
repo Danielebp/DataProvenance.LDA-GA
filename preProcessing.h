@@ -11,4 +11,4 @@
 
 using namespace std;
 
-unordered_map<string, Document> preProcess();
+unordered_map<string, Document> preProcess(ConfigOptions cfg);

@@ -16,20 +16,20 @@
 
 using namespace std;
 
-void CheckLDAPerformance(int numberOfDocuments, bool cuda, bool debug);
+void CheckLDAPerformance(int numberOfDocuments, ConfigOptions cfg);
 
 int main(int argc, char* argv[]) {
     // fixing seed for testing purposes
     srand(time(NULL));
     string configFile = "";
-    
+
     // should be multiple of 3
     int arg=1;
     if(argc == 2){
         configFile = argv[arg++];
     }
     ConfigOptions cfg(configFile);
-    
+
     for (; arg < argc; arg++) {
         string s = argv[arg];
         if(s.compare("-p") == 0)
@@ -48,7 +48,6 @@ int main(int argc, char* argv[]) {
             cout<<"\tparameter not recognized: "<<argv[arg]<<endl;
     }
 
-    cout<<cfg.delimiter<<endl;
 
     cout<<endl;
 
@@ -59,7 +58,7 @@ int main(int argc, char* argv[]) {
     }
     else {
       // call genetic logic to perform LDA-GA
-      reconstructProvenance(populationSize, documentsMap.size(), fitnessThreshold, cuda, debug, progress);
+      reconstructProvenance(populationSize, documentsMap.size(), fitnessThreshold, cfg);
 
     }
 }
@@ -81,24 +80,24 @@ void CheckLDAPerformance(int numberOfDocuments, ConfigOptions cfg) {
             LDATotTime = 0;
 
             for (int i = 0; i < TEST_COUNT; ++i) {
-                TopicModelling tm(number_of_topics, number_of_iterations, numberOfDocuments, cuda, debug);
+                TopicModelling tm(number_of_topics, number_of_iterations, numberOfDocuments, cfg);
                 string id = "__"+to_string(i/2)+"__"+to_string(number_of_topics)+"x"+to_string(number_of_iterations);
 
                 LDATotTime += tm.LDA(id);
             }
             popCfg.LDA_execution_milliseconds = ((double)LDATotTime/TEST_COUNT);
             times[i][j] = popCfg.LDA_execution_milliseconds;
-            cout<< number_of_topics<<"x"<<number_of_iterations<<": " + to_string(popCfg.LDA_execution_milliseconds)<<"ms"<<endl;
+            cfg.logger.log(info, number_of_topics<<"x"<<number_of_iterations<<": " + to_string(popCfg.LDA_execution_milliseconds)<<"ms");
         }
     }
-    cout<<"topics\t";
+    cfg.logger.log(info, "topics\t");
     for(int i=100; i<=500; i+=100){
-      cout<<i<<(i==500 ? "\n" : "\t");
+      cfg.logger.log(info, i<<(i==500 ? "\n" : "\t"));
 }
     for(int i=0; i<5; i++){
-      cout<<tpcs[i]<<"\t";
+      cfg.logger.log(info, tpcs[i]<<"\t");
       for(int j=0; j<5; j++){
-        cout<<times[i][j]<<(j==4 ? "\n":"\t");
+        cfg.logger.log(info, times[i][j]<<(j==4 ? "\n":"\t"));
 }
 }
 

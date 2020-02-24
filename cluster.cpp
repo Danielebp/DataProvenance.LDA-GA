@@ -1,9 +1,10 @@
 #include "cluster.h"
 
-vector<Cluster> ClusterManager::createClusters() {
+vector<Cluster> ClusterManager::createClusters(ConfigOptions cfg) {
+    this->cfg = cfg;
 	vector<Cluster> clusters;
 
-    if (debug) cout<<"Start reading files for cluster creation"<<endl;
+    cfg.logger.log(debug, "Start reading files for cluster creation");
 
 	// read the topic.txt to identify the number of clusters and the number
 	// of the cluster and the keywords belonging to each cluster
@@ -28,12 +29,12 @@ vector<Cluster> ClusterManager::createClusters() {
 		}
     } catch (exception& e) {
 
-		cout<<"Hit error while reading the topic.txt "<<endl;
-        cout<<e.what()<<endl;
+		cfg.logger.log(error, "Hit error while reading the topic.txt ");
+        cfg.logger.log(error, e.what());
 	}
     sc.close();
 
-    if(debug) cout<<"Finished reading topic.txt"<<endl;
+    cfg.logger.log(debug, "Finished reading topic.txt");
 
 	// System.out.println("Successfully scanned the file");
 	// read the distribution.txt to find which file belongs to which topic
@@ -59,11 +60,11 @@ vector<Cluster> ClusterManager::createClusters() {
 		}
 	} catch (exception& e) {
 
-		cout<<"Hit error while reading the distribution.txt "<<endl;
-        cout<<e.what()<<endl;
+		cfg.logger.log(error, "Hit error while reading the distribution.txt ")l;
+        cfg.logger.log(error, e.what());
 	}
     sc.close();
-    if(debug) cout<<"Finished reading distribution.txt"<<endl;
+    cfg.logger.log(debug, "Finished reading distribution.txt");
 
 	// System.out.println("returning clusters");
 	return clusters;
@@ -94,7 +95,7 @@ vector<Cluster> ClusterManager::cleanSourceFileCluster(vector<Cluster> clusters,
         // at this point the clusters cannot have more than one article
 
         if (cl.articles.size() > 1) {
-            cout<<">>>>>Cluster has more than one article."<<endl;
+            cfg.logger.log(info, ">>>>>Cluster has more than one article.");
             it++;
         } else if (cl.articles.size() == 1) {
             it++;
@@ -104,7 +105,7 @@ vector<Cluster> ClusterManager::cleanSourceFileCluster(vector<Cluster> clusters,
             for (int i=0; i < cl.sourceFiles.size(); i++) {
                 if(sourceFileMap.find(cl.sourceFiles[i]) == sourceFileMap.end()){
                     // this should never happen if clusters were generated from same sourceFiles
-                    cout<<"SourceFile >>"<<cl.sourceFiles[i]<<"<< not found"<<endl;
+                    cfg.logger.log(info, "SourceFile >>"<<cl.sourceFiles[i]<<"<< not found");
                 }
                 else {
                     SourceFile sf = sourceFileMap[cl.sourceFiles[i]];
@@ -172,15 +173,15 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 
 			// get each cluster
 			//Cluster cluster = clusters[clusterNo];
-            if(debug) cout<<"Checking cluster "<<cluster.clusterNo<<endl;
+            cfg.logger.log(debug, "Checking cluster "<<cluster.clusterNo);
 
 			// check if the cluster has 1 article or more than 1 article
 			if (cluster.articles.size() <= 1) {
-                if(debug) cout<<"1 article"<<endl;
+                cfg.logger.log(debug, "1 article");
 				// go check the next cluster
                 newClusterList.push_back(cluster);
 			} else {
-                if(debug) cout<<"multi articles"<<endl;
+                cfg.logger.log(debug, "multi articles");
 
 				// get the articles of this cluster
                 vector<Article> articlesInCluster;
@@ -188,7 +189,7 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 				for (int i = 0; i < cluster.articles.size(); i++) {
                     if(articleMap.find(cluster.articles[i]) == articleMap.end()){
                         // this should never happen if clusters were generated from same articlesMap
-                        cout<<"Article not found: "<<cluster.articles[i]<<endl;
+                        cfg.logger.log(info, "Article not found: "<<cluster.articles[i]);
                     }
                     else {
 	                    articlesInCluster.push_back(articleMap[cluster.articles[i]]);

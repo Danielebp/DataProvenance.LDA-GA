@@ -57,7 +57,7 @@ void TopicModelling::WriteFiles() {
 // should write distribution.txt and topics.txt
 long TopicModelling::LDA(string MyCount) {
 // srand(10);
-  if(debug) cout<<"#### Starting LDA with "<<numberOfTopics<<" topics and "<<numberOfIterations<<" iterations ####"<<endl;
+  cfg.logger.log(debug, "#### Starting LDA with "<<numberOfTopics<<" topics and "<<numberOfIterations<<" iterations ####");
   string inputFile = "./tempData/input1.txt";
   outputFile = MyCount;
 
@@ -76,12 +76,12 @@ long TopicModelling::LDA(string MyCount) {
                 (char*)"-dir", (char*)"./tempData/",
                 NULL};
   this->ldaModel.init(16, args);
-  if(debug) cout<<"GLDA setup completed. Starting estimate"<<endl;
-  
+  cfg.logger.log(debug, "GLDA setup completed. Starting estimate");
+
   if(cuda) this->ldaModel.cuda_estimate();
   else this->ldaModel.estimate();
-  
-  if(debug) cout<<"GLDA estimate completed"<<endl;
+
+  cfg.logger.log(debug, "GLDA estimate completed");
 
   // write topic.txt
   ofstream outTop;
@@ -95,7 +95,7 @@ long TopicModelling::LDA(string MyCount) {
   t = clock() - t;
   long time = (((float)t)/(CLOCKS_PER_SEC/1000));
 
-  if(debug) cout<<"#### Ending LDA ####"<<endl;
+  cfg.logger.log(debug, "#### Ending LDA ####");
 
   return time;
 }

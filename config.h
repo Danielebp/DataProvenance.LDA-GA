@@ -37,8 +37,12 @@ public:
     string  outputDir;
 
     string  stopWordsFile;//  = "stopwords.txt";
+    string  truthFile;//  = "truthfile.txt";
     string  ldaInputFile;//   = "./tempData/input1.txt";
+    string  loggerFile;//   = "./tempData/input1.txt";
     string  delimiter;//      = "##lda_delimiter##";
+
+    Logger logger;
 
     ConfigOptions(string filename);
 

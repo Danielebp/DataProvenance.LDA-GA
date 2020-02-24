@@ -65,11 +65,11 @@ bool getMaxDistancesInsideClusters(double* maxDistanceInsideCluster,
 bool getMinDistancesOutsideClusters(double* minDistanceOutsideCluster,
                                         multimap <int, int>* clusterMap,
                                         TopicModelling* tm,
-                                        int numberOfTopics){
+                                        int numberOfTopics, ConfigOptions cfg){
     // first calculates centroids
     double* clusterCentroids = new double[numberOfTopics*numberOfTopics];
     if(!calculateCentroids(clusterCentroids, clusterMap, tm, numberOfTopics))
-        cout<<"Error getting centroids"<<endl;
+        cfg.logger.log(error, "Error getting centroids");
 
     for(int k = 0; k<numberOfTopics; k++){
         int docsOfK = clusterMap->count(k);
@@ -99,7 +99,7 @@ bool getMinDistancesOutsideClusters(double* minDistanceOutsideCluster,
     return true;
 }
 
-double calculateFitness(TopicModelling* tm, int numberOfTopics, int numberOfDocuments, bool debug) {
+double calculateFitness(TopicModelling* tm, int numberOfTopics, int numberOfDocuments, ConfigOptions cfg) {
 
     multimap <int, int> clusterMap;
     int mainTopic;
@@ -114,16 +114,16 @@ double calculateFitness(TopicModelling* tm, int numberOfTopics, int numberOfDocu
         }
     }
 
-    if(debug) cout<<"Documents without topic: "<<topicLess<<endl;
+    cfg.logger.log(debug, "Documents without topic: "<<topicLess);
 
 
     double* maxDistanceInsideCluster = new double[numberOfDocuments];
     if(!getMaxDistancesInsideClusters(maxDistanceInsideCluster, &clusterMap, tm, numberOfTopics))
-        cout<<"Error getting distances inside cluster"<<endl;
+        cfg.logger.log(error, "Error getting distances inside cluster");
 
     double* minDistanceOutsideCluster = new double[numberOfDocuments];
     if(!getMinDistancesOutsideClusters(minDistanceOutsideCluster, &clusterMap, tm, numberOfTopics))
-        cout<<"Error getting distances outside cluster"<<endl;
+        cfg.logger.log(error, "Error getting distances outside cluster");
 
 
     //calculate the Silhouette coefficient for each document
@@ -144,13 +144,13 @@ double calculateFitness(TopicModelling* tm, int numberOfTopics, int numberOfDocu
     return (total / (numberOfDocuments - topicLess));
 }
 
-ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, double fitnessThreshold, bool cuda, bool debug, bool progress) {
+ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, ConfigOptions cfg) {
 
     ResultStatistics result;
     PopulationConfig* population = new PopulationConfig[populationSize];
 
-    if(debug) cout<<"Starting GA"<<endl;
-    if(debug) cout<<"###########################"<<endl;
+    cfg.logger.log(debug, "Starting GA");
+    cfg.logger.log(debug, "###########################");
 
     // initialize population
     for (int i = 0; i<populationSize; i++){
@@ -167,7 +167,7 @@ ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, double 
     // add a limit of 1000 GA iterations, it should not run infinitly
     while (GACounter<1000){
         GACounter ++;
-        if(progress) cout<<"GA Attempt: "<<GACounter<<endl;
+        cfg.logger.log(info, "GA Attempt: "<<GACounter);
         bool checkLowThreshold = true;
 
         // runs LDA for each pair on the population
@@ -187,9 +187,9 @@ ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, double 
 
             // calculates fitness value to determine wether to stop or try next pair
             population[i].fitness_value = calculateFitness(&tm, population[i].number_of_topics, numberOfDocuments, debug);
-            if(progress) cout<<"LDA Attempt: "<<LDACounter<<" - Fitness: "<<population[i].fitness_value<<endl;
+            cfg.logger.log(info, "LDA Attempt: "<<LDACounter<<" - Fitness: "<<population[i].fitness_value);
             if(population[i].fitness_value >= fitnessThreshold) {
-                cout<<"Achieved fitness"<<endl;
+                cfg.logger.log(info, "Achieved fitness");
                 // if fitness was achieved write dist files
                 tm.WriteFiles();
                 break;
@@ -214,17 +214,17 @@ ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, double 
                     // when maxFitness satisfies the requirement, stop running GA
                     if(maxFitness >= fitnessThreshold) {
                         // TODO: running the LDA again, which is not such a great idea, see if it can be removed
-                        if(debug)cout<<"Re-run LDA"<<endl;
+                        cfg.logger.log(debug, "Re-run LDA");
                         TopicModelling tm(population[j].number_of_topics, population[j].number_of_iterations, numberOfDocuments, cuda, debug);
                         tm.LDA("");
-                        if(debug)cout<<"Ran LDA"<<endl;
+                        cfg.logger.log(debug, "Ran LDA");
                         tm.WriteFiles();
-                        if(debug)cout<<"Wrote files"<<endl;
+                        cfg.logger.log(debug, "Wrote files");
 
                         //run the function again to get the words in each topic
-                        cout<<"the best distribution is "<<population[j].number_of_topics<<" topics and "<<population[j].number_of_iterations<<" iterations and fitness is "<<maxFitness<<endl;
+                        cfg.logger.log(info, "the best distribution is "<<population[j].number_of_topics<<" topics and "<<population[j].number_of_iterations<<" iterations and fitness is "<<maxFitness);
                         result.cfg.copy(population[j]);
-                        if(debug)cout<<"Copied population"<<endl;
+                        cfg.logger.log(debug, "Copied population");
 
                         result.GA_count = GACounter;
                         result.LDA_count = LDACounter;
@@ -272,7 +272,7 @@ ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, double 
         population = newPopulation;
 
         t = clock() - t;
-        cout << "GA took " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms"<<endl;
+        cfg.logger.log(info, "GA took " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms");
     }
 
     result.GA_count = GACounter;

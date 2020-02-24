@@ -42,11 +42,11 @@ struct Cluster
 class ClusterManager{
 
 public:
-    static const bool debug = false;
+    static ConfigOptions cfg;
     // reads the data from the topic.txt and distribution.txt
 	// create cluster for each topic
 	// assigns the keywords to the appropraite topic
-	static vector<Cluster> createClusters() ;
+	static vector<Cluster> createClusters(ConfigOptions cfg) ;
     static vector<Cluster> cleanSourceFileCluster(vector<Cluster> clusters, unordered_map<string, SourceFile> sourceFileMap);
     static vector<Cluster> cleanCluster(vector<Cluster> clusters, unordered_map<string, Article> articleMap, unordered_map<string, SourceFile> sourceFileMap);
 	// TODO: cleanClusters ()

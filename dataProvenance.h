@@ -15,6 +15,6 @@
 
 using namespace std;
 
-ResultStatistics reconstructProvenance(int populationSize, int numberOfDocuments, double fitnessThreshold,bool cuda, bool debug, bool progress) ;
+ResultStatistics reconstructProvenance(int populationSize, int numberOfDocuments, ConfigOptions cfg) ;
 
 #endif

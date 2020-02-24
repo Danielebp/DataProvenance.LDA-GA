@@ -51,27 +51,22 @@ unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, 
 }
 
 
-unordered_map<string, Document> preProcess(){
+unordered_map<string, Document> preProcess(ConfigOptions cfg){
     clock_t t;
-    string stopWordsFile  = "stopwords.txt";
-    string ldaInputFile   = "./tempData/input1.txt";
-    string dataDir        = "txtData";        // name of the directory that contains the original source data
-    string mirrorDir      = "processedData";  // name of the directory where the modified data is to be stored
-    string delimiter      = "##lda_delimiter##";
 
-    WordFilter wordFilter(stopWordsFile);
+    WordFilter wordFilter(cfg.stopWordsFile);
 
     // tokenize articles
     t = clock();
-    unordered_map<string,Document> documentsMap = tokenizeFiles(dataDir, mirrorDir, wordFilter);
+    unordered_map<string,Document> documentsMap = tokenizeFiles(cfg.dataDir, cfg.mirrorDir, wordFilter);
     t = clock() - t;
     // Output the time it took to find all article's titles and keywords
-    cout << "Preprocessing takes " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms" << endl;
+    cfg.logger.log(info, "Preprocessing takes " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms");
 
     // write input file for LDA
-    ofstream outfile (ldaInputFile);
+    ofstream outfile (cfg.ldaInputFile);
     for (pair<string, Document> element : documentsMap)
-      outfile << element.first << delimiter << (element.second).getKeyWords() << endl;
+      outfile << element.first << cfg.delimiter << (element.second).getKeyWords() << endl;
     outfile.close();
 
     return documentsMap;

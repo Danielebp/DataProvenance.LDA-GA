@@ -28,7 +28,9 @@ ConfigOptions::ConfigOptions(string filename){
     outputDir   = j["outputDir"];
 
     stopWordsFile = j["stopWordsFile"];
+    truthFile     = j["truthFile"];
     ldaInputFile  = j["ldaInputFile"];
+    loggerFile    = j["loggerFile"];
     delimiter     = j["delimiter"];
     } else {
 
@@ -44,8 +46,11 @@ ConfigOptions::ConfigOptions(string filename){
     outputDir   = "tempData";
 
     stopWordsFile = "stopwords.txt";
+    loggerFile    = "log.txt";
+    truthFile     = "truthfile.txt";
     ldaInputFile  = "input1.txt";
     delimiter     = "##lda_delimiter##";
     }
-}
 
+    logger = new Logger(cfg.loggerFile, cfg.logLevel);
+}

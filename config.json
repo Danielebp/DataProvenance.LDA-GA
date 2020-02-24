@@ -13,6 +13,8 @@
     "outputDir":"tempData",
 
     "stopWordsFile":"stopwords.txt",
-    "ldaInputFile":"input1.txt",
+    "loggerFile":"log.txt",
+    "truthFile":"truthfile.txt",
+    "ldaInputFile":"./tempData/input1.txt",
     "delimiter":"##lda_delimiter##"
 }
