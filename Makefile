@@ -22,7 +22,7 @@ LIB		= $(CUDA_LIB)
 
 
 
-OBJS=           main.o config.o document.o cluster.o myutils.o scanner.o dataProvenance.o geneticAlgorithm.o resultStatistics.o populationConfig.o parallelizables.o TopicModelling.o preProcessing.o wordFilter.o strtokenizer.o dataset.o utils.o model.o CUDASampling.o sample_kernel.o
+OBJS=           main.o logger.o config.o document.o cluster.o myutils.o scanner.o dataProvenance.o geneticAlgorithm.o resultStatistics.o populationConfig.o parallelizables.o TopicModelling.o preProcessing.o wordFilter.o strtokenizer.o dataset.o utils.o model.o CUDASampling.o sample_kernel.o
 
 MAIN=           main
 
@@ -34,6 +34,10 @@ main.o: ./main.cpp
 
 config.o: ./config.cpp
 	$(CXX) -c -o config.o ./config.cpp $(CXXFLAGS) $(INCLUDE)
+
+
+logger.o: ./logger.cpp
+	$(CXX) -c -o logger.o ./logger.cpp $(CXXFLAGS) $(INCLUDE)
 
 document.o: ./document.cpp
 	$(CXX) -c -o document.o ./document.cpp $(CXXFLAGS) $(INCLUDE)
@@ -93,4 +97,3 @@ sample_kernel.o: ./gldaCuda/src/sample_kernel.h ./gldaCuda/src/sample_kernel.cu
 clean:
 	rm $(OBJS)
 	rm $(MAIN)
-
