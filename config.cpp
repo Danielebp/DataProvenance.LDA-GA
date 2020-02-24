@@ -1,8 +1,8 @@
-#include <config.h>
+#include "config.h"
 
-enum LogLevel { error, info, debug };
-enum RunType { metric, train };
-enum PerfType { cpu, cuda };
+//enum LogLevel { error, info, debug };
+//enum RunType { metric, train };
+//enum PerfType { cpu, cuda };
 
     // running config
 //    LogLevel logLevel;
@@ -10,7 +10,6 @@ enum PerfType { cpu, cuda };
 //    PerfType perfType;
 
 
-public:
 ConfigOptions::ConfigOptions(string filename){
     ifstream inputFile(filename);
     json j;
