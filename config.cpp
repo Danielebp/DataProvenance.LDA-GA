@@ -52,5 +52,5 @@ ConfigOptions::ConfigOptions(string filename){
     delimiter     = "##lda_delimiter##";
     }
 
-    logger = new Logger(cfg.loggerFile, cfg.logLevel);
+    logger.init(loggerFile, logLevel);
 }

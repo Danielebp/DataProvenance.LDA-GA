@@ -14,13 +14,14 @@
 #include "parallelizables.h"
 #include "TopicModelling.h"
 #include "cluster.h"
+#include "config.h"
 
 using namespace std;
 
 const int MAX_TOPICS = 20;
 const int MAX_ITERATIONS = 1000;
 
-ResultStatistics geneticLogic(int population, int numberOfDocuments, double fitnessThreshold, bool cuda, bool debug, bool progress);
+ResultStatistics geneticLogic(int numberOfDocuments, ConfigOptions* cfg);
 void sortInitialPopulation(PopulationConfig* mInitialPopulation, int size);
 
 #endif

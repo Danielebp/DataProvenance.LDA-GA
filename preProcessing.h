@@ -7,8 +7,10 @@
 #include <vector>
 #include "document.h"
 #include "utils.h"
+#include "config.h"
 #include "wordFilter.h"
 
 using namespace std;
 
-unordered_map<string, Document> preProcess(ConfigOptions cfg);
+unordered_map<string, Document> preProcess(ConfigOptions* cfg);
+

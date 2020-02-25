@@ -4,15 +4,11 @@
 #include <fstream>
 #include <iostream>
 #include "json.hpp"
+#include "logger.h"
+#include "commons.h"
 
 using json = nlohmann::json;
 using namespace std;
-
-
-
-enum LogLevel { error, info, debug };
-enum RunType { metric, train };
-enum PerfType { cpu, cuda };
 
 NLOHMANN_JSON_SERIALIZE_ENUM(LogLevel, {{error, "error"},{info, "info"}, {debug,"debug"}})
 NLOHMANN_JSON_SERIALIZE_ENUM(RunType,  {{metric, "metric"}, {train,"train"}})

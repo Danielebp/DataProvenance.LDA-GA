@@ -9,8 +9,14 @@ Logger::Logger(string filename, LogLevel level){
     logLevel = level;
 }
 
+bool Logger::init(string filename, LogLevel level){
+    logFile.open (filename);
+    logLevel = level;
+    return true;
+}
+
 Logger::~Logger(){
-    myfile.close();
+    logFile.close();
 }
 
 string getLabel(LogLevel level){
@@ -22,11 +28,16 @@ string getLabel(LogLevel level){
        case error:
           return "ERROR";
        default :
-          "UNLABELED"
+          "UNLABELED";
     }
 }
 
+string getTime(){
+    auto timenow = chrono::system_clock::to_time_t(chrono::system_clock::now());
+    return ctime(&timenow);
+}
+
 bool Logger::log(LogLevel level, string message){
-    if(level<=logLevel)myfile << level<< " message at " ctime(&timenow)<<": "<<message<<endl;
+    if(level<=logLevel)logFile << level<< " message at "<<getTime()<<": "<<message<<endl;
 
 }

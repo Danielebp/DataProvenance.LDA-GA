@@ -15,6 +15,6 @@
 
 using namespace std;
 
-ResultStatistics reconstructProvenance(int populationSize, int numberOfDocuments, ConfigOptions cfg) ;
+ResultStatistics reconstructProvenance(int numberOfDocuments, ConfigOptions *cfg) ;
 
 #endif

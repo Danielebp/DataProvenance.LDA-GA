@@ -10,7 +10,7 @@
 #include <fstream>
 #include <set>
 #include <map>
-
+#include "config.h"
 #include "utils.h"
 #include "gldaCuda/src/model.h"
 
@@ -18,7 +18,6 @@ using namespace std;
 
 class TopicModelling {
 private:
-    string delimiter = "##lda_delimiter##";
     string outputFile;
     string res;
     string dist;
@@ -26,8 +25,7 @@ private:
     double *topicDistribution;
     unordered_map<int,string> docsMap;
 
-    bool debug;
-    bool cuda;
+    ConfigOptions* cfg;
     int numberOfTopics;
     int numberOfIterations;
     int burnInIterations;
@@ -35,15 +33,14 @@ private:
     model ldaModel;
 
 public:
-  TopicModelling(int numberOfTopics, int numberOfIterations, int numberOfDocuments, bool cuda,  bool debug){
+  TopicModelling(int numberOfTopics, int numberOfIterations, int numberOfDocuments, ConfigOptions* cfg){
       distribution = new double[numberOfTopics*numberOfDocuments];
       topicDistribution = new double[numberOfTopics];
       this->numberOfTopics = numberOfTopics;
       this->numberOfIterations = numberOfIterations;
       this->burnInIterations = (2*numberOfIterations)/3;
       this->numberOfDocuments = numberOfDocuments;
-      this->cuda = cuda;
-      this->debug = debug;
+      this->cfg = cfg;
   }
 
   ~TopicModelling(){

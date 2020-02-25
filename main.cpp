@@ -16,7 +16,7 @@
 
 using namespace std;
 
-void CheckLDAPerformance(int numberOfDocuments, ConfigOptions cfg);
+void CheckLDAPerformance(int numberOfDocuments, ConfigOptions* cfg);
 
 int main(int argc, char* argv[]) {
     // fixing seed for testing purposes
@@ -51,25 +51,26 @@ int main(int argc, char* argv[]) {
 
     cout<<endl;
 
-    unordered_map<string, Document> documentsMap = preProcess();
+    unordered_map<string, Document> documentsMap = preProcess(&cfg);
 
     if(cfg.runType == metric) {
-      CheckLDAPerformance(documentsMap.size(), cfg);
+      CheckLDAPerformance(documentsMap.size(), &cfg);
     }
     else {
       // call genetic logic to perform LDA-GA
-      reconstructProvenance(populationSize, documentsMap.size(), fitnessThreshold, cfg);
+      reconstructProvenance(documentsMap.size(), &cfg);
 
     }
 }
 
-void CheckLDAPerformance(int numberOfDocuments, ConfigOptions cfg) {
+void CheckLDAPerformance(int numberOfDocuments, ConfigOptions *cfg) {
     int TEST_COUNT = 3;
     long LDATotTime = 0;
     string line;
     int tpcs[] = {2, 4, 6, 8, 10};
     int times[5][5];
-
+   
+    stringstream ss;
     for (int i = 0; i < 5; i++) {
         int number_of_topics = tpcs[i];
 		for (int j = 0; j <5; j++) {
@@ -87,18 +88,25 @@ void CheckLDAPerformance(int numberOfDocuments, ConfigOptions cfg) {
             }
             popCfg.LDA_execution_milliseconds = ((double)LDATotTime/TEST_COUNT);
             times[i][j] = popCfg.LDA_execution_milliseconds;
-            cfg.logger.log(info, number_of_topics<<"x"<<number_of_iterations<<": " + to_string(popCfg.LDA_execution_milliseconds)<<"ms");
+            ss<<number_of_topics<<"x"<<number_of_iterations<<": " + to_string(popCfg.LDA_execution_milliseconds)<<"ms";
+            cfg->logger.log(info, ss.str());
+            ss.str(std::string());
+            ss.clear();
         }
     }
-    cfg.logger.log(info, "topics\t");
-    for(int i=100; i<=500; i+=100){
-      cfg.logger.log(info, i<<(i==500 ? "\n" : "\t"));
-}
-    for(int i=0; i<5; i++){
-      cfg.logger.log(info, tpcs[i]<<"\t");
-      for(int j=0; j<5; j++){
-        cfg.logger.log(info, times[i][j]<<(j==4 ? "\n":"\t"));
-}
-}
 
+    ss<<"topics\t";
+    for(int i=100; i<=500; i+=100){
+      ss<<i<<(i==500 ? "\n" : "\t");
+    }
+    for(int i=0; i<5; i++){
+      ss<<tpcs[i]<<"\t";
+      for(int j=0; j<5; j++){
+        ss<<times[i][j]<<(j==4 ? "\n":"\t");
+      }
+    }
+
+    cfg->logger.log(info, ss.str());
+    ss.str(std::string());
+    ss.clear();
 }

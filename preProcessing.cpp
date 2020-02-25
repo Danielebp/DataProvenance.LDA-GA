@@ -51,22 +51,25 @@ unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, 
 }
 
 
-unordered_map<string, Document> preProcess(ConfigOptions cfg){
+unordered_map<string, Document> preProcess(ConfigOptions* cfg){
     clock_t t;
-
-    WordFilter wordFilter(cfg.stopWordsFile);
+    stringstream ss;
+    WordFilter wordFilter(cfg->stopWordsFile);
 
     // tokenize articles
     t = clock();
-    unordered_map<string,Document> documentsMap = tokenizeFiles(cfg.dataDir, cfg.mirrorDir, wordFilter);
+    unordered_map<string,Document> documentsMap = tokenizeFiles(cfg->dataDir, cfg->mirrorDir, wordFilter);
     t = clock() - t;
     // Output the time it took to find all article's titles and keywords
-    cfg.logger.log(info, "Preprocessing takes " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms");
+    ss<<"Preprocessing takes " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms";
+    cfg->logger.log(info, ss.str());
+    ss.str(std::string());
+    ss.clear();
 
     // write input file for LDA
-    ofstream outfile (cfg.ldaInputFile);
+    ofstream outfile (cfg->ldaInputFile);
     for (pair<string, Document> element : documentsMap)
-      outfile << element.first << cfg.delimiter << (element.second).getKeyWords() << endl;
+      outfile << element.first << cfg->delimiter << (element.second).getKeyWords() << endl;
     outfile.close();
 
     return documentsMap;

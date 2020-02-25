@@ -65,11 +65,11 @@ bool getMaxDistancesInsideClusters(double* maxDistanceInsideCluster,
 bool getMinDistancesOutsideClusters(double* minDistanceOutsideCluster,
                                         multimap <int, int>* clusterMap,
                                         TopicModelling* tm,
-                                        int numberOfTopics, ConfigOptions cfg){
+                                        int numberOfTopics, ConfigOptions* cfg){
     // first calculates centroids
     double* clusterCentroids = new double[numberOfTopics*numberOfTopics];
     if(!calculateCentroids(clusterCentroids, clusterMap, tm, numberOfTopics))
-        cfg.logger.log(error, "Error getting centroids");
+        cfg->logger.log(error, "Error getting centroids");
 
     for(int k = 0; k<numberOfTopics; k++){
         int docsOfK = clusterMap->count(k);
@@ -99,8 +99,8 @@ bool getMinDistancesOutsideClusters(double* minDistanceOutsideCluster,
     return true;
 }
 
-double calculateFitness(TopicModelling* tm, int numberOfTopics, int numberOfDocuments, ConfigOptions cfg) {
-
+double calculateFitness(TopicModelling* tm, int numberOfTopics, int numberOfDocuments, ConfigOptions* cfg) {
+    stringstream ss;
     multimap <int, int> clusterMap;
     int mainTopic;
     int topicLess = 0;
@@ -113,17 +113,19 @@ double calculateFitness(TopicModelling* tm, int numberOfTopics, int numberOfDocu
             topicLess++;
         }
     }
-
-    cfg.logger.log(debug, "Documents without topic: "<<topicLess);
+    ss<<"Documents without topic: "<<topicLess;
+    cfg->logger.log(debug, ss.str());
+    ss.str(std::string());
+    ss.clear();;
 
 
     double* maxDistanceInsideCluster = new double[numberOfDocuments];
     if(!getMaxDistancesInsideClusters(maxDistanceInsideCluster, &clusterMap, tm, numberOfTopics))
-        cfg.logger.log(error, "Error getting distances inside cluster");
+        cfg->logger.log(error, "Error getting distances inside cluster");
 
     double* minDistanceOutsideCluster = new double[numberOfDocuments];
-    if(!getMinDistancesOutsideClusters(minDistanceOutsideCluster, &clusterMap, tm, numberOfTopics))
-        cfg.logger.log(error, "Error getting distances outside cluster");
+    if(!getMinDistancesOutsideClusters(minDistanceOutsideCluster, &clusterMap, tm, numberOfTopics, cfg))
+        cfg->logger.log(error, "Error getting distances outside cluster");
 
 
     //calculate the Silhouette coefficient for each document
@@ -144,16 +146,17 @@ double calculateFitness(TopicModelling* tm, int numberOfTopics, int numberOfDocu
     return (total / (numberOfDocuments - topicLess));
 }
 
-ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, ConfigOptions cfg) {
+ResultStatistics geneticLogic(int numberOfDocuments, ConfigOptions* cfg) {
 
+    stringstream ss;
     ResultStatistics result;
-    PopulationConfig* population = new PopulationConfig[populationSize];
+    PopulationConfig* population = new PopulationConfig[cfg->populationSize];
 
-    cfg.logger.log(debug, "Starting GA");
-    cfg.logger.log(debug, "###########################");
+    cfg->logger.log(debug, "Starting GA");
+    cfg->logger.log(debug, "###########################");
 
     // initialize population
-    for (int i = 0; i<populationSize; i++){
+    for (int i = 0; i<cfg->populationSize; i++){
         population[i].set_max(MAX_TOPICS, MAX_ITERATIONS); // define max of topics and iterations
         population[i].random(); // generate random number of topics and iterations
     }
@@ -167,18 +170,22 @@ ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, ConfigO
     // add a limit of 1000 GA iterations, it should not run infinitly
     while (GACounter<1000){
         GACounter ++;
-        cfg.logger.log(info, "GA Attempt: "<<GACounter);
+        ss<<"GA Attempt: "<<GACounter;
+        cfg->logger.log(info, ss.str());
+        ss.str(std::string());
+        ss.clear();
+        
         bool checkLowThreshold = true;
 
         // runs LDA for each pair on the population
-        for (int i = 0; i<populationSize; i++){
+        for (int i = 0; i<cfg->populationSize; i++){
             LDACounter ++;
 
             // creates temporary files for each LDA run
             string tempFileID = "__"+to_string(i)+"__"+to_string(population[i].number_of_topics)+"x"+to_string(population[i].number_of_topics);
 
             // creates TopicModelling obj and runs lda for pair i
-            TopicModelling tm(population[i].number_of_topics, population[i].number_of_iterations, numberOfDocuments, cuda, debug);
+            TopicModelling tm(population[i].number_of_topics, population[i].number_of_iterations, numberOfDocuments, cfg);
             long ldaTime = tm.LDA(tempFileID);
 
             // updates times
@@ -186,10 +193,13 @@ ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, ConfigO
             LDATotTime += population[i].LDA_execution_milliseconds;
 
             // calculates fitness value to determine wether to stop or try next pair
-            population[i].fitness_value = calculateFitness(&tm, population[i].number_of_topics, numberOfDocuments, debug);
-            cfg.logger.log(info, "LDA Attempt: "<<LDACounter<<" - Fitness: "<<population[i].fitness_value);
-            if(population[i].fitness_value >= fitnessThreshold) {
-                cfg.logger.log(info, "Achieved fitness");
+            population[i].fitness_value = calculateFitness(&tm, population[i].number_of_topics, numberOfDocuments, cfg);
+            ss<<"LDA Attempt: "<<LDACounter<<" - Fitness: "<<population[i].fitness_value;
+            cfg->logger.log(info, ss.str());
+            ss.str(std::string());
+            ss.clear();
+            if(population[i].fitness_value >= cfg->fitnessThreshold) {
+                cfg->logger.log(info, "Achieved fitness");
                 // if fitness was achieved write dist files
                 tm.WriteFiles();
                 break;
@@ -201,30 +211,33 @@ ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, ConfigO
 
         //ranking and ordering the chromosomes based on the fitness function.
         //We need only the top 1/3rd of the chromosomes with high fitness values - Silhouette coefficient
-        PopulationConfig* newPopulation = new PopulationConfig[populationSize];
-        int spanSize = populationSize/3;
+        PopulationConfig* newPopulation = new PopulationConfig[cfg->populationSize];
+        int spanSize = cfg->populationSize/3;
         //copy only the top 1/3rd of the chromosomes to the new population
         for(int i = 0 ; i < spanSize ; i++) {
             double maxFitness = INT_MIN;
             int maxFitnessChromosome = -1;
-            for(int j = 0 ; j < populationSize ; j++) {
+            for(int j = 0 ; j < cfg->populationSize ; j++) {
                 if(population[j].fitness_value > maxFitness) {
                     maxFitness = population[j].fitness_value;
 
                     // when maxFitness satisfies the requirement, stop running GA
-                    if(maxFitness >= fitnessThreshold) {
+                    if(maxFitness >= cfg->fitnessThreshold) {
                         // TODO: running the LDA again, which is not such a great idea, see if it can be removed
-                        cfg.logger.log(debug, "Re-run LDA");
-                        TopicModelling tm(population[j].number_of_topics, population[j].number_of_iterations, numberOfDocuments, cuda, debug);
+                        cfg->logger.log(debug, "Re-run LDA");
+                        TopicModelling tm(population[j].number_of_topics, population[j].number_of_iterations, numberOfDocuments, cfg);
                         tm.LDA("");
-                        cfg.logger.log(debug, "Ran LDA");
+                        cfg->logger.log(debug, "Ran LDA");
                         tm.WriteFiles();
-                        cfg.logger.log(debug, "Wrote files");
+                        cfg->logger.log(debug, "Wrote files");
 
                         //run the function again to get the words in each topic
-                        cfg.logger.log(info, "the best distribution is "<<population[j].number_of_topics<<" topics and "<<population[j].number_of_iterations<<" iterations and fitness is "<<maxFitness);
+                        ss<<"the best distribution is "<<population[j].number_of_topics<<" topics and "<<population[j].number_of_iterations<<" iterations and fitness is "<<maxFitness;
+                        cfg->logger.log(info, ss.str());
+    			ss.str(std::string());
+    			ss.clear();
                         result.cfg.copy(population[j]);
-                        cfg.logger.log(debug, "Copied population");
+                        cfg->logger.log(debug, "Copied population");
 
                         result.GA_count = GACounter;
                         result.LDA_count = LDACounter;
@@ -272,8 +285,11 @@ ResultStatistics geneticLogic(int populationSize, int numberOfDocuments, ConfigO
         population = newPopulation;
 
         t = clock() - t;
-        cfg.logger.log(info, "GA took " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms");
-    }
+        ss<<"GA took " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms";
+	cfg->logger.log(info, ss.str());
+       	ss.str(std::string());
+    	ss.clear(); 
+   }
 
     result.GA_count = GACounter;
     result.LDA_count = LDACounter;

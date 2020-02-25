@@ -1,10 +1,9 @@
 #include "cluster.h"
 
-vector<Cluster> ClusterManager::createClusters(ConfigOptions cfg) {
-    this->cfg = cfg;
-	vector<Cluster> clusters;
+vector<Cluster> ClusterManager::createClusters(ConfigOptions* cfg) {
+    vector<Cluster> clusters;
 
-    cfg.logger.log(debug, "Start reading files for cluster creation");
+    cfg->logger.log(debug, "Start reading files for cluster creation");
 
 	// read the topic.txt to identify the number of clusters and the number
 	// of the cluster and the keywords belonging to each cluster
@@ -29,12 +28,12 @@ vector<Cluster> ClusterManager::createClusters(ConfigOptions cfg) {
 		}
     } catch (exception& e) {
 
-		cfg.logger.log(error, "Hit error while reading the topic.txt ");
-        cfg.logger.log(error, e.what());
+		cfg->logger.log(error, "Hit error while reading the topic.txt ");
+        cfg->logger.log(error, e.what());
 	}
     sc.close();
 
-    cfg.logger.log(debug, "Finished reading topic.txt");
+    cfg->logger.log(debug, "Finished reading topic.txt");
 
 	// System.out.println("Successfully scanned the file");
 	// read the distribution.txt to find which file belongs to which topic
@@ -60,11 +59,11 @@ vector<Cluster> ClusterManager::createClusters(ConfigOptions cfg) {
 		}
 	} catch (exception& e) {
 
-		cfg.logger.log(error, "Hit error while reading the distribution.txt ")l;
-        cfg.logger.log(error, e.what());
+		cfg->logger.log(error, "Hit error while reading the distribution.txt ");
+        cfg->logger.log(error, e.what());
 	}
     sc.close();
-    cfg.logger.log(debug, "Finished reading distribution.txt");
+    cfg->logger.log(debug, "Finished reading distribution.txt");
 
 	// System.out.println("returning clusters");
 	return clusters;
@@ -78,9 +77,10 @@ vector<Cluster> ClusterManager::createClusters(ConfigOptions cfg) {
 // the keywords that are associated with those clusters need to be found
 // the source file can be transferred to the cluster with which it matches the
 // most
-vector<Cluster> ClusterManager::cleanSourceFileCluster(vector<Cluster> clusters, unordered_map<string, SourceFile> sourceFileMap) {
+vector<Cluster> ClusterManager::cleanSourceFileCluster(vector<Cluster> clusters, unordered_map<string, SourceFile> sourceFileMap, ConfigOptions* cfg) {
 
     int clusterNo = 0;
+    stringstream ss;
 
     // collect all the source files from clusters without an article
     vector<SourceFile> sourceFiles;
@@ -95,7 +95,7 @@ vector<Cluster> ClusterManager::cleanSourceFileCluster(vector<Cluster> clusters,
         // at this point the clusters cannot have more than one article
 
         if (cl.articles.size() > 1) {
-            cfg.logger.log(info, ">>>>>Cluster has more than one article.");
+            cfg->logger.log(info, ">>>>>Cluster has more than one article.");
             it++;
         } else if (cl.articles.size() == 1) {
             it++;
@@ -105,7 +105,10 @@ vector<Cluster> ClusterManager::cleanSourceFileCluster(vector<Cluster> clusters,
             for (int i=0; i < cl.sourceFiles.size(); i++) {
                 if(sourceFileMap.find(cl.sourceFiles[i]) == sourceFileMap.end()){
                     // this should never happen if clusters were generated from same sourceFiles
-                    cfg.logger.log(info, "SourceFile >>"<<cl.sourceFiles[i]<<"<< not found");
+                    ss<<"SourceFile >>"<<cl.sourceFiles[i]<<"<< not found";
+                    cfg->logger.log(info, ss.str());
+                    ss.str(std::string());
+                    ss.clear();
                 }
                 else {
                     SourceFile sf = sourceFileMap[cl.sourceFiles[i]];
@@ -160,8 +163,9 @@ vector<Cluster> ClusterManager::cleanSourceFileCluster(vector<Cluster> clusters,
 	// create new cluster for each of these article and add them to the main list,
 	// remove the cluster which had more then one article from the main list
 	// "clusters"
-vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered_map<string, Article> articleMap, unordered_map<string, SourceFile> sourceFileMap) {
+vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered_map<string, Article> articleMap, unordered_map<string, SourceFile> sourceFileMap, ConfigOptions* cfg) {
         vector<Cluster> newClusterList;
+        stringstream ss;
 
 		// this is to make sure all the clusters are checked
         for ( auto it = clusters.begin(); it != clusters.end(); it++){
@@ -173,15 +177,18 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 
 			// get each cluster
 			//Cluster cluster = clusters[clusterNo];
-            cfg.logger.log(debug, "Checking cluster "<<cluster.clusterNo);
+	    ss<<"Checking cluster "<<cluster.clusterNo;
+            cfg->logger.log(debug, ss.str());
+            ss.str(std::string());
+            ss.clear();
 
 			// check if the cluster has 1 article or more than 1 article
 			if (cluster.articles.size() <= 1) {
-                cfg.logger.log(debug, "1 article");
+                cfg->logger.log(debug, "1 article");
 				// go check the next cluster
                 newClusterList.push_back(cluster);
 			} else {
-                cfg.logger.log(debug, "multi articles");
+                cfg->logger.log(debug, "multi articles");
 
 				// get the articles of this cluster
                 vector<Article> articlesInCluster;
@@ -189,7 +196,10 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 				for (int i = 0; i < cluster.articles.size(); i++) {
                     if(articleMap.find(cluster.articles[i]) == articleMap.end()){
                         // this should never happen if clusters were generated from same articlesMap
-                        cfg.logger.log(info, "Article not found: "<<cluster.articles[i]);
+                        ss<<""<<cluster.articles[i];
+                        cfg->logger.log(info, ss.str());
+                        ss.str(std::string());
+                        ss.clear();
                     }
                     else {
 	                    articlesInCluster.push_back(articleMap[cluster.articles[i]]);
@@ -266,7 +276,10 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 				for (int i = 0; i < cluster.sourceFiles.size(); i++) {
                     if(sourceFileMap.find(cluster.sourceFiles[i]) == sourceFileMap.end()){
                         // this should never happen if clusters were generated from same sourceFiles
-                        cout<<"SourceFile not found: "<<cluster.sourceFiles[i]<<endl;
+                        ss<<"SourceFile not found: "<<cluster.sourceFiles[i];
+                        cfg->logger.log(error, ss.str());
+                        ss.str(std::string());
+                        ss.clear();
                     }
                     else {
     					SourceFile source = sourceFileMap[cluster.sourceFiles[i]];
