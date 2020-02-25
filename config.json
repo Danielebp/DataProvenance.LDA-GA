@@ -1,7 +1,7 @@
 {
 
 
-    "logLevel": "debug",
+    "logLevel": "info",
     "runType": "train",
     "perfType": "cpu",
 
