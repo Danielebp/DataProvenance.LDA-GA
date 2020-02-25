@@ -131,7 +131,7 @@ int dataset::read_trndata(string dfile, string wordmapfile, int ndocs) {
 	fgets(buff, BUFF_SIZE_LONG - 1, fin);
 
     line = buff;
-    int pos = line.find("##lda_delimiter##");
+    int pos = line.find(cfg->delimiter);
     string fname = line.substr(0, pos);
     if(pos!=string::npos)
         line.erase(0, pos + 17);

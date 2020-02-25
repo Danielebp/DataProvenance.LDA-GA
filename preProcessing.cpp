@@ -50,6 +50,24 @@ unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, 
     return documentsMap;
 }
 
+unordered_map<string, Document> loadPreProcessed(ConfigOptions* cfg){
+    unordered_map<string,Document> documentsMap;
+
+
+    ifstream myfile (cfg->ldaInputFile + "/" + filename);
+    string semitoken;
+
+    while ( getline (myfile, line, '\n') ) {
+        string filename = line.substr(0, line.find(cfg->delimiter));
+        string content = line.substr(line.find(cfg->delimiter)+17);
+
+        Document newSource(filename, content);
+        documentList.push_back(newSource);
+        documentsMap[filename] = newSource;
+    }
+
+    return documentsMap;
+}
 
 unordered_map<string, Document> preProcess(ConfigOptions* cfg){
     clock_t t;

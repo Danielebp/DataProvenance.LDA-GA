@@ -49,9 +49,13 @@ int main(int argc, char* argv[]) {
         else
             cout<<"\tparameter not recognized: "<<argv[arg]<<endl;
     }
+    unordered_map<string, Document> documentsMap;
 
     cfg.logger.log(debug, "Starting preprocess");
-    unordered_map<string, Document> documentsMap = preProcess(&cfg);
+    if(cfg->skipPreprocess)
+        documentsMap = loadPreProcessed(&cfg);
+    else
+        documentsMap = preProcess(&cfg);
 
     if(cfg.runType == metric) {
       cfg.logger.log(debug, "Starting LDA performance test");
@@ -71,7 +75,7 @@ void CheckLDAPerformance(int numberOfDocuments, ConfigOptions *cfg) {
     string line;
     int tpcs[] = {2, 4, 6, 8, 10};
     int times[5][5];
-   
+
     stringstream ss;
     for (int i = 0; i < 5; i++) {
         int number_of_topics = tpcs[i];

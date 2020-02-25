@@ -19,6 +19,7 @@ ConfigOptions::ConfigOptions(string filename){
     logLevel = j["logLevel"];
     runType = j["runType"];
     perfType = j["perfType"];
+    skipPreprocess = j["skipPreprocess"];
 
     populationSize      = j["populationSize"];
     fitnessThreshold    = j["fitnessThreshold"];
@@ -40,7 +41,8 @@ ConfigOptions::ConfigOptions(string filename){
 
     populationSize      = 9;
     fitnessThreshold    = 0.8;
-
+    skipPreprocess      = false;
+    
     dataDir     = "txtData";
     mirrorDir   = "processedData";
     outputDir   = "tempData";

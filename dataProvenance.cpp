@@ -128,11 +128,11 @@ ResultStatistics reconstructProvenance(int numberOfDocuments, ConfigOptions * cf
     unordered_map<string, Article> articlesMap;
     unordered_map<string, SourceFile> sourceFileMap;
 
-    ifstream myfile("./tempData/input1.txt");
+    ifstream myfile(cfg->ldaInputFile);
     string line;
     while(getline (myfile, line, '\n')) {
-        string filename = line.substr(0, line.find("##lda_delimiter##"));
-        string keywords = line.substr(line.find("##lda_delimiter##")+17);
+        string filename = line.substr(0, line.find(cfg->delimiter));
+        string keywords = line.substr(line.find(cfg->delimiter)+17);
         if(filename.find("$AAA$") != string::npos){
             articlesMap[filename] = Article(filename, keywords); // needs real values for testing
         }

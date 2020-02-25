@@ -4,6 +4,7 @@
     "logLevel": "info",
     "runType": "train",
     "perfType": "cpu",
+    "skipPreprocess": true,
 
     "populationSize": 9,
     "fitnessThreshold": 0.85,

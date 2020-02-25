@@ -10,7 +10,7 @@ vector<Cluster> ClusterManager::createClusters(ConfigOptions* cfg) {
 	Scanner sc;
 	try {
 
-		sc.open("./tempData/topic.txt");
+		sc.open(cfg->outputDir + "/topic.txt");
 
 
 		// for every topic create a cluster, read the topic no and the
@@ -39,7 +39,7 @@ vector<Cluster> ClusterManager::createClusters(ConfigOptions* cfg) {
 	// read the distribution.txt to find which file belongs to which topic
 	try {
 
-		sc.open("./tempData/distribution.txt");
+		sc.open(cfg->outputDir + "/distribution.txt");
 
 		// in every row there is a document and there is the proportional distribution
 		// of the document

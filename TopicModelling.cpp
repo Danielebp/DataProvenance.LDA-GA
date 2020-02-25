@@ -34,7 +34,7 @@ void TopicModelling::FreeCorpus(LDACorpus* corpus) {
 void TopicModelling::WriteFiles() {
 
 
-    ofstream fout("./tempData/distribution" + outputFile + ".txt");
+    ofstream fout(cfg->outputDir + "/distribution" + outputFile + ".txt");
     stringstream out;
     out<<"docID\ttopic\tdist\t..."<<endl;
     for(int docID = 0; docID<this->ldaModel.ptrndata->M; docID++){
@@ -50,7 +50,7 @@ void TopicModelling::WriteFiles() {
     }
     fout<<out.str();;
 
-    //ofstream fout("./tempData/model"+outputFile+".txt");
+    //ofstream fout(cfg->outputDir + "/model"+outputFile+".txt");
     //fout<<res;
 }
 
@@ -63,7 +63,6 @@ long TopicModelling::LDA(string MyCount) {
     ss.str(std::string());
     ss.clear();
 
-  string inputFile = "./tempData/input1.txt";
   outputFile = MyCount;
 
   clock_t t = clock();
@@ -75,10 +74,10 @@ long TopicModelling::LDA(string MyCount) {
                 (char*)"-ntopics", (char*)(ntopics.c_str()),
                 (char*)"-niters", (char*)(niters.c_str()),
                 (char*)"-twords", (char*)"20",
-                (char*)"-dfile", const_cast<char*>(inputFile.c_str()),
+                (char*)"-dfile", const_cast<char*>(cfg->ldaInputFile.c_str()),
                 (char*)"-ndocs", (char*)"131",
                 (char*)"-savestep", (char*)"0",
-                (char*)"-dir", (char*)"./tempData/",
+                (char*)"-dir", (char*)cfg->outputDir,
                 NULL};
   this->ldaModel.init(16, args, cfg);
   cfg->logger.log(debug, "GLDA setup completed. Starting estimate");
@@ -90,7 +89,7 @@ long TopicModelling::LDA(string MyCount) {
 
   // write topic.txt
   ofstream outTop;
-  outTop.open ("./tempData/topic.txt");
+  outTop.open (cfg->outputDir + "/topic.txt");
   outTop<<"topic\tdist\twords"<<endl;
   for (int topic = 0; topic < numberOfTopics; topic++) {
       outTop<<topic<<"\t"<<this->ldaModel.getTopicDistribution(topic)<<"\t"<<this->ldaModel.maptopic2Words[topic]<<endl;
