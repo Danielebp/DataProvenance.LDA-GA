@@ -3,6 +3,7 @@
 #ifndef	_MODEL_H
 #define	_MODEL_H
 
+#include "../../config.h"
 #include "constants.h"
 #include "dataset.h"
 

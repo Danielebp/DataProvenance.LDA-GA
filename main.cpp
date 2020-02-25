@@ -50,15 +50,15 @@ int main(int argc, char* argv[]) {
             cout<<"\tparameter not recognized: "<<argv[arg]<<endl;
     }
 
-
-    cout<<endl;
-
+    cfg.logger.log(debug, "Starting preprocess");
     unordered_map<string, Document> documentsMap = preProcess(&cfg);
 
     if(cfg.runType == metric) {
+      cfg.logger.log(debug, "Starting LDA performance test");
       CheckLDAPerformance(documentsMap.size(), &cfg);
     }
     else {
+      cfg.logger.log(debug, "Starting provenance");
       // call genetic logic to perform LDA-GA
       reconstructProvenance(documentsMap.size(), &cfg);
 

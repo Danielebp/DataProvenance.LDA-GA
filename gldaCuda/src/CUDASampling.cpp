@@ -109,7 +109,7 @@ void ParallelSampling::computeWordPB(unsigned int* wordOffsetPB, unsigned int* w
             tmp += 1;
         }
     }
-    cout << "*** real working #block: " << tmp << " ***" << endl;
+    cfg->logger.log(debug, "*** real working #block: " + std::to_string(tmp) + " ***");
 
     //check the results
     tmp = 0;
@@ -149,7 +149,7 @@ unsigned long long ParallelSampling::fingerprint(const model& lda) const {
 //CUDASampling
 
 CUDASampling::CUDASampling(const model& lda, const unsigned int numBlock, ConfigOptions* cfg, const int device) :
-ParallelSampling(lda, numBlock) {
+ParallelSampling(lda, numBlock, cfg) {
     this->cfg = cfg;
 
     assert(numBlock == _numBlock);
@@ -180,14 +180,13 @@ ParallelSampling(lda, numBlock) {
     checkCudaErrors(cudaMalloc(&_d_doc, sizeof (int) *numTotalWord));
     checkCudaErrors(cudaMalloc(&_d_random, sizeof (float) *numTotalWord));
 
-    cfg->logger.log(debug, "CUDASampling initialization ....\n"
-    + "\tM: " + std::to_string(lda.M) + "\n"
-    + "\tV: " + std::to_string(lda.V) + "\n"
-    + "\tK: " + std::to_string(lda.K) + "\n"
-    + "\tnumBlock: " + std::to_string(numBlock) + "\n"
-    + "\tnumThread: " + std::to_string(_numThread) + "\n"
-    + "\tsharedMemSize: " + std::to_string(_sharedMemSize) + "\n"
-    + "\tnumTotalWord: " + std::to_string(numTotalWord));
+    cfg->logger.log(debug, "CUDASampling initialization ....\n\tM: " + std::to_string(lda.M) 
+    + "\n\tV: " + std::to_string(lda.V) 
+    + "\n\tK: " + std::to_string(lda.K) 
+    + "\n\tnumBlock: " + std::to_string(numBlock) 
+    + "\n\tnumThread: " + std::to_string(_numThread)
+    + "\n\tsharedMemSize: " + std::to_string(_sharedMemSize) 
+    + "\n\tnumTotalWord: " + std::to_string(numTotalWord));
 
     checkCudaErrors(cudaMalloc(&_d_wordOffsetPB, sizeof (unsigned int) *numBlock));
     checkCudaErrors(cudaMalloc(&_d_wordNumPB, sizeof (unsigned int) *numBlock));
@@ -321,7 +320,7 @@ void CUDASampling::copyBack() {
 
 
 #if DEBUG_LEVEL == DEBUG_ALL
-    cfg->logger.log(debug, "===> fingerprint of z: " std::to_string(fingerprint(_lda));
+    cfg->logger.log(debug, "===> fingerprint of z: " + std::to_string(fingerprint(_lda)));
 #endif
 }
 
@@ -351,9 +350,9 @@ unsigned int CUDASampling::computeNumThread(const model& lda) const {
 /////////////////////////////////////////////////////////////////////////////
 //GoldSampling
 
-GoldSampling::GoldSampling(const model& lda, const unsigned int numBlock) :
-ParallelSampling(lda, numBlock) {
-
+GoldSampling::GoldSampling(const model& lda, const unsigned int numBlock, ConfigOptions* cfg) :
+ParallelSampling(lda, numBlock, cfg) {
+    this->cfg = cfg;
     const unsigned int M = lda.M;
     const unsigned int V = lda.V;
     const unsigned int K = lda.K;
@@ -554,6 +553,6 @@ void GoldSampling::copyBack() {
 
 
 #if DEBUG_LEVEL == DEBUG_ALL
-    cfg->logger.log(debug, "===> fingerprint of z: " + std::to_string(fingerprint(_lda));
+    cfg->logger.log(debug, "===> fingerprint of z: " + std::to_string(fingerprint(_lda)));
 #endif
 }

@@ -53,18 +53,14 @@ unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, 
 
 unordered_map<string, Document> preProcess(ConfigOptions* cfg){
     clock_t t;
-    stringstream ss;
     WordFilter wordFilter(cfg->stopWordsFile);
-
+    cfg->logger.log(debug, "Starting to tokenize files");
     // tokenize articles
     t = clock();
     unordered_map<string,Document> documentsMap = tokenizeFiles(cfg->dataDir, cfg->mirrorDir, wordFilter);
     t = clock() - t;
     // Output the time it took to find all article's titles and keywords
-    ss<<"Preprocessing takes " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms";
-    cfg->logger.log(info, ss.str());
-    ss.str(std::string());
-    ss.clear();
+    cfg->logger.log(info, "Preprocessing takes " + std::to_string(((float)t)/(CLOCKS_PER_SEC/1000)) + "ms");
 
     // write input file for LDA
     ofstream outfile (cfg->ldaInputFile);

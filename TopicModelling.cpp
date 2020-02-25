@@ -80,7 +80,7 @@ long TopicModelling::LDA(string MyCount) {
                 (char*)"-savestep", (char*)"0",
                 (char*)"-dir", (char*)"./tempData/",
                 NULL};
-  this->ldaModel.init(16, args);
+  this->ldaModel.init(16, args, cfg);
   cfg->logger.log(debug, "GLDA setup completed. Starting estimate");
 
   if(cuda) this->ldaModel.cuda_estimate();

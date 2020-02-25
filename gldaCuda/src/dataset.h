@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "../../config.h"
 
 using namespace std;
 
@@ -84,15 +85,16 @@ public:
     int M; // number of documents
     int V; // number of words
 
-    dataset(ConfigOptions* cfg) {
+    dataset(ConfigOptions* _cfg) {
 	docs = NULL;
 	_docs = NULL;
 	M = 0;
 	V = 0;
+	cfg = _cfg;
     }
 
-    dataset(int M, ConfigOptions* cfg) {
-    this->cfg = cfg;
+    dataset(int M, ConfigOptions* _cfg) {
+        cfg = _cfg;
 	this->M = M;
 	this->V = 0;
 	docs = new document*[M];
@@ -145,9 +147,9 @@ public:
 	}
     }
 
-    static int write_wordmap(string wordmapfile, mapword2id * pword2id);
-    static int read_wordmap(string wordmapfile, mapword2id * pword2id);
-    static int read_wordmap(string wordmapfile, mapid2word * pid2word);
+    int write_wordmap(string wordmapfile, mapword2id * pword2id);
+    int read_wordmap(string wordmapfile, mapword2id * pword2id);
+    int read_wordmap(string wordmapfile, mapid2word * pid2word);
 
     int read_trndata(string dfile, string wordmapfile, int ndocs = 0);
     int read_newdata(string dfile, string wordmapfile);

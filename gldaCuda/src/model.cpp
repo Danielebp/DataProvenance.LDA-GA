@@ -757,7 +757,7 @@ int model::init_estc() {
 void model::cuda_estimate() {
     if (twords > 0) {
         // print out top words per topic
-        dataset::read_wordmap(dir + wordmapfile, &id2word);
+        ptrndata->read_wordmap(dir + wordmapfile, &id2word);
     }
 
     //printf("Sampling %d iterations (CUDA)!\n", niters);
@@ -771,7 +771,7 @@ void model::cuda_estimate() {
 
 
     //GoldSampling sample(*this, numBlock);
-    CUDASampling sample(*this, numBlock, device);
+    CUDASampling sample(*this, numBlock, cfg, device);
 
     int last_iter = liter;
     for (liter = last_iter + 1; liter <= niters + last_iter; liter++) {
@@ -810,7 +810,7 @@ void model::cuda_estimate() {
 void model::estimate() {
     if (twords > 0) {
         // print out top words per topic
-        dataset::read_wordmap(dir + wordmapfile, &id2word);
+        ptrndata->read_wordmap(dir + wordmapfile, &id2word);
     }
 
     //printf("Sampling %d iterations (CPU, serial)!\n", niters);
@@ -1049,7 +1049,7 @@ int model::init_inf() {
 void model::inference() {
     if (twords > 0) {
         // print out top words per topic
-        dataset::read_wordmap(dir + wordmapfile, &id2word);
+        ptrndata->read_wordmap(dir + wordmapfile, &id2word);
     }
 
     cfg->logger.log(debug, "Sampling " + std::to_string(niters) + " iterations for inference!");

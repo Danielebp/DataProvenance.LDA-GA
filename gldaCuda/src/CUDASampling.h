@@ -8,7 +8,7 @@
 #ifndef CUDASAMPLING_H
 #define	CUDASAMPLING_H
 
-
+#include "../../config.h"
 #include "common.h"
 #include "model.h"
 
@@ -16,11 +16,12 @@ class ParallelSampling {
 protected:
     const model &_lda;
     const unsigned int _numBlock;
-
+    ConfigOptions* cfg;
 public:
 
-    ParallelSampling(const model &lda, const unsigned int numBlock) :
+    ParallelSampling(const model &lda, const unsigned int numBlock, ConfigOptions* cfg) :
     _lda(lda), _numBlock(numBlock) {
+	this->cfg = cfg;
     }
 
     virtual ~ParallelSampling() {
@@ -102,9 +103,10 @@ private:
     unsigned int* _wordNumPB; //size numBlock, number of words processed per block
     unsigned int* _wordProcessedPB; //size numBlock
     unsigned int* _new;
+    ConfigOptions* cfg;
 
 public:
-    GoldSampling(const model &lda, const unsigned int numBlock);
+    GoldSampling(const model &lda, const unsigned int numBlock, ConfigOptions* cfg);
     virtual ~GoldSampling();
 
     void run();
