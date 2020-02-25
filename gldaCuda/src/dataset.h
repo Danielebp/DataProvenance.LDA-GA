@@ -77,20 +77,22 @@ public:
 
 class dataset {
 public:
+    ConfigOptions* cfg;
     document ** docs;
     document ** _docs; // used only for inference
     map<int, int> _id2id; // also used only for inference
     int M; // number of documents
     int V; // number of words
 
-    dataset() {
+    dataset(ConfigOptions* cfg) {
 	docs = NULL;
 	_docs = NULL;
 	M = 0;
 	V = 0;
     }
 
-    dataset(int M) {
+    dataset(int M, ConfigOptions* cfg) {
+    this->cfg = cfg;
 	this->M = M;
 	this->V = 0;
 	docs = new document*[M];

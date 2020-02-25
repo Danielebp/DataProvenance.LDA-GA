@@ -180,8 +180,10 @@ int model::parse_args(int argc, char ** argv) {
     return utils::parse_args(argc, argv, this);
 }
 
-int model::init(int argc, char ** argv) {
+int model::init(int argc, char ** argv, ConfigOptions* cfg) {
     // call parse_args
+    this->cfg = cfg;
+
     if (parse_args(argc, argv)) {
         return 1;
     }
@@ -214,7 +216,7 @@ int model::load_model(string model_name) {
     string filename = dir + model_name + tassign_suffix;
     FILE * fin = fopen(filename.c_str(), "r");
     if (!fin) {
-        printf("Cannot open file %d to load model!\n", filename.c_str());
+        cfg->logger.log(error, "Cannot open file to load model!");
         return 1;
     }
 
@@ -223,13 +225,13 @@ int model::load_model(string model_name) {
 
     // allocate memory for z and ptrndata
     z = new int*[M];
-    ptrndata = new dataset(M);
+    ptrndata = new dataset(M, cfg);
     ptrndata->V = V;
 
     for (i = 0; i < M; i++) {
         char * pointer = fgets(buff, BUFF_SIZE_LONG, fin);
         if (!pointer) {
-            printf("Invalid word-topic assignment file, check the number of docs!\n");
+            cfg->logger.log(error, "Invalid word-topic assignment file, check the number of docs!");
             return 1;
         }
 
@@ -244,7 +246,7 @@ int model::load_model(string model_name) {
 
             strtokenizer tok(token, ":");
             if (tok.count_tokens() != 2) {
-                printf("Invalid word-topic assignment line!\n");
+                cfg->logger.log(error, "Invalid word-topic assignment line!");
                 return 1;
             }
 
@@ -299,7 +301,7 @@ int model::save_model_tassign(string filename) {
 
     FILE * fout = fopen(filename.c_str(), "w");
     if (!fout) {
-        printf("Cannot open file %s to save!\n", filename.c_str());
+        cfg->logger.log(error, "Cannot open assignments file to save!");
         return 1;
     }
 
@@ -319,7 +321,7 @@ int model::save_model_tassign(string filename) {
 int model::save_model_theta(string filename) {
     FILE * fout = fopen(filename.c_str(), "w");
     if (!fout) {
-        printf("Cannot open file %s to save!\n", filename.c_str());
+        cfg->logger.log(error, "Cannot open theta file to save!");
         return 1;
     }
 
@@ -338,7 +340,7 @@ int model::save_model_theta(string filename) {
 int model::save_model_phi(string filename) {
     FILE * fout = fopen(filename.c_str(), "w");
     if (!fout) {
-        printf("Cannot open file %s to save!\n", filename.c_str());
+        cfg->logger.log(error, "Cannot open phi file to save!");
         return 1;
     }
 
@@ -390,7 +392,7 @@ double model::getTopicDistribution(int topic){
 int model::save_model_others(string filename) {
     FILE * fout = fopen(filename.c_str(), "w");
     if (!fout) {
-        printf("Cannot open file %s to save!\n", filename.c_str());
+        cfg->logger.log(error, "Cannot open others-file to save!");
         return 1;
     }
 
@@ -409,7 +411,7 @@ int model::save_model_others(string filename) {
 int model::save_model_twords(string filename) {
     FILE * fout = fopen(filename.c_str(), "w");
     if (!fout) {
-        printf("Cannot open file %s to save!\n", filename.c_str());
+        cfg->logger.log(error, "Cannot open word-topic file to save!");
         return 1;
     }
 
@@ -479,7 +481,7 @@ int model::save_inf_model_tassign(string filename) {
 
     FILE * fout = fopen(filename.c_str(), "w");
     if (!fout) {
-        printf("Cannot open file %s to save!\n", filename.c_str());
+        cfg->logger.log(error, "Cannot open assignments file to save!");
         return 1;
     }
 
@@ -501,7 +503,7 @@ int model::save_inf_model_newtheta(string filename) {
 
     FILE * fout = fopen(filename.c_str(), "w");
     if (!fout) {
-        printf("Cannot open file %s to save!\n", filename.c_str());
+        cfg->logger.log(error, "Cannot open new theta file to save!");
         return 1;
     }
 
@@ -520,7 +522,7 @@ int model::save_inf_model_newtheta(string filename) {
 int model::save_inf_model_newphi(string filename) {
     FILE * fout = fopen(filename.c_str(), "w");
     if (!fout) {
-        printf("Cannot open file %s to save!\n", filename.c_str());
+        cfg->logger.log(error, "Cannot open new phi file to save!");
         return 1;
     }
 
@@ -539,7 +541,7 @@ int model::save_inf_model_newphi(string filename) {
 int model::save_inf_model_others(string filename) {
     FILE * fout = fopen(filename.c_str(), "w");
     if (!fout) {
-        printf("Cannot open file %s to save!\n", filename.c_str());
+        cfg->logger.log(error, "Cannot open others-file to save!");
         return 1;
     }
 
@@ -558,7 +560,7 @@ int model::save_inf_model_others(string filename) {
 int model::save_inf_model_twords(string filename) {
     FILE * fout = fopen(filename.c_str(), "w");
     if (!fout) {
-        printf("Cannot open file %s to save!\n", filename.c_str());
+        cfg->logger.log(error, "Cannot open twords file to save!");
         return 1;
     }
 
@@ -604,9 +606,9 @@ int model::init_est() {
     p = new double[K];
 
     // + read training data
-    ptrndata = new dataset;
+    ptrndata = new dataset(cfg);
     if (ptrndata->read_trndata(dir + dfile, dir + wordmapfile, ndocs)) {
-        printf("Fail to read training data!\n");
+        cfg->logger.log(error, "Fail to read training data!");
         return 1;
     }
 
@@ -690,7 +692,7 @@ int model::init_estc() {
 
     // load moel, i.e., read z and ptrndata
     if (load_model(model_name)) {
-        printf("Fail to load word-topic assignmetn file of the model!\n");
+        cfg->logger.log(error, "Fail to load word-topic assignmetn file of the model!");
         return 1;
     }
 
@@ -785,7 +787,7 @@ void model::cuda_estimate() {
         if (savestep > 0) {
             if (liter % savestep == 0) {
                 // saving the model
-                printf("Saving the model at iteration %d ...\n", liter);
+                cfg->logger.log(debug, "Saving the model at iteration "+std::to_string(liter)+" ...");
                 sample.copyBack();
                 compute_theta();
                 compute_phi();
@@ -836,7 +838,7 @@ void model::estimate() {
         if (savestep > 0) {
             if (liter % savestep == 0) {
                 // saving the model
-                printf("Saving the model at iteration %d ...\n", liter);
+                cfg->logger.log(debug, "Saving the model at iteration " + std::to_string(liter) + " ...");
                 compute_theta();
                 compute_phi();
                 save_model(utils::generate_model_name(liter));
@@ -914,7 +916,7 @@ int model::init_inf() {
 
     // load moel, i.e., read z and ptrndata
     if (load_model(model_name)) {
-        printf("Fail to load word-topic assignmetn file of the model!\n");
+        cfg->logger.log(error, "Fail to load word-topic assignmetn file of the model!");
         return 1;
     }
 
@@ -964,15 +966,15 @@ int model::init_inf() {
     }
 
     // read new data for inference
-    pnewdata = new dataset;
+    pnewdata = new dataset(cfg);
     if (withrawstrs) {
         if (pnewdata->read_newdata_withrawstrs(dir + dfile, dir + wordmapfile)) {
-            printf("Fail to read new data!\n");
+            cfg->logger.log(error, "Fail to read new data!");
             return 1;
         }
     } else {
         if (pnewdata->read_newdata(dir + dfile, dir + wordmapfile)) {
-            printf("Fail to read new data!\n");
+            cfg->logger.log(error, "Fail to read new data!");
             return 1;
         }
     }
@@ -1050,10 +1052,10 @@ void model::inference() {
         dataset::read_wordmap(dir + wordmapfile, &id2word);
     }
 
-    printf("Sampling %d iterations for inference!\n", niters);
+    cfg->logger.log(debug, "Sampling " + std::to_string(niters) + " iterations for inference!");
 
     for (inf_liter = 1; inf_liter <= niters; inf_liter++) {
-        printf("Iteration %d ...\n", inf_liter);
+        cfg->logger.log(info, "Iteration " + std::to_string(inf_liter) + " ...");
 
         // for all newz_i
         for (int m = 0; m < newM; m++) {
@@ -1066,8 +1068,8 @@ void model::inference() {
         }
     }
 
-    printf("Gibbs sampling for inference completed!\n");
-    printf("Saving the inference outputs!\n");
+    cfg->logger.log(debug, "Gibbs sampling for inference completed!\n");
+    cfg->logger.log(debug, "Saving the inference outputs!\n");
     compute_newtheta();
     compute_newphi();
     inf_liter--;
@@ -1081,7 +1083,7 @@ int model::compute_and_save_perplexity(string filename) {
     double perplexity = compute_perplexity();
     FILE * fout = fopen(filename.c_str(), "a");
     if (!fout) {
-        printf("Cannot open file %s to save!\n", filename.c_str());
+        cfg->logger.log(error, "Cannot open perplexity file to save!");
         return 1;
     }
 
@@ -1099,7 +1101,7 @@ double model::compute_perplexity() {
     double numerator = 0.0;
     double perp = 0.0;
 
-    printf("newM = %d\n", newM);
+    cfg->logger.log(info, "newM =" + std::to_string(newM));
     for (int m = 0; m < newM; m++) {
         int Nd = pnewdata->docs[m]->length;
 
@@ -1113,9 +1115,9 @@ double model::compute_perplexity() {
                     p += newphi[k][w] * newtheta[m][k];
                 }
                 if (p == 0)
-                    printf("fds");
+                    cfg->logger.log(info, "fds");
                 if (::isnan(p))
-                    printf("nan ");
+                    cfg->logger.log(info, "nan ");
                 perp += log(p);
             }
             numerator = perp;

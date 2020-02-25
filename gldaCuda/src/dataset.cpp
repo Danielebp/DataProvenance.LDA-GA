@@ -12,7 +12,7 @@ using namespace std;
 int dataset::write_wordmap(string wordmapfile, mapword2id * pword2id) {
     FILE * fout = fopen(wordmapfile.c_str(), "w");
     if (!fout) {
-	printf("Cannot open file %s to write!\n", wordmapfile.c_str());
+	cfg->logger.log(error, "Cannot open file "+wordmapfile.c_str()+" to write!");
 	return 1;
     }
 
@@ -32,7 +32,7 @@ int dataset::read_wordmap(string wordmapfile, mapword2id * pword2id) {
 
     FILE * fin = fopen(wordmapfile.c_str(), "r");
     if (!fin) {
-	printf("Cannot open file %s to read!\n", wordmapfile.c_str());
+	cfg->logger.log(error, "Cannot open file "+wordmapfile.c_str()+" to read!");
 	return 1;
     }
 
@@ -64,7 +64,7 @@ int dataset::read_wordmap(string wordmapfile, mapid2word * pid2word) {
 
     FILE * fin = fopen(wordmapfile.c_str(), "r");
     if (!fin) {
-	printf("Cannot open file %s to read!\n", wordmapfile.c_str());
+	cfg->logger.log(error, "Cannot open file "+wordmapfile.c_str()+" to read!");
 	return 1;
     }
 
@@ -96,7 +96,7 @@ int dataset::read_trndata(string dfile, string wordmapfile, int ndocs) {
 
     FILE * fin = fopen(dfile.c_str(), "r");
     if (!fin) {
-	printf("Cannot open file %s to read!\n", dfile.c_str());
+	cfg->logger.log(error, "Cannot open file "+dfile.c_str()+" to read!");
 	return 1;
     }
 
@@ -109,7 +109,7 @@ int dataset::read_trndata(string dfile, string wordmapfile, int ndocs) {
         fgets(buff, BUFF_SIZE_LONG - 1, fin);
         M = atoi(buff);
         if (M <= 0) {
-    	printf("No document available!\n");
+    	cfg->logger.log(error, "No document available!");
     	return 1;
         }
     }
@@ -140,7 +140,7 @@ int dataset::read_trndata(string dfile, string wordmapfile, int ndocs) {
 	int length = strtok.count_tokens();
 
 	if (length <= 0) {
-	    printf("Invalid (empty) document!\n");
+	    cfg->logger.log(info, "Invalid (empty) document!");
 	    M--;
         i--;
         continue;
@@ -184,13 +184,13 @@ int dataset::read_newdata(string dfile, string wordmapfile) {
 
     read_wordmap(wordmapfile, &word2id);
     if (word2id.size() <= 0) {
-	printf("No word map available!\n");
+	cfg->logger.log(error, "No word map available!");
 	return 1;
     }
 
     FILE * fin = fopen(dfile.c_str(), "r");
     if (!fin) {
-	printf("Cannot open file %s to read!\n", dfile.c_str());
+	cfg->logger.log(error, "Cannot open file "+dfile.c_str()+" to read!");
 	return 1;
     }
 
@@ -203,7 +203,7 @@ int dataset::read_newdata(string dfile, string wordmapfile) {
     fgets(buff, BUFF_SIZE_LONG - 1, fin);
     M = atoi(buff);
     if (M <= 0) {
-	printf("No document available!\n");
+	cfg->logger.log(error, "No document available!");
 	return 1;
     }
 
@@ -270,13 +270,13 @@ int dataset::read_newdata_withrawstrs(string dfile, string wordmapfile) {
 
     read_wordmap(wordmapfile, &word2id);
     if (word2id.size() <= 0) {
-	printf("No word map available!\n");
+	cfg->logger.log(error, "No word map available!");
 	return 1;
     }
 
     FILE * fin = fopen(dfile.c_str(), "r");
     if (!fin) {
-	printf("Cannot open file %s to read!\n", dfile.c_str());
+	cfg->logger.log(error, "Cannot open file "+dfile.c_str()+" to read!");
 	return 1;
     }
 
@@ -289,7 +289,7 @@ int dataset::read_newdata_withrawstrs(string dfile, string wordmapfile) {
     fgets(buff, BUFF_SIZE_LONG - 1, fin);
     M = atoi(buff);
     if (M <= 0) {
-	printf("No document available!\n");
+	cfg->logger.log(error, "No document available!");
 	return 1;
     }
 
