@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   CUDASampling.h
  * Author: mianlu
  *
@@ -53,7 +53,7 @@ private:
     int* _d_word; //size M x doc.length
     int* _d_z; //size M x doc.length
     int* _d_doc; //size M x doc.length, document id for each word
-    float* _d_random; 
+    float* _d_random;
 
     int* _d_new; //size numBlock
     unsigned int* _d_wordOffsetPB; //size numBlock
@@ -62,12 +62,14 @@ private:
 
     unsigned int _numThread;
     unsigned int _sharedMemSize;
-    
+
     unsigned int _numKernelLaunch; //equal to the max number of words for blocks
     unsigned int _numTotalWord;
 
+    ConfigOptions* cfg;
+
 public:
-    CUDASampling(const model &lda, const unsigned int numBlock, const int device = 0);
+    CUDASampling(const model &lda, const unsigned int numBlock, ConfigOptions* cfg, const int device = 0);
     virtual ~CUDASampling();
 
     void run(); //execute one sampling
@@ -100,7 +102,7 @@ private:
     unsigned int* _wordNumPB; //size numBlock, number of words processed per block
     unsigned int* _wordProcessedPB; //size numBlock
     unsigned int* _new;
-    
+
 public:
     GoldSampling(const model &lda, const unsigned int numBlock);
     virtual ~GoldSampling();
@@ -115,4 +117,3 @@ private:
 
 
 #endif	/* CUDASAMPLING_H */
-

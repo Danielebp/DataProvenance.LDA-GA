@@ -12,6 +12,7 @@ using namespace std;
 class model {
 public:
     // fixed options
+    ConfigOptions* cfg;
     string wordmapfile;		// file that contains word map [string -> integer id]
     string trainlogfile;	// training log file
     string tassign_suffix;	// suffix for topic assignment file
@@ -82,7 +83,7 @@ public:
     int parse_args(int argc, char ** argv);
 
     // initialize the model
-    int init(int argc, char ** argv);
+    int init(int argc, char ** argv, ConfigOptions* cfg);
 
     // load LDA model to continue estimating or to do inference
     int load_model(string model_name);

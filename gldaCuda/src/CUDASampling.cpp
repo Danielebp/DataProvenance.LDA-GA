@@ -1,7 +1,7 @@
-/* 
+/*
  * File:   CUDASampling.cpp
  * Author: mianlu
- * 
+ *
  * Created on February 5, 2013, 5:42 PM
  */
 
@@ -85,7 +85,7 @@ void ParallelSampling::computeWordPB(unsigned int* wordOffsetPB, unsigned int* w
 
     const unsigned int numWordPB = ceil(numTotalWord / static_cast<double> (_numBlock));
     assert(numWordPB > 0);
-    
+
     unsigned int count = numTotalWord; //#remaining elements
     for (unsigned int i = 0; i < _numBlock; i += 1) {
         wordOffsetPB[i] = i*numWordPB;
@@ -110,7 +110,7 @@ void ParallelSampling::computeWordPB(unsigned int* wordOffsetPB, unsigned int* w
         }
     }
     cout << "*** real working #block: " << tmp << " ***" << endl;
-    
+
     //check the results
     tmp = 0;
     for (unsigned int i = 0; i < _numBlock; i += 1) {
@@ -148,24 +148,15 @@ unsigned long long ParallelSampling::fingerprint(const model& lda) const {
 //-----------------------------------------------------------------------------
 //CUDASampling
 
-CUDASampling::CUDASampling(const model& lda, const unsigned int numBlock, const int device) :
+CUDASampling::CUDASampling(const model& lda, const unsigned int numBlock, ConfigOptions* cfg, const int device) :
 ParallelSampling(lda, numBlock) {
+    this->cfg = cfg;
 
-    cout << "CUDASampling initialization ...." << endl;
-    cout << "\tM: " << lda.M << endl;
-    cout << "\tV: " << lda.V << endl;
-    cout << "\tK: " << lda.K << endl;
-    cout << "\tnumBlock: " << numBlock << endl;
     assert(numBlock == _numBlock);
-
     //check parameters, calculate _numThread, _sharedMemSize
     _numThread = this->computeNumThread(lda);
     _sharedMemSize = max(sizeof (double) *2 * _numThread, sizeof (double) *(lda.K));
-    cout << "\tnumThread: " << _numThread << endl;
-    cout << "\tsharedMemSize: " << _sharedMemSize << endl;
 
-
-    //
 
     checkCudaErrors(cudaSetDevice(device));
 
@@ -189,7 +180,14 @@ ParallelSampling(lda, numBlock) {
     checkCudaErrors(cudaMalloc(&_d_doc, sizeof (int) *numTotalWord));
     checkCudaErrors(cudaMalloc(&_d_random, sizeof (float) *numTotalWord));
 
-    cout << "\tnumTotalWord: " << numTotalWord << endl;
+    cfg->logger.log(debug, "CUDASampling initialization ....\n"
+    + "\tM: " + std::to_string(lda.M) + "\n"
+    + "\tV: " + std::to_string(lda.V) + "\n"
+    + "\tK: " + std::to_string(lda.K) + "\n"
+    + "\tnumBlock: " + std::to_string(numBlock) + "\n"
+    + "\tnumThread: " + std::to_string(_numThread) + "\n"
+    + "\tsharedMemSize: " + std::to_string(_sharedMemSize) + "\n"
+    + "\tnumTotalWord: " + std::to_string(numTotalWord));
 
     checkCudaErrors(cudaMalloc(&_d_wordOffsetPB, sizeof (unsigned int) *numBlock));
     checkCudaErrors(cudaMalloc(&_d_wordNumPB, sizeof (unsigned int) *numBlock));
@@ -323,7 +321,7 @@ void CUDASampling::copyBack() {
 
 
 #if DEBUG_LEVEL == DEBUG_ALL
-    cout << "===> fingerprint of z: " << fingerprint(_lda) << endl;
+    cfg->logger.log(debug, "===> fingerprint of z: " std::to_string(fingerprint(_lda));
 #endif
 }
 
@@ -345,7 +343,7 @@ unsigned int CUDASampling::computeNumThread(const model& lda) const {
     }*/
 
     const unsigned int numThread = lda.K>4 ? (lda.K)/4 : 1;
-    
+
     return numThread;
 }
 
@@ -370,7 +368,7 @@ ParallelSampling(lda, numBlock) {
     for (int m = 0; m < M; m += 1) {
         numTotalWord += ((lda.ptrndata)->docs)[m]->length;
     }
-    cout << "numTotalWord: " << numTotalWord << endl;
+    cfg->logger.log(debug, "numTotalWord: " + std::to_string(numTotalWord));
     _word = new int[numTotalWord];
     _z = new int[numTotalWord];
     _doc = new int[numTotalWord];
@@ -434,8 +432,8 @@ GoldSampling::~GoldSampling() {
 void GoldSampling::run() {
     const unsigned int numPass = max(_wordNumPB, _numBlock);
 
-    cout << "numBlock: " << _numBlock << endl;
-    cout << "numPass: " << numPass << endl;
+    cfg->logger.log( debug, "numBlock: "+ std::to_string(_numBlock));
+    cfg->logger.log( debug, "numPass: " + std::to_string(numPass));
 
     const double Vbeta = (_lda.V)*(_lda.beta);
     const double Kalpha = (_lda.K)*(_lda.alpha);
@@ -556,10 +554,6 @@ void GoldSampling::copyBack() {
 
 
 #if DEBUG_LEVEL == DEBUG_ALL
-    cout << "===> fingerprint of z: " << fingerprint(_lda) << endl;
+    cfg->logger.log(debug, "===> fingerprint of z: " + std::to_string(fingerprint(_lda));
 #endif
 }
-
-
-
-
