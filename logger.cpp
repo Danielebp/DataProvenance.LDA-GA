@@ -33,11 +33,14 @@ string getLabel(LogLevel level){
 }
 
 string getTime(){
-    auto timenow = chrono::system_clock::to_time_t(chrono::system_clock::now());
-    return ctime(&timenow);
+    auto givemetime = chrono::system_clock::to_time_t(chrono::system_clock::now());
+    string t( ctime( &givemetime ) );
+    return t.substr( 0, t.length() -1  );
 }
 
 bool Logger::log(LogLevel level, string message){
-    if(level<=logLevel)logFile << level<< " message at "<<getTime()<<": "<<message<<endl;
-
+    if(level<=logLevel){
+       cout    << getLabel(level)<< "\tmessage at "<<getTime()<<": "<<message<<endl;
+       logFile << getLabel(level)<< "\tmessage at "<<getTime()<<": "<<message<<endl;
+    }
 }

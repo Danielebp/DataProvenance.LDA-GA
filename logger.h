@@ -8,7 +8,7 @@
 #include "commons.h"
 
 using namespace std;
-
+using namespace chrono;
 
 
 class Logger {

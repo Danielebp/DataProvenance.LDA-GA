@@ -30,6 +30,8 @@ int main(int argc, char* argv[]) {
     }
     ConfigOptions cfg(configFile);
 
+    cout<<"Log level: "<<cfg.logLevel<<endl;
+
     for (; arg < argc; arg++) {
         string s = argv[arg];
         if(s.compare("-p") == 0)
