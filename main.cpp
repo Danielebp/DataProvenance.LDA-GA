@@ -55,6 +55,7 @@ int main(int argc, char* argv[]) {
     if(cfg.skipPreprocess){
         cfg.logger.log(debug, "Skipped preprocess");
         documentsMap = loadPreProcessed(&cfg);
+        cfg.logger.log(debug, "Loaded "+std::to_string(documentsMap.size())+" documents");
     }
     else{
         documentsMap = preProcess(&cfg);

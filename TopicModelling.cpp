@@ -69,13 +69,14 @@ long TopicModelling::LDA(string MyCount) {
 
   string ntopics = to_string(numberOfTopics);
   string niters = to_string(numberOfIterations);
+  string ndocs = to_string(numberOfDocuments);
 
   char* args[] = {(char*)"lda", (char*)"-est",
                 (char*)"-ntopics", (char*)(ntopics.c_str()),
                 (char*)"-niters", (char*)(niters.c_str()),
                 (char*)"-twords", (char*)"20",
                 (char*)"-dfile", const_cast<char*>(cfg->ldaInputFile.c_str()),
-                (char*)"-ndocs", (char*)"131",
+                (char*)"-ndocs", const_cast<char*>(ndocs.c_str()),
                 (char*)"-savestep", (char*)"0",
                 (char*)"-dir", const_cast<char*>(cfg->outputDir.c_str()),
                 NULL};

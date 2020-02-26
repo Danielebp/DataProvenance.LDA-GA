@@ -100,7 +100,6 @@ bool getMinDistancesOutsideClusters(double* minDistanceOutsideCluster,
 }
 
 double calculateFitness(TopicModelling* tm, int numberOfTopics, int numberOfDocuments, ConfigOptions* cfg) {
-    stringstream ss;
     multimap <int, int> clusterMap;
     int mainTopic;
     int topicLess = 0;
@@ -113,20 +112,18 @@ double calculateFitness(TopicModelling* tm, int numberOfTopics, int numberOfDocu
             topicLess++;
         }
     }
-    ss<<"Documents without topic: "<<topicLess;
-    cfg->logger.log(debug, ss.str());
-    ss.str(std::string());
-    ss.clear();;
+    cfg->logger.log(debug, "Documents without topic: "+std::to_string(topicLess)+"/"+std::to_string(numberOfDocuments));
 
 
     double* maxDistanceInsideCluster = new double[numberOfDocuments];
     if(!getMaxDistancesInsideClusters(maxDistanceInsideCluster, &clusterMap, tm, numberOfTopics))
         cfg->logger.log(error, "Error getting distances inside cluster");
+    cfg->logger.log(debug, "Max distance inside cluster: "+std::to_string(maxDistanceInsideCluster[0]));
 
     double* minDistanceOutsideCluster = new double[numberOfDocuments];
     if(!getMinDistancesOutsideClusters(minDistanceOutsideCluster, &clusterMap, tm, numberOfTopics, cfg))
         cfg->logger.log(error, "Error getting distances outside cluster");
-
+    cfg->logger.log(debug, "Min distance outside cluster: "+std::to_string(minDistanceOutsideCluster[0]));
 
     //calculate the Silhouette coefficient for each document
     double* silhouetteCoefficient = new double[numberOfDocuments];
@@ -136,14 +133,16 @@ double calculateFitness(TopicModelling* tm, int numberOfTopics, int numberOfDocu
         else
             silhouetteCoefficient[m] = (minDistanceOutsideCluster[m] - maxDistanceInsideCluster[m]) / max(minDistanceOutsideCluster[m],maxDistanceInsideCluster[m]);
     }
+    cfg->logger.log(debug, "Silhouette coef: "+std::to_string(silhouetteCoefficient[0]));
 
     //find the average of the Silhouette coefficient of all the documents - fitness criteria
     double total = 0;
     for(int m = 0 ; m < (numberOfDocuments); m++ ) {
         total += silhouetteCoefficient[m];
     }
+    cfg->logger.log(debug, "Fitness add up: "+std::to_string(total));
 
-    return (total / (numberOfDocuments - topicLess));
+    return (total / (numberOfDocuments));
 }
 
 ResultStatistics geneticLogic(int numberOfDocuments, ConfigOptions* cfg) {
@@ -151,7 +150,7 @@ ResultStatistics geneticLogic(int numberOfDocuments, ConfigOptions* cfg) {
     ResultStatistics result;
     PopulationConfig* population = new PopulationConfig[cfg->populationSize];
 
-    cfg->logger.log(debug, "Starting GA");
+    cfg->logger.log(debug, "Starting GA with " + std::to_string(numberOfDocuments) + " files");
     cfg->logger.log(debug, "###########################");
 
     // initialize population

@@ -607,7 +607,7 @@ int model::init_est() {
 
     // + read training data
     ptrndata = new dataset(cfg);
-    if (ptrndata->read_trndata(dir + dfile, dir + wordmapfile, ndocs)) {
+    if (ptrndata->read_trndata(dfile, dir + wordmapfile, ndocs)) {
         cfg->logger.log(error, "Fail to read training data!");
         return 1;
     }
@@ -776,7 +776,7 @@ void model::cuda_estimate() {
 
     int last_iter = liter;
     for (liter = last_iter + 1; liter <= niters + last_iter; liter++) {
-        cfg->logger.log(debug, "Iteration "+std::to_string(liter)+" ...");
+//        cfg->logger.log(debug, "Iteration "+std::to_string(liter)+" ...");
 
         timer.reset();
         timer.go();
@@ -969,12 +969,12 @@ int model::init_inf() {
     // read new data for inference
     pnewdata = new dataset(cfg);
     if (withrawstrs) {
-        if (pnewdata->read_newdata_withrawstrs(dir + dfile, dir + wordmapfile)) {
+        if (pnewdata->read_newdata_withrawstrs(dfile, dir + wordmapfile)) {
             cfg->logger.log(error, "Fail to read new data!");
             return 1;
         }
     } else {
-        if (pnewdata->read_newdata(dir + dfile, dir + wordmapfile)) {
+        if (pnewdata->read_newdata(dfile, dir + wordmapfile)) {
             cfg->logger.log(error, "Fail to read new data!");
             return 1;
         }
