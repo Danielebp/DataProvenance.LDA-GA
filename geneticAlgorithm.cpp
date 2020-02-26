@@ -110,25 +110,24 @@ double calculateFitness(TopicModelling* tm, int numberOfTopics, int numberOfDocu
         if(mainTopic>=0)clusterMap.insert(pair<int, int> (mainTopic, d));
         else{
             topicLess++;
+            cfg->logger.log(error, "Document " + tm->getDocNameByNumber(d) + " is topicless.")
         }
     }
-    cfg->logger.log(debug, "Documents without topic: "+std::to_string(topicLess)+"/"+std::to_string(numberOfDocuments));
+    cfg->logger.log(info, "Documents without topic: "+std::to_string(topicLess)+"/"+std::to_string(numberOfDocuments));
 
 
     double* maxDistanceInsideCluster = new double[numberOfDocuments];
     if(!getMaxDistancesInsideClusters(maxDistanceInsideCluster, &clusterMap, tm, numberOfTopics))
         cfg->logger.log(error, "Error getting distances inside cluster");
-    cfg->logger.log(debug, "Max distance inside cluster: "+std::to_string(maxDistanceInsideCluster[0]));
 
     double* minDistanceOutsideCluster = new double[numberOfDocuments];
     if(!getMinDistancesOutsideClusters(minDistanceOutsideCluster, &clusterMap, tm, numberOfTopics, cfg))
         cfg->logger.log(error, "Error getting distances outside cluster");
-    cfg->logger.log(debug, "Min distance outside cluster: "+std::to_string(minDistanceOutsideCluster[0]));
 
     //calculate the Silhouette coefficient for each document
     double* silhouetteCoefficient = new double[numberOfDocuments];
     for(int m = 0 ; m < (numberOfDocuments); m++ ) {
-        if(max(minDistanceOutsideCluster[m],maxDistanceInsideCluster[m]) <= 0)
+        if(max(minDistanceOutsideCluster[m],maxDistanceInsideCluster[m]) == 0)
             silhouetteCoefficient[m] = 0;
         else
             silhouetteCoefficient[m] = (minDistanceOutsideCluster[m] - maxDistanceInsideCluster[m]) / max(minDistanceOutsideCluster[m],maxDistanceInsideCluster[m]);
@@ -169,7 +168,7 @@ ResultStatistics geneticLogic(int numberOfDocuments, ConfigOptions* cfg) {
     while (GACounter<1000){
         GACounter ++;
         cfg->logger.log(info, "GA Attempt: " + std::to_string(GACounter));
-        
+
         bool checkLowThreshold = true;
 
         // runs LDA for each pair on the population
@@ -276,7 +275,7 @@ ResultStatistics geneticLogic(int numberOfDocuments, ConfigOptions* cfg) {
 
         t = clock() - t;
         cfg->logger.log(info, "GA took " + std::to_string(((float)t)/(CLOCKS_PER_SEC/1000)) + "ms");
-       	 
+
    }
 
     result.GA_count = GACounter;
