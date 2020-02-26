@@ -224,6 +224,7 @@ ParallelSampling(lda, numBlock, cfg) {
     assert(count == numTotalWord);
     checkCudaErrors(cudaMemcpy(_d_doc, h_doc, sizeof (int) *numTotalWord, cudaMemcpyHostToDevice));
 
+    cfg->logger.log(debug, "Compute Word PB");
 
     //arrange the offset and length for each block
     unsigned int* h_wordOffsetPB = new unsigned int[numBlock];

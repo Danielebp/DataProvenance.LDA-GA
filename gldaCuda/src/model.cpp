@@ -760,22 +760,23 @@ void model::cuda_estimate() {
         ptrndata->read_wordmap(dir + wordmapfile, &id2word);
     }
 
-    //printf("Sampling %d iterations (CUDA)!\n", niters);
+    cfg->logger.log(debug, "Sampling "+std::to_string(niters)+" iterations (CUDA)!");
 
     //cout << "#doc: " << M << endl;
 
     int numBlock = 1024;
     const unsigned int device = 0;
     CUDATimer timer;
-    //cout << "\tnumBlock: " << numBlock << ", device: " << device << endl;
+    cfg->logger.log(debug, "tnumBlock: " + std::to_string(numBlock) + ", device: " +std::to_string(device));
 
 
     //GoldSampling sample(*this, numBlock);
     CUDASampling sample(*this, numBlock, cfg, device);
+    cfg->logger.log(debug, "Finished sampling");
 
     int last_iter = liter;
     for (liter = last_iter + 1; liter <= niters + last_iter; liter++) {
-        //printf("Iteration %d ...\n", liter);
+        cfg->logger.log(debug, "Iteration "+std::to_string(liter)+" ...");
 
         timer.reset();
         timer.go();

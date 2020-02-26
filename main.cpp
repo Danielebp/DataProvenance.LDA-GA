@@ -52,10 +52,13 @@ int main(int argc, char* argv[]) {
     unordered_map<string, Document> documentsMap;
 
     cfg.logger.log(debug, "Starting preprocess");
-    if(cfg->skipPreprocess)
+    if(cfg.skipPreprocess){
+        cfg.logger.log(debug, "Skipped preprocess");
         documentsMap = loadPreProcessed(&cfg);
-    else
+    }
+    else{
         documentsMap = preProcess(&cfg);
+    }
 
     if(cfg.runType == metric) {
       cfg.logger.log(debug, "Starting LDA performance test");

@@ -148,7 +148,6 @@ double calculateFitness(TopicModelling* tm, int numberOfTopics, int numberOfDocu
 
 ResultStatistics geneticLogic(int numberOfDocuments, ConfigOptions* cfg) {
 
-    stringstream ss;
     ResultStatistics result;
     PopulationConfig* population = new PopulationConfig[cfg->populationSize];
 
@@ -170,10 +169,7 @@ ResultStatistics geneticLogic(int numberOfDocuments, ConfigOptions* cfg) {
     // add a limit of 1000 GA iterations, it should not run infinitly
     while (GACounter<1000){
         GACounter ++;
-        ss<<"GA Attempt: "<<GACounter;
-        cfg->logger.log(info, ss.str());
-        ss.str(std::string());
-        ss.clear();
+        cfg->logger.log(info, "GA Attempt: " + std::to_string(GACounter));
         
         bool checkLowThreshold = true;
 
@@ -194,10 +190,7 @@ ResultStatistics geneticLogic(int numberOfDocuments, ConfigOptions* cfg) {
 
             // calculates fitness value to determine wether to stop or try next pair
             population[i].fitness_value = calculateFitness(&tm, population[i].number_of_topics, numberOfDocuments, cfg);
-            ss<<"LDA Attempt: "<<LDACounter<<" - Fitness: "<<population[i].fitness_value;
-            cfg->logger.log(info, ss.str());
-            ss.str(std::string());
-            ss.clear();
+            cfg->logger.log(info, "LDA Attempt: "+std::to_string(LDACounter)+" - Fitness: "+std::to_string(population[i].fitness_value));
             if(population[i].fitness_value >= cfg->fitnessThreshold) {
                 cfg->logger.log(info, "Achieved fitness");
                 // if fitness was achieved write dist files
@@ -232,10 +225,8 @@ ResultStatistics geneticLogic(int numberOfDocuments, ConfigOptions* cfg) {
                         cfg->logger.log(debug, "Wrote files");
 
                         //run the function again to get the words in each topic
-                        ss<<"the best distribution is "<<population[j].number_of_topics<<" topics and "<<population[j].number_of_iterations<<" iterations and fitness is "<<maxFitness;
-                        cfg->logger.log(info, ss.str());
-    			ss.str(std::string());
-    			ss.clear();
+                        cfg->logger.log(info, "the best distribution is "+std::to_string(population[j].number_of_topics)+" topics and "+std::to_string(population[j].number_of_iterations)+" iterations and fitness is "+std::to_string(maxFitness));
+
                         result.cfg.copy(population[j]);
                         cfg->logger.log(debug, "Copied population");
 
@@ -285,10 +276,8 @@ ResultStatistics geneticLogic(int numberOfDocuments, ConfigOptions* cfg) {
         population = newPopulation;
 
         t = clock() - t;
-        ss<<"GA took " << ((float)t)/(CLOCKS_PER_SEC/1000) << "ms";
-	cfg->logger.log(info, ss.str());
-       	ss.str(std::string());
-    	ss.clear(); 
+        cfg->logger.log(info, "GA took " + std::to_string(((float)t)/(CLOCKS_PER_SEC/1000)) + "ms");
+       	 
    }
 
     result.GA_count = GACounter;

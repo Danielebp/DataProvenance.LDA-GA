@@ -7,7 +7,6 @@ unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, 
     string semitoken;
     string token;
     string content;
-    vector<Document> documentList;
     unordered_map<string,Document> documentsMap;
 
     while ((entry = readdir(dirp)) != NULL) {
@@ -34,7 +33,6 @@ unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, 
             myfile.close();
 
             Document newSource(filename, content);
-            documentList.push_back(newSource);
             documentsMap[filename] = newSource;
 
             // Write content to the file
@@ -52,17 +50,14 @@ unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, 
 
 unordered_map<string, Document> loadPreProcessed(ConfigOptions* cfg){
     unordered_map<string,Document> documentsMap;
-
-
-    ifstream myfile (cfg->ldaInputFile + "/" + filename);
-    string semitoken;
+    ifstream myfile (cfg->ldaInputFile);
+    string line;
 
     while ( getline (myfile, line, '\n') ) {
         string filename = line.substr(0, line.find(cfg->delimiter));
         string content = line.substr(line.find(cfg->delimiter)+17);
 
         Document newSource(filename, content);
-        documentList.push_back(newSource);
         documentsMap[filename] = newSource;
     }
 

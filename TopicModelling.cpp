@@ -77,7 +77,7 @@ long TopicModelling::LDA(string MyCount) {
                 (char*)"-dfile", const_cast<char*>(cfg->ldaInputFile.c_str()),
                 (char*)"-ndocs", (char*)"131",
                 (char*)"-savestep", (char*)"0",
-                (char*)"-dir", (char*)cfg->outputDir,
+                (char*)"-dir", const_cast<char*>(cfg->outputDir.c_str()),
                 NULL};
   this->ldaModel.init(16, args, cfg);
   cfg->logger.log(debug, "GLDA setup completed. Starting estimate");
