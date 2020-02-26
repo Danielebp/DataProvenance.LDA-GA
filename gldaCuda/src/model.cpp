@@ -362,6 +362,10 @@ double model::getDistribution(int doc, int topic){
 
     return -1;
 }
+string getDocName(int doc){
+    return ptrndata->get_doc_name(doc);
+}
+
 vector<pair<int, double> > model::getDocDistributions(int doc){
     vector<pair<int, double> > topics_probs;
     pair<int, double> topic_prob;

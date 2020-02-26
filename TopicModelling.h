@@ -53,7 +53,7 @@ public:
   }
 
   inline string getDocNameByNumber(int num){
-      return docsMap[num];
+      return this->ldaModel.getDocName[num];
   }
 
   void WriteFiles() ;

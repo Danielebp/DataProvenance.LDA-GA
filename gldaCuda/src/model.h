@@ -89,6 +89,7 @@ public:
     // load LDA model to continue estimating or to do inference
     int load_model(string model_name);
     double getDistribution(int doc, int topic);
+    string getDocName(int doc);
     double getTopicDistribution(int topic);
     vector<pair<int, double> > getDocDistributions(int doc);
 

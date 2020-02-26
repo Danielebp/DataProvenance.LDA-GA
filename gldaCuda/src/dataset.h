@@ -141,6 +141,13 @@ public:
 	}
     }
 
+    string get_doc_name(int idx) {
+	if (0 <= idx && idx < M) {
+	    return docs[idx].name;
+	}
+    return "":
+    }
+
     void _add_doc(document * doc, int idx) {
 	if (0 <= idx && idx < M) {
 	    _docs[idx] = doc;
