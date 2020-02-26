@@ -7,6 +7,7 @@ ResultStatistics calculatePrecisionRecall(ResultStatistics result, vector<Cluste
 	if (clusters.size() <= 0) {
         result.precision_percentage = 0;
     	result.recall_percentage = 0;
+	cfg->logger.log(error, "No clusters were created");
 		return result;
 	}
     string line;
