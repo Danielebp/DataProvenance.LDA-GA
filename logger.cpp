@@ -5,11 +5,23 @@ LogLevel logLevel;
 ofstream logFile;
 
 Logger::Logger(string filename, LogLevel level){
+    size_t lastindex = filename.find_last_of("."); 
+    string name = filename.substr(0, lastindex); 
+    string ext = filename.substr(lastindex);
+    string timestamp = getTimestamp();
+
+    filename = name + "_" + timestamp + ext;
     logFile.open (filename);
     logLevel = level;
 }
 
 bool Logger::init(string filename, LogLevel level){
+    size_t lastindex = filename.find_last_of(".");
+    string name = filename.substr(0, lastindex);
+    string ext = filename.substr(lastindex);
+    string timestamp = getTimestamp();
+
+    filename = name +"_"+ timestamp + ext;
     logFile.open (filename);
     logLevel = level;
     return true;
@@ -40,7 +52,7 @@ string getTime(){
 
 bool Logger::log(LogLevel level, string message){
     if(level<=logLevel){
-       cout    << getLabel(level)<< "\tmessage at "<<getTime()<<": "<<message<<endl;
+       cout << (level==error ? RED : (level==info ? GREEN : WHITE)) << getLabel(level)<< "\tmessage at "<<getTime()<<": "<<message<<RESET<<endl;
        logFile << getLabel(level)<< "\tmessage at "<<getTime()<<": "<<message<<endl;
     }
 }

@@ -1,10 +1,8 @@
 {
-
-
     "logLevel": "info",
     "runType": "train",
     "perfType": "cpu",
-    "skipPreprocess": true,
+    "skipPreprocess": false,
 
     "populationSize": 9,
     "fitnessThreshold": 0.85,
@@ -14,8 +12,9 @@
     "outputDir":"tempData",
 
     "stopWordsFile":"stopwords.txt",
-    "loggerFile":"log.txt",
+    "loggerFile":"res/log.txt",
     "truthFile":"truthfile.txt",
-    "ldaInputFile":"./tempData/input1.txt",
+    "preProcessedFile":"./input0.txt",
+    "ldaInputFile":"./input1.txt",
     "delimiter":"##lda_delimiter##"
 }

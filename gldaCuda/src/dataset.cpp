@@ -140,7 +140,7 @@ int dataset::read_trndata(string dfile, string wordmapfile, int ndocs) {
 	int length = strtok.count_tokens();
 
 	if (length <= 0) {
-	    cfg->logger.log(debug, "Invalid (empty) document!");
+	    cfg->logger.log(error, "Invalid (empty) document: " + fname);
 	    M--;
         i--;
         continue;

@@ -84,7 +84,19 @@ int utils::parse_args(int argc, char ** argv, model * pmodel) {
 	    return 1;
 	}
 
-	pmodel->model_status = model_status;
+        if (dir == "") {
+            printf("Please specify model directory please!\n");
+            return 1;
+        }
+
+        pmodel->model_status = model_status;
+
+        if (!dir.empty()){
+	    if( dir[dir.size() - 1] != '/') {
+                dir += "/";
+	    }
+	    pmodel->dir = dir;
+        }
 
 	if (K > 0) {
 	    pmodel->K = K;
@@ -115,6 +127,7 @@ int utils::parse_args(int argc, char ** argv, model * pmodel) {
 
 	pmodel->dfile = dfile;
 
+        if(dir==""){
 	string::size_type idx = dfile.find_last_of("/");
 	if (idx == string::npos) {
 	    pmodel->dir = "./";
@@ -124,6 +137,7 @@ int utils::parse_args(int argc, char ** argv, model * pmodel) {
 	    //printf("dir = %s\n", pmodel->dir.c_str());
 	    //printf("dfile = %s\n", pmodel->dfile.c_str());
 	}
+        }
     }
 
     if (model_status == MODEL_STATUS_ESTC) {

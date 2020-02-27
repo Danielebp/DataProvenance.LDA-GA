@@ -1,6 +1,17 @@
 
 #include "utils.h"
 
+string getTimestamp() {
+   time_t now = time(0);
+   tm *ltm = localtime(&now);
+
+   stringstream ss;
+   // print various components of tm structure.
+   ss << 1900 + ltm->tm_year << 1 + ltm->tm_mon<< ltm->tm_mday << 1 + ltm->tm_hour << 1 + ltm->tm_min << 1 + ltm->tm_sec;
+
+   return ss.str();
+}
+
 float getRandomFloat() {
     return (static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
 }

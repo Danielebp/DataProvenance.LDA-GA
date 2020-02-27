@@ -143,9 +143,9 @@ public:
 
     string get_doc_name(int idx) {
 	if (0 <= idx && idx < M) {
-	    return docs[idx].name;
+	    return docs[idx]->name;
 	}
-    return "":
+    return "";
     }
 
     void _add_doc(document * doc, int idx) {

@@ -25,9 +25,12 @@ string WordFilter::removeLineMarkers (string token) {
 }
 
 bool WordFilter::isEmpty(string s) {
+    if(s.empty()) return true;
     if(s.length()<1)    return true;
     if(s == "" || s == " ") return true;
 
+    strtokenizer strtok(s, " \t\r\n");
+    if(strtok.count_tokens() == 0) return true;
     return false;
 }
 

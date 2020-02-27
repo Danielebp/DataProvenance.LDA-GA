@@ -31,6 +31,7 @@ ConfigOptions::ConfigOptions(string filename){
     stopWordsFile = j["stopWordsFile"];
     truthFile     = j["truthFile"];
     ldaInputFile  = j["ldaInputFile"];
+    preProcessedFile = j["preProcessedFile"];
     loggerFile    = j["loggerFile"];
     delimiter     = j["delimiter"];
     } else {
@@ -51,6 +52,7 @@ ConfigOptions::ConfigOptions(string filename){
     loggerFile    = "log.txt";
     truthFile     = "truthfile.txt";
     ldaInputFile  = "input1.txt";
+    preProcessedFile = "input0.txt";
     delimiter     = "##lda_delimiter##";
     }
 

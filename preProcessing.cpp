@@ -1,6 +1,6 @@
 #include "preProcessing.h"
 
-unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, WordFilter wordFilter) {
+unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, WordFilter wordFilter, ConfigOptions* cfg) {
     DIR* dirp = opendir(sourceDir.c_str());
     struct dirent* entry;
     string filename;
@@ -32,11 +32,14 @@ unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, 
 
             myfile.close();
 
-            Document newSource(filename, content);
-            documentsMap[filename] = newSource;
+            if (wordFilter.isEmpty(content)) {
+                cfg->logger.log(debug, "Removing document "+filename+". Content is empty.");
+            }
+            else {
+                Document newSource(filename, content);
+                documentsMap[filename] = newSource;
 
-            // Write content to the file
-            if (content.length() != 0) {
+                // Write content to the file
                 ofstream outfile (destDir + "/" + filename);
                 outfile << content;
                 outfile.close();
@@ -50,17 +53,26 @@ unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, 
 
 unordered_map<string, Document> loadPreProcessed(ConfigOptions* cfg){
     unordered_map<string,Document> documentsMap;
-    ifstream myfile (cfg->ldaInputFile);
+    ifstream infile (cfg->preProcessedFile);
+    ofstream outfile (cfg->ldaInputFile);
     string line;
 
-    while ( getline (myfile, line, '\n') ) {
+    while ( getline (infile, line, '\n') ) {
         string filename = line.substr(0, line.find(cfg->delimiter));
         string content = line.substr(line.find(cfg->delimiter)+17);
 
+        if(content.empty()){
+            cfg->logger.log(debug, "Removing document "+filename+". Content is empty.");
+            continue;
+        }
+
         Document newSource(filename, content);
         documentsMap[filename] = newSource;
+        outfile<<filename<<cfg->delimiter<<content<<endl;
     }
 
+    outfile.close();
+    infile.close();
     return documentsMap;
 }
 
@@ -70,7 +82,7 @@ unordered_map<string, Document> preProcess(ConfigOptions* cfg){
     cfg->logger.log(debug, "Starting to tokenize files");
     // tokenize articles
     t = clock();
-    unordered_map<string,Document> documentsMap = tokenizeFiles(cfg->dataDir, cfg->mirrorDir, wordFilter);
+    unordered_map<string,Document> documentsMap = tokenizeFiles(cfg->dataDir, cfg->mirrorDir, wordFilter, cfg);
     t = clock() - t;
     // Output the time it took to find all article's titles and keywords
     cfg->logger.log(info, "Preprocessing takes " + std::to_string(((float)t)/(CLOCKS_PER_SEC/1000)) + "ms");

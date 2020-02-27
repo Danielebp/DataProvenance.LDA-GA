@@ -362,7 +362,7 @@ double model::getDistribution(int doc, int topic){
 
     return -1;
 }
-string getDocName(int doc){
+string model::getDocName(int doc){
     return ptrndata->get_doc_name(doc);
 }
 

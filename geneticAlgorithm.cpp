@@ -110,10 +110,10 @@ double calculateFitness(TopicModelling* tm, int numberOfTopics, int numberOfDocu
         if(mainTopic>=0)clusterMap.insert(pair<int, int> (mainTopic, d));
         else{
             topicLess++;
-            cfg->logger.log(error, "Document " + tm->getDocNameByNumber(d) + " is topicless.")
+            cfg->logger.log(error, "Document " + tm->getDocNameByNumber(d) + " is topicless.");
         }
     }
-    cfg->logger.log(info, "Documents without topic: "+std::to_string(topicLess)+"/"+std::to_string(numberOfDocuments));
+    if(topicLess>0)cfg->logger.log(info, "Documents without topic: "+std::to_string(topicLess)+"/"+std::to_string(numberOfDocuments));
 
 
     double* maxDistanceInsideCluster = new double[numberOfDocuments];
@@ -132,14 +132,12 @@ double calculateFitness(TopicModelling* tm, int numberOfTopics, int numberOfDocu
         else
             silhouetteCoefficient[m] = (minDistanceOutsideCluster[m] - maxDistanceInsideCluster[m]) / max(minDistanceOutsideCluster[m],maxDistanceInsideCluster[m]);
     }
-    cfg->logger.log(debug, "Silhouette coef: "+std::to_string(silhouetteCoefficient[0]));
 
     //find the average of the Silhouette coefficient of all the documents - fitness criteria
     double total = 0;
     for(int m = 0 ; m < (numberOfDocuments); m++ ) {
         total += silhouetteCoefficient[m];
     }
-    cfg->logger.log(debug, "Fitness add up: "+std::to_string(total));
 
     return (total / (numberOfDocuments));
 }

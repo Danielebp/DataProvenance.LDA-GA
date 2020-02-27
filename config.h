@@ -35,6 +35,7 @@ public:
 
     string  stopWordsFile;//  = "stopwords.txt";
     string  truthFile;//  = "truthfile.txt";
+    string preProcessedFile;
     string  ldaInputFile;//   = "./tempData/input1.txt";
     string  loggerFile;//   = "log.txt";
     string  delimiter;//      = "##lda_delimiter##";
