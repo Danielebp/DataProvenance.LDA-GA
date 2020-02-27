@@ -5,8 +5,8 @@ LogLevel logLevel;
 ofstream logFile;
 
 Logger::Logger(string filename, LogLevel level){
-    size_t lastindex = filename.find_last_of("."); 
-    string name = filename.substr(0, lastindex); 
+    size_t lastindex = filename.find_last_of(".");
+    string name = filename.substr(0, lastindex);
     string ext = filename.substr(lastindex);
     string timestamp = getTimestamp();
 
@@ -35,6 +35,8 @@ string getLabel(LogLevel level){
     switch(level) {
        case debug:
           return "DEBUG";
+       case status:
+          return "STATUS";
        case info:
           return "INFO";
        case error:
@@ -52,7 +54,7 @@ string getTime(){
 
 bool Logger::log(LogLevel level, string message){
     if(level<=logLevel){
-       cout << (level==error ? RED : (level==info ? GREEN : WHITE)) << getLabel(level)<< "\tmessage at "<<getTime()<<": "<<message<<RESET<<endl;
+       cout << (level==error ? RED : (level==status ? GREEN : (level==info ? BLUE : WHITE))) << getLabel(level)<< "\tmessage at "<<getTime()<<": "<<message<<RESET<<endl;
        logFile << getLabel(level)<< "\tmessage at "<<getTime()<<": "<<message<<endl;
     }
 }

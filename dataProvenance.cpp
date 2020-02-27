@@ -147,7 +147,7 @@ ResultStatistics reconstructProvenance(int numberOfDocuments, ConfigOptions * cf
     clock_t geneticEndTime = clock();
 
     ss<< "Genetic algorithm takes " << (geneticEndTime - exTm) << "ms";
-    cfg->logger.log(info,ss.str());
+    cfg->logger.log(status,ss.str());
     ss.str(std::string());
     ss.clear();
 
@@ -156,7 +156,7 @@ ResultStatistics reconstructProvenance(int numberOfDocuments, ConfigOptions * cf
 
     clock_t clusteringEndTime = clock();
     ss<<"Clustering takes " << (clusteringEndTime - geneticEndTime) << "ms";
-    cfg->logger.log(info, ss.str());
+    cfg->logger.log(status, ss.str());
     ss.str(std::string());
     ss.clear();
 
@@ -165,7 +165,7 @@ ResultStatistics reconstructProvenance(int numberOfDocuments, ConfigOptions * cf
 
     exTm = clock() - exTm;
     result.execution_milliseconds = ((float)exTm)/(CLOCKS_PER_SEC/1000);
-    cfg->logger.log(info, result.to_string(""));
+    cfg->logger.log(status, result.to_string(""));
     cfg->logger.log(info, "###########################################");
 
     return result;

@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
     }
     ConfigOptions cfg(configFile);
 
-    cout<<"Log level: "<<cfg.logLevel<<endl;
+    cout<<"Log level: "<<getLabel(cfg.logLevel)<<endl;
 
     for (; arg < argc; arg++) {
         string s = argv[arg];
@@ -51,10 +51,10 @@ int main(int argc, char* argv[]) {
     }
     unordered_map<string, Document> documentsMap;
 
-    cfg.logger.log(info, "Running Provenance with the following configuration:");
-    cfg.logger.log(info, "Fitness Threshold: " + std::to_string(cfg.fitnessThreshold));
-    cfg.logger.log(info, "Population Size: " + std::to_string(cfg.populationSize));
-    cfg.logger.log(info, "Running on "+ std::string(cfg.perfType == cuda ? "GPU" : "CPU"));
+    cfg.logger.log(status, "Running Provenance with the following configuration:");
+    cfg.logger.log(status, "Fitness Threshold: " + std::to_string(cfg.fitnessThreshold));
+    cfg.logger.log(status, "Population Size: " + std::to_string(cfg.populationSize));
+    cfg.logger.log(status, "Running on "+ std::string(cfg.perfType == cuda ? "GPU" : "CPU"));
 
     cfg.logger.log(debug, "Loading Dataset");
     if(cfg.skipPreprocess){
@@ -67,14 +67,14 @@ int main(int argc, char* argv[]) {
        documentsMap = preProcess(&cfg);
     }
 
-    cfg.logger.log(info, "Number of Documents: " + std::to_string(documentsMap.size()));
+    cfg.logger.log(status, "Number of Documents: " + std::to_string(documentsMap.size()));
 
     int articlesCount = 0;
     for (std::pair<std::string, Document> element : documentsMap)
     {
         if (element.first.find("$AAA$") != string::npos) articlesCount++;
     }
-    cfg.logger.log(info, "Number of Articles: " + std::to_string(articlesCount));
+    cfg.logger.log(status, "Number of Articles: " + std::to_string(articlesCount));
 
     if(cfg.runType == metric) {
       cfg.logger.log(debug, "Starting LDA performance test");
@@ -131,7 +131,7 @@ void CheckLDAPerformance(int numberOfDocuments, ConfigOptions *cfg) {
       }
     }
 
-    cfg->logger.log(info, ss.str());
+    cfg->logger.log(status, ss.str());
     ss.str(std::string());
     ss.clear();
 }
