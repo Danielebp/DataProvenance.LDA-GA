@@ -17,6 +17,7 @@ ConfigOptions::ConfigOptions(string filename){
     inputFile >> j;
 
     logLevel = j["logLevel"];
+    logFileLevel = j["logFileLevel"];
     runType = j["runType"];
     perfType = j["perfType"];
     skipPreprocess = j["skipPreprocess"];
@@ -36,7 +37,8 @@ ConfigOptions::ConfigOptions(string filename){
     delimiter     = j["delimiter"];
     } else {
 
-    logLevel = error;
+    logLevel = info;
+    logFileLevel = status;
     runType = train;
     perfType = cpu;
 
@@ -56,5 +58,5 @@ ConfigOptions::ConfigOptions(string filename){
     delimiter     = "##lda_delimiter##";
     }
 
-    logger.init(loggerFile, logLevel);
+    logger.init(loggerFile, logLevel, logFileLevel);
 }

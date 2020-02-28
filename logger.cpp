@@ -4,7 +4,7 @@
 LogLevel logLevel;
 ofstream logFile;
 
-Logger::Logger(string filename, LogLevel level){
+Logger::Logger(string filename, LogLevel level, LogLevel fileLevel){
     size_t lastindex = filename.find_last_of(".");
     string name = filename.substr(0, lastindex);
     string ext = filename.substr(lastindex);
@@ -13,9 +13,10 @@ Logger::Logger(string filename, LogLevel level){
     filename = name + "_" + timestamp + ext;
     logFile.open (filename);
     logLevel = level;
+    logFileLevel = fileLevel;
 }
 
-bool Logger::init(string filename, LogLevel level){
+bool Logger::init(string filename, LogLevel level, LogLevel fileLevel){
     size_t lastindex = filename.find_last_of(".");
     string name = filename.substr(0, lastindex);
     string ext = filename.substr(lastindex);
@@ -24,6 +25,7 @@ bool Logger::init(string filename, LogLevel level){
     filename = name +"_"+ timestamp + ext;
     logFile.open (filename);
     logLevel = level;
+    logFileLevel = fileLevel;
     return true;
 }
 
@@ -31,20 +33,6 @@ Logger::~Logger(){
     logFile.close();
 }
 
-string getLabel(LogLevel level){
-    switch(level) {
-       case debug:
-          return "DEBUG";
-       case status:
-          return "STATUS";
-       case info:
-          return "INFO";
-       case error:
-          return "ERROR";
-       default :
-          "UNLABELED";
-    }
-}
 
 string getTime(){
     auto givemetime = chrono::system_clock::to_time_t(chrono::system_clock::now());
@@ -54,7 +42,9 @@ string getTime(){
 
 bool Logger::log(LogLevel level, string message){
     if(level<=logLevel){
-       cout << (level==error ? RED : (level==status ? GREEN : (level==info ? BLUE : WHITE))) << getLabel(level)<< "\tmessage at "<<getTime()<<": "<<message<<RESET<<endl;
-       logFile << getLabel(level)<< "\tmessage at "<<getTime()<<": "<<message<<endl;
+       cout << (level==error ? RED : (level==status ? GREEN : (level==info ? BLUE : WHITE))) << getLogLabel(level)<< "\tmessage at "<<getTime()<<": "<<message<<RESET<<endl;
+    }
+    if(level<=logFileLevel){
+       logFile << getLogLabel(level)<< "\tmessage at "<<getTime()<<": "<<message<<endl;
     }
 }

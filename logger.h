@@ -35,14 +35,15 @@ class Logger {
 public:
     // running config
     LogLevel logLevel;
+    LogLevel logFileLevel;
     ofstream logFile;
     
-    Logger() {logLevel = info;}
-    Logger(string filename, LogLevel level);
+    Logger() {logLevel = info; logFileLevel = status;}
+    Logger(string filename, LogLevel level, LogLevel fileLevel);
     ~Logger();
     
     bool log(LogLevel level, string message);
-    bool init(string filename, LogLevel level);
+    bool init(string filename, LogLevel level, LogLevel fileLevel);
 };
 
 #endif

@@ -10,7 +10,7 @@
 using json = nlohmann::json;
 using namespace std;
 
-NLOHMANN_JSON_SERIALIZE_ENUM(LogLevel, {{error, "error"},{info, "info"}, {debug,"debug"}})
+NLOHMANN_JSON_SERIALIZE_ENUM(LogLevel, {{error, "error"},{status, "status"},{info, "info"}, {debug,"debug"}})
 NLOHMANN_JSON_SERIALIZE_ENUM(RunType,  {{metric, "metric"}, {train,"train"}})
 NLOHMANN_JSON_SERIALIZE_ENUM(PerfType, {{cpu, "cpu"}, {cuda,"cuda"}})
 
@@ -20,6 +20,7 @@ class ConfigOptions {
 public:
     // running config
     LogLevel    logLevel;
+    LogLevel    logFileLevel;
     RunType     runType;
     PerfType    perfType;
 

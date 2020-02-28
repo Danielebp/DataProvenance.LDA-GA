@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
     }
     ConfigOptions cfg(configFile);
 
-    cout<<"Log level: "<<getLabel(cfg.logLevel)<<endl;
+    cout<<"Log level: "<<getLogLabel(cfg.logLevel)<<endl;
 
     for (; arg < argc; arg++) {
         string s = argv[arg];
@@ -51,10 +51,6 @@ int main(int argc, char* argv[]) {
     }
     unordered_map<string, Document> documentsMap;
 
-    cfg.logger.log(status, "Running Provenance with the following configuration:");
-    cfg.logger.log(status, "Fitness Threshold: " + std::to_string(cfg.fitnessThreshold));
-    cfg.logger.log(status, "Population Size: " + std::to_string(cfg.populationSize));
-    cfg.logger.log(status, "Running on "+ std::string(cfg.perfType == cuda ? "GPU" : "CPU"));
 
     cfg.logger.log(debug, "Loading Dataset");
     if(cfg.skipPreprocess){
@@ -67,6 +63,10 @@ int main(int argc, char* argv[]) {
        documentsMap = preProcess(&cfg);
     }
 
+    cfg.logger.log(status, "Running Provenance with the following configuration:");
+    cfg.logger.log(status, "Fitness Threshold: " + std::to_string(cfg.fitnessThreshold));
+    cfg.logger.log(status, "Population Size: " + std::to_string(cfg.populationSize));
+    cfg.logger.log(status, "Running on "+ std::string(cfg.perfType == cuda ? "GPU" : "CPU"));
     cfg.logger.log(status, "Number of Documents: " + std::to_string(documentsMap.size()));
 
     int articlesCount = 0;

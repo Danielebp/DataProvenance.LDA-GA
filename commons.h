@@ -8,4 +8,7 @@ enum LogLevel { error, status, info, debug };
 enum RunType { metric, train };
 enum PerfType { cpu, cuda };
 
+
+string getLogLabel(LogLevel level);
+
 #endif
