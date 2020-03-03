@@ -83,7 +83,7 @@ long TopicModelling::LDA(string MyCount) {
   this->ldaModel.init(16, args, cfg);
   cfg->logger.log(debug, "GLDA setup completed. Starting estimate");
 
-  if(cuda) this->ldaModel.cuda_estimate();
+  if(cfg->perfType==cuda) this->ldaModel.cuda_estimate();
   else this->ldaModel.estimate();
 
   cfg->logger.log(debug, "GLDA estimate completed");

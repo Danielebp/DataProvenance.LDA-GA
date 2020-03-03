@@ -1,5 +1,10 @@
 #include "config.h"
 
+#include <sys/stat.h>
+#include <sys/types.h>
+
+struct stat sb;
+
 //enum LogLevel { error, info, debug };
 //enum RunType { metric, train };
 //enum PerfType { cpu, cuda };
@@ -58,5 +63,21 @@ ConfigOptions::ConfigOptions(string filename){
     delimiter     = "##lda_delimiter##";
     }
 
-    logger.init(loggerFile, logLevel, logFileLevel);
 }
+
+bool ConfigOptions::start() {
+    cout<<"Start up dir.."<<endl;
+    if(!(stat(outputDir.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode)) ){
+        mkdir(outputDir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        cout<<"Create dir "<<outputDir<<endl;
+    }
+    if(!(stat(mirrorDir.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode))){
+        mkdir(mirrorDir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        cout<<"Create dir "<<mirrorDir<<endl;
+    }
+    cout<<"Start logger"<<endl;
+    logger.init(loggerFile, logLevel, logFileLevel);
+
+    return true;
+}
+

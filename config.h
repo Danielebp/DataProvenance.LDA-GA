@@ -44,7 +44,7 @@ public:
     Logger logger;
 
     ConfigOptions(string filename);
-
+    bool start();
 };
 
 #endif

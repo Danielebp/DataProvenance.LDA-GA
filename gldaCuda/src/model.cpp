@@ -769,7 +769,7 @@ void model::cuda_estimate() {
     //cout << "#doc: " << M << endl;
 
     int numBlock = 1024;
-    const unsigned int device = 0;
+    const unsigned int device = 1;
     CUDATimer timer;
     cfg->logger.log(debug, "tnumBlock: " + std::to_string(numBlock) + ", device: " +std::to_string(device));
 

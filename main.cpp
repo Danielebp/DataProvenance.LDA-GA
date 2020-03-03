@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
 
     // should be multiple of 3
     int arg=1;
-    if(argc == 2){
+    if(argc >= 2){
         configFile = argv[arg++];
     }
     ConfigOptions cfg(configFile);
@@ -38,6 +38,20 @@ int main(int argc, char* argv[]) {
             cfg.populationSize = stoi(argv[++arg]);
         else if(s.compare("-f") == 0)
             cfg.fitnessThreshold = stod(argv[++arg]);
+        else if(s.compare("-dir")==0){
+	    string dir = argv[++arg];
+            cfg.truthFile	= dir + cfg.truthFile; 
+            cfg.dataDir		= dir + cfg.dataDir;
+            cfg.preProcessedFile= dir + cfg.preProcessedFile;
+            cfg.mirrorDir	= dir + cfg.mirrorDir;
+            cfg.ldaInputFile	= dir + cfg.ldaInputFile;
+            cfg.outputDir	= dir + cfg.outputDir;
+            cfg.loggerFile	= dir + cfg.loggerFile;
+	}
+        else if(s.compare("-out")==0){
+	    string outdir = argv[++arg];
+            cfg.outputDir = cfg.outputDir + "/" + outdir;
+	}
         else if(s.compare("-cuda") == 0)
             cfg.perfType = cuda;
         else if(s.compare("-metrics") == 0)
@@ -51,6 +65,7 @@ int main(int argc, char* argv[]) {
     }
     unordered_map<string, Document> documentsMap;
 
+    cfg.start();
 
     cfg.logger.log(debug, "Loading Dataset");
     if(cfg.skipPreprocess){

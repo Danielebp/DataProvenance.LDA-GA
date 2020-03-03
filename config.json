@@ -2,20 +2,20 @@
     "logLevel": "info",
     "logFileLevel": "status",
     "runType": "train",
-    "perfType": "cpu",
+    "perfType": "cuda",
     "skipPreprocess": false,
 
     "populationSize": 9,
-    "fitnessThreshold": 0.85,
+    "fitnessThreshold": 0.5,
 
     "dataDir":"txtData",
     "mirrorDir":"processedData",
-    "outputDir":"tempData",
+    "outputDir":"",
 
     "stopWordsFile":"stopwords.txt",
-    "loggerFile":"res/log.txt",
+    "loggerFile":"execution.log",
     "truthFile":"truthfile.txt",
-    "preProcessedFile":"./input0.txt",
-    "ldaInputFile":"./input1.txt",
+    "preProcessedFile":"input0.txt",
+    "ldaInputFile":"input1.txt",
     "delimiter":"##lda_delimiter##"
 }
