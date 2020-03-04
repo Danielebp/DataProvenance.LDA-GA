@@ -26,6 +26,7 @@ public:
   void open (string filename) ;
   bool nextLine();
   bool hasNextLine();
+  bool nextLineClean();
   void close();
 
   int nextInt();

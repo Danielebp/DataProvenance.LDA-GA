@@ -30,6 +30,35 @@ bool Scanner::nextLine() {
     return false;
 }
 
+
+bool Scanner::nextLineClean() {
+    string line;
+    int pos;
+    ss.str(std::string());
+    ss.clear();
+    if(getline (myfile, line, '\n')) {
+        pos = line.find("STATUS");
+        if(pos!=std::string::npos)line.replace(pos, 43, " ");
+        pos = line.find(":");
+        while(pos!=std::string::npos){
+            line.replace(pos, 1, " ");
+            pos = line.find(":");
+        }
+        pos = line.find("ms");
+        while(pos!=std::string::npos){
+            line.replace(pos, 2, " ");
+            pos = line.find("ms");
+        }
+        pos = line.find("calls");
+        if(pos!=std::string::npos)line.replace(pos, 5, "calls ");
+
+        ss.str(line);
+        return true;
+    }
+    ss.str("");
+    return false;
+}
+
 bool Scanner::hasNextLine() {
     int c = myfile.peek();  // peek character
     return (c != EOF);
