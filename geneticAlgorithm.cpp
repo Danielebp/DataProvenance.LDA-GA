@@ -142,6 +142,63 @@ double calculateFitness(TopicModelling* tm, int numberOfTopics, int numberOfDocu
     return (total / (numberOfDocuments));
 }
 
+
+PopulationConfig* mutateToNewPopulation (PopulationConfig* population, ConfigOptions* cfg){
+    //ranking and ordering the chromosomes based on the fitness function.
+    //We need only the top 1/3rd of the chromosomes with high fitness values - Silhouette coefficient
+    PopulationConfig* newPopulation = new PopulationConfig[cfg->populationSize];
+    int spanSize = cfg->populationSize/3;
+
+    //copy the top 1/3rd of the chromosomes to the new population
+    for(int i = 0 ; i < spanSize ; i++) {
+        double maxFitness = INT_MIN;
+        int maxFitnessChromosome = -1;
+
+        // gets maxFitness
+        for(int j = 0 ; j < cfg->populationSize ; j++) {
+            if(population[j].fitness_value > maxFitness) {
+                maxFitness = population[j].fitness_value;
+                maxFitnessChromosome = j;
+            }
+        }
+
+        if(i==0 && maxFitness < 0) {
+            // if best is this low, restart from scratch
+            // only test the original max
+            // apparently this was my idea, makes it converge faster
+            for (int q = 0; q<spanSize; q++){
+                newPopulation[q].set_max(MAX_TOPICS, MAX_ITERATIONS);
+                newPopulation[q].random();
+            }
+            break;
+        }
+
+        //copy the chromosome with high fitness to the next generation
+        newPopulation[i].copy(population[maxFitnessChromosome]);
+        population[maxFitnessChromosome].fitness_value = INT_MIN;
+
+    }
+
+    //perform crossover - to fill the rest of the 2/3rd of the initial Population
+    for(int i = 0 ; i < spanSize  ; i++ ) {
+        const double MUTATION_RATIO = 0.5;
+        newPopulation[spanSize+i].set_max(MAX_TOPICS, MAX_ITERATIONS);
+        newPopulation[2*spanSize+i].set_max(MAX_TOPICS, MAX_ITERATIONS);
+
+        newPopulation[spanSize+i].number_of_topics = newPopulation[i].number_of_topics;
+        newPopulation[spanSize+i].number_of_iterations = newPopulation[i].number_of_iterations;
+        if(getRandomFloat()<MUTATION_RATIO) newPopulation[spanSize+i].random_topic();
+        if(getRandomFloat()<MUTATION_RATIO) newPopulation[spanSize+i].random_iteration();
+
+        newPopulation[2*spanSize+i].number_of_topics = newPopulation[i].number_of_topics;
+        newPopulation[2*spanSize+i].number_of_iterations = newPopulation[i].number_of_iterations;
+        if(getRandomFloat()<MUTATION_RATIO) newPopulation[2*spanSize+i].random_topic();
+        if(getRandomFloat()<MUTATION_RATIO) newPopulation[2*spanSize+i].random_iteration();
+    }
+
+    return newPopulation;
+}
+
 ResultStatistics geneticLogic(int numberOfDocuments, ConfigOptions* cfg) {
 
     ResultStatistics result;
@@ -159,15 +216,14 @@ ResultStatistics geneticLogic(int numberOfDocuments, ConfigOptions* cfg) {
     int GACounter = 0;
     int LDACounter = 0;
     long LDATotTime = 0;
+    bool fitnessThresholdFound = false;
 
     clock_t t;
 
     // add a limit of 1000 GA iterations, it should not run infinitly
-    while (GACounter<1000){
+    while (GACounter<500){
         GACounter ++;
         cfg->logger.log(info, "GA Attempt: " + std::to_string(GACounter));
-
-        bool checkLowThreshold = true;
 
         // runs LDA for each pair on the population
         for (int i = 0; i<cfg->populationSize; i++){
@@ -191,88 +247,57 @@ ResultStatistics geneticLogic(int numberOfDocuments, ConfigOptions* cfg) {
                 cfg->logger.log(info, "Achieved fitness");
                 // if fitness was achieved write dist files
                 tm.WriteFiles();
+                cfg->logger.log(debug, "Wrote files");
+
+                cfg->logger.log(info, "the best distribution is "+std::to_string(population[j].number_of_topics)+" topics and "+std::to_string(population[j].number_of_iterations)+" iterations and fitness is "+std::to_string(maxFitness));
+
+                result.cfg.copy(population[j]);
+                cfg->logger.log(debug, "Copied population");
+
+                // stops GA
+                fitnessThresholdFound = true;
                 break;
+
+                // TODO: this should all be done here, it was inside loop that calculates max fitness
+                // when maxFitness satisfies the requirement, stop running GA
+                /*
+                if(maxFitness >= cfg->fitnessThreshold) {
+                    cfg->logger.log(debug, "Re-run LDA");
+                    TopicModelling tm(population[j].number_of_topics, population[j].number_of_iterations, numberOfDocuments, cfg);
+                    tm.LDA("");
+                    cfg->logger.log(debug, "Ran LDA");
+                    tm.WriteFiles();
+                    cfg->logger.log(debug, "Wrote files");
+
+                    cfg->logger.log(info, "the best distribution is "+std::to_string(population[j].number_of_topics)+" topics and "+std::to_string(population[j].number_of_iterations)+" iterations and fitness is "+std::to_string(maxFitness));
+
+                    result.cfg.copy(population[j]);
+                    cfg->logger.log(debug, "Copied population");
+
+                    result.GA_count = GACounter;
+                    result.LDA_count = LDACounter;
+                    result.LDA_time = LDATotTime;
+
+                    return result;
+                }
+                */
+
             }
 
         }
+
+        // stops GA as Fitness Threshold was reached
+        if(fitnessThresholdFound) break;
 
         t = clock();
 
-        //ranking and ordering the chromosomes based on the fitness function.
-        //We need only the top 1/3rd of the chromosomes with high fitness values - Silhouette coefficient
-        PopulationConfig* newPopulation = new PopulationConfig[cfg->populationSize];
-        int spanSize = cfg->populationSize/3;
-        //copy only the top 1/3rd of the chromosomes to the new population
-        for(int i = 0 ; i < spanSize ; i++) {
-            double maxFitness = INT_MIN;
-            int maxFitnessChromosome = -1;
-            for(int j = 0 ; j < cfg->populationSize ; j++) {
-                if(population[j].fitness_value > maxFitness) {
-                    maxFitness = population[j].fitness_value;
-
-                    // when maxFitness satisfies the requirement, stop running GA
-                    if(maxFitness >= cfg->fitnessThreshold) {
-                        // TODO: running the LDA again, which is not such a great idea, see if it can be removed
-                        cfg->logger.log(debug, "Re-run LDA");
-                        TopicModelling tm(population[j].number_of_topics, population[j].number_of_iterations, numberOfDocuments, cfg);
-                        tm.LDA("");
-                        cfg->logger.log(debug, "Ran LDA");
-                        tm.WriteFiles();
-                        cfg->logger.log(debug, "Wrote files");
-
-                        //run the function again to get the words in each topic
-                        cfg->logger.log(info, "the best distribution is "+std::to_string(population[j].number_of_topics)+" topics and "+std::to_string(population[j].number_of_iterations)+" iterations and fitness is "+std::to_string(maxFitness));
-
-                        result.cfg.copy(population[j]);
-                        cfg->logger.log(debug, "Copied population");
-
-                        result.GA_count = GACounter;
-                        result.LDA_count = LDACounter;
-                        result.LDA_time = LDATotTime;
-
-                        // stops GA
-                        return result;
-                    }
-                    maxFitnessChromosome = j;
-                }
-            }
-
-            if(checkLowThreshold) {
-                // if best is this low, restart from zero
-                if(maxFitness < 0) {
-                    for (int q = 0; q<spanSize; q++){
-                        newPopulation[q].set_max(MAX_TOPICS, MAX_ITERATIONS);
-                        newPopulation[q].random(); // needs at least 1 iteration
-                    }
-                    break;
-                }
-                checkLowThreshold = false;
-            }
-
-            //copy the chromosome with high fitness to the next generation
-            newPopulation[i].copy(population[maxFitnessChromosome]);
-            population[maxFitnessChromosome].fitness_value = INT_MIN;
-
-        }
-
-        //perform crossover - to fill the rest of the 2/3rd of the initial Population
-        for(int i = 0 ; i < spanSize  ; i++ ) {
-            newPopulation[spanSize+i].set_max(MAX_TOPICS, MAX_ITERATIONS);
-            newPopulation[2*spanSize+i].set_max(MAX_TOPICS, MAX_ITERATIONS);
-
-            newPopulation[spanSize+i].number_of_topics = population[i].number_of_topics;
-            newPopulation[spanSize+i].random_iteration();
-
-            newPopulation[2*spanSize+i].random_topic();
-            newPopulation[2*spanSize+i].number_of_iterations = population[i].number_of_iterations;
-        }
-
+        PopulationConfig* newPopulation = mutateToNewPopulation(population, cfg);
         //substitute the initial population with the new population and continue
         delete[] population;
         population = newPopulation;
 
         t = clock() - t;
-        cfg->logger.log(info, "GA took " + std::to_string(((float)t)/(CLOCKS_PER_SEC/1000)) + "ms");
+        cfg->logger.log(info, "GA iteration "+std::to_string(GACounter)+ " took " + std::to_string(((float)t)/(CLOCKS_PER_SEC/1000)) + "ms");
 
    }
 
