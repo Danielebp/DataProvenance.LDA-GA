@@ -19,33 +19,22 @@ using namespace std;
 class TopicModelling {
 private:
     string outputFile;
-    string res;
-    string dist;
-    double *distribution;
-    double *topicDistribution;
-    unordered_map<int,string> docsMap;
 
     ConfigOptions* cfg;
     int numberOfTopics;
     int numberOfIterations;
-    int burnInIterations;
     int numberOfDocuments;
     model ldaModel;
 
 public:
   TopicModelling(int numberOfTopics, int numberOfIterations, int numberOfDocuments, ConfigOptions* cfg){
-      distribution = new double[numberOfTopics*numberOfDocuments];
-      topicDistribution = new double[numberOfTopics];
       this->numberOfTopics = numberOfTopics;
       this->numberOfIterations = numberOfIterations;
-      this->burnInIterations = (2*numberOfIterations)/3;
       this->numberOfDocuments = numberOfDocuments;
       this->cfg = cfg;
   }
 
   ~TopicModelling(){
-      delete[] distribution;
-      delete[] topicDistribution;
   }
 
   inline double getDistribution(int topic, int docNum) {

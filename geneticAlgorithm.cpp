@@ -167,16 +167,16 @@ PopulationConfig* mutateToNewPopulation (PopulationConfig* population, ConfigOpt
             }
         }
 
-        if(i==0 && maxFitness < 0) {
+        //if(i==0 && maxFitness < 0) {
             // if best is this low, restart from scratch
             // only test the original max
             // apparently this was my idea, makes it converge faster
-            for (int q = 0; q<spanSize; q++){
-                newPopulation[q].set_max(MAX_TOPICS, MAX_ITERATIONS);
-                newPopulation[q].random();
-            }
-            break;
-        }
+        //    for (int q = 0; q<spanSize; q++){
+        //        newPopulation[q].set_max(MAX_TOPICS, MAX_ITERATIONS);
+        //        newPopulation[q].random();
+        //    }
+        //    break;
+        //}
 
         //copy the chromosome with high fitness to the next generation
         newPopulation[i].copy(population[maxFitnessChromosome]);
@@ -186,19 +186,18 @@ PopulationConfig* mutateToNewPopulation (PopulationConfig* population, ConfigOpt
 
     //perform crossover - to fill the rest of the 2/3rd of the initial Population
     for(int i = 0 ; i < spanSize  ; i++ ) {
-        const double MUTATION_RATIO = 0.5;
         newPopulation[spanSize+i].set_max(MAX_TOPICS, MAX_ITERATIONS);
         newPopulation[2*spanSize+i].set_max(MAX_TOPICS, MAX_ITERATIONS);
 
         newPopulation[spanSize+i].number_of_topics = newPopulation[i].number_of_topics;
         newPopulation[spanSize+i].number_of_iterations = newPopulation[i].number_of_iterations;
-        if(getRandomFloat()<MUTATION_RATIO) newPopulation[spanSize+i].random_topic();
-        if(getRandomFloat()<MUTATION_RATIO) newPopulation[spanSize+i].random_iteration();
+        if(getRandomFloat()<cfg->mutationLevel) newPopulation[spanSize+i].random_topic();
+        if(getRandomFloat()<cfg->mutationLevel) newPopulation[spanSize+i].random_iteration();
 
         newPopulation[2*spanSize+i].number_of_topics = newPopulation[i].number_of_topics;
         newPopulation[2*spanSize+i].number_of_iterations = newPopulation[i].number_of_iterations;
-        if(getRandomFloat()<MUTATION_RATIO) newPopulation[2*spanSize+i].random_topic();
-        if(getRandomFloat()<MUTATION_RATIO) newPopulation[2*spanSize+i].random_iteration();
+        if(getRandomFloat()<cfg->mutationLevel) newPopulation[2*spanSize+i].random_topic();
+        if(getRandomFloat()<cfg->mutationLevel) newPopulation[2*spanSize+i].random_iteration();
     }
 
     return newPopulation;

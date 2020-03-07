@@ -36,7 +36,9 @@ int main(int argc, char* argv[]) {
         string s = argv[arg];
         if(s.compare("-p") == 0)
             cfg.populationSize = stoi(argv[++arg]);
-        else if(s.compare("-f") == 0)
+        else if(s.compare("-m")==0)
+            cfg.mutationLevel = stod(argv[++arg]);
+	else if(s.compare("-f") == 0)
             cfg.fitnessThreshold = stod(argv[++arg]);
         else if(s.compare("-dir")==0){
 	    string dir = argv[++arg];
@@ -46,7 +48,6 @@ int main(int argc, char* argv[]) {
             cfg.mirrorDir	= dir + cfg.mirrorDir;
             cfg.ldaInputFile	= dir + cfg.ldaInputFile;
             cfg.outputDir	= dir + cfg.outputDir;
-            cfg.loggerFile	= dir + cfg.loggerFile;
 	}
         else if(s.compare("-out")==0){
 	    string outdir = argv[++arg];

@@ -28,6 +28,7 @@ ConfigOptions::ConfigOptions(string filename){
     skipPreprocess = j["skipPreprocess"];
 
     populationSize      = j["populationSize"];
+    mutationLevel	= j["mutationLevel"];
     fitnessThreshold    = j["fitnessThreshold"];
 
     dataDir     = j["dataDir"];
@@ -49,6 +50,7 @@ ConfigOptions::ConfigOptions(string filename){
 
     populationSize      = 9;
     fitnessThreshold    = 0.8;
+    mutationLevel	= 0.7;
     skipPreprocess      = false;
     
     dataDir     = "txtData";
@@ -76,6 +78,7 @@ bool ConfigOptions::start() {
         cout<<"Create dir "<<mirrorDir<<endl;
     }
     cout<<"Start logger"<<endl;
+    loggerFile = outputDir+"/"+loggerFile;
     logger.init(loggerFile, logLevel, logFileLevel);
 
     return true;

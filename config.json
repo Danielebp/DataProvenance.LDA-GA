@@ -2,10 +2,11 @@
     "logLevel": "info",
     "logFileLevel": "status",
     "runType": "train",
-    "perfType": "cuda",
+    "perfType": "cpu",
     "skipPreprocess": false,
 
     "populationSize": 9,
+    "mutationLevel": 0.7,
     "fitnessThreshold": 0.5,
 
     "dataDir":"txtData",
