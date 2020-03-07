@@ -3,19 +3,22 @@
 
 bool calculateCentroids(double* clusterCentroids, multimap <int, int>* clusterMap, TopicModelling* tm, int numberOfTopics){
     for(int k = 0; k<numberOfTopics; k++){
-        int docsOfK = clusterMap->count(k);
+	int docsOfK = clusterMap->count(k);
         // topic does not have any document
         if(docsOfK <= 0) continue;
 
-        int counter = docsOfK;
+        std::pair<multimap <int, int> :: iterator,multimap <int, int> :: iterator> result = clusterMap->equal_range(k);
+ 
+        // topic does not have any document
+        if(result.first == result.second) continue;
 
-        for(multimap <int, int> :: iterator itr = clusterMap->find(k); counter>0; itr++, counter--){
+        for (multimap <int, int> :: iterator itr = result.first; itr != result.second; itr++){
             for (int t = 0; t<numberOfTopics; t++) {
-                clusterCentroids[(k*numberOfTopics)+t] += tm->getDistribution(t, itr->second);
+                clusterCentroids[(k*numberOfTopics)+t] = clusterCentroids[(k*numberOfTopics)+t] + tm->getDistribution(t, itr->second);
             }
         }
-        for (int t = 0; t<numberOfTopics; t++) {
-            clusterCentroids[(k*numberOfTopics)+t] /= docsOfK;
+	for (int t = 0; t<numberOfTopics; t++) {
+            clusterCentroids[(k*numberOfTopics)+t] = clusterCentroids[(k*numberOfTopics)+t]/docsOfK;
         }
     }
     return true;
@@ -67,7 +70,7 @@ bool getMinDistancesOutsideClusters(double* minDistanceOutsideCluster,
                                         TopicModelling* tm,
                                         int numberOfTopics, ConfigOptions* cfg){
     // first calculates centroids
-    double* clusterCentroids = new double[numberOfTopics*numberOfTopics];
+    double* clusterCentroids = new double[numberOfTopics*numberOfTopics]{};
     if(!calculateCentroids(clusterCentroids, clusterMap, tm, numberOfTopics))
         cfg->logger.log(error, "Error getting centroids");
 
@@ -99,6 +102,7 @@ bool getMinDistancesOutsideClusters(double* minDistanceOutsideCluster,
     return true;
 }
 
+
 double calculateFitness(TopicModelling* tm, int numberOfTopics, int numberOfDocuments, ConfigOptions* cfg) {
     multimap <int, int> clusterMap;
     int mainTopic;
@@ -116,16 +120,17 @@ double calculateFitness(TopicModelling* tm, int numberOfTopics, int numberOfDocu
     if(topicLess>0)cfg->logger.log(info, "Documents without topic: "+std::to_string(topicLess)+"/"+std::to_string(numberOfDocuments));
 
 
-    double* maxDistanceInsideCluster = new double[numberOfDocuments];
+    double* maxDistanceInsideCluster = new double[numberOfDocuments] {};
+    
     if(!getMaxDistancesInsideClusters(maxDistanceInsideCluster, &clusterMap, tm, numberOfTopics))
         cfg->logger.log(error, "Error getting distances inside cluster");
 
-    double* minDistanceOutsideCluster = new double[numberOfDocuments];
+    double* minDistanceOutsideCluster = new double[numberOfDocuments]{};
     if(!getMinDistancesOutsideClusters(minDistanceOutsideCluster, &clusterMap, tm, numberOfTopics, cfg))
         cfg->logger.log(error, "Error getting distances outside cluster");
 
     //calculate the Silhouette coefficient for each document
-    double* silhouetteCoefficient = new double[numberOfDocuments];
+    double* silhouetteCoefficient = new double[numberOfDocuments]{};
     for(int m = 0 ; m < (numberOfDocuments); m++ ) {
         if(max(minDistanceOutsideCluster[m],maxDistanceInsideCluster[m]) == 0)
             silhouetteCoefficient[m] = 0;
@@ -243,15 +248,16 @@ ResultStatistics geneticLogic(int numberOfDocuments, ConfigOptions* cfg) {
             // calculates fitness value to determine wether to stop or try next pair
             population[i].fitness_value = calculateFitness(&tm, population[i].number_of_topics, numberOfDocuments, cfg);
             cfg->logger.log(info, "LDA Attempt: "+std::to_string(LDACounter)+" - Fitness: "+std::to_string(population[i].fitness_value));
+
             if(population[i].fitness_value >= cfg->fitnessThreshold) {
                 cfg->logger.log(info, "Achieved fitness");
                 // if fitness was achieved write dist files
-                tm.WriteFiles();
+                tm.WriteFiles(true);
                 cfg->logger.log(debug, "Wrote files");
 
-                cfg->logger.log(info, "the best distribution is "+std::to_string(population[j].number_of_topics)+" topics and "+std::to_string(population[j].number_of_iterations)+" iterations and fitness is "+std::to_string(maxFitness));
+                cfg->logger.log(info, "the best distribution is "+std::to_string(population[i].number_of_topics)+" topics and "+std::to_string(population[i].number_of_iterations)+" iterations and fitness is "+std::to_string(population[i].fitness_value));
 
-                result.cfg.copy(population[j]);
+                result.cfg.copy(population[i]);
                 cfg->logger.log(debug, "Copied population");
 
                 // stops GA

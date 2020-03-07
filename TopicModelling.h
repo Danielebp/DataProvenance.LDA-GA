@@ -56,7 +56,7 @@ public:
       return this->ldaModel.getDocName(num);
   }
 
-  void WriteFiles() ;
+  void WriteFiles(bool isfinal) ;
 
   int getMainTopic(int docNum);
 

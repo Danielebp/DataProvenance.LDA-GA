@@ -31,10 +31,10 @@ void TopicModelling::FreeCorpus(LDACorpus* corpus) {
   }
 }
 */
-void TopicModelling::WriteFiles() {
-
-
-    ofstream fout(cfg->outputDir + "/distribution" + outputFile + ".txt");
+void TopicModelling::WriteFiles(bool isfinal) {
+    string filename = cfg->outputDir + "/distribution" + (isfinal ? "" : outputFile) + ".txt";
+    
+    ofstream fout(filename);
     stringstream out;
     out<<"docID\ttopic\tdist\t..."<<endl;
     for(int docID = 0; docID<this->ldaModel.ptrndata->M; docID++){
