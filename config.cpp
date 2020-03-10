@@ -28,6 +28,7 @@ ConfigOptions::ConfigOptions(string filename){
     skipPreprocess = j["skipPreprocess"];
 
     populationSize      = j["populationSize"];
+    device		= j["device"];
     mutationLevel	= j["mutationLevel"];
     fitnessThreshold    = j["fitnessThreshold"];
 
@@ -49,6 +50,7 @@ ConfigOptions::ConfigOptions(string filename){
     perfType = cpu;
 
     populationSize      = 9;
+    device		= 0;
     fitnessThreshold    = 0.8;
     mutationLevel	= 0.7;
     skipPreprocess      = false;

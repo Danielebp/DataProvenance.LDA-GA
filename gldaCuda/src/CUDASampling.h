@@ -11,6 +11,7 @@
 #include "../../config.h"
 #include "common.h"
 #include "model.h"
+#include "math.h"
 
 class ParallelSampling {
 protected:
@@ -70,7 +71,7 @@ private:
     ConfigOptions* cfg;
 
 public:
-    CUDASampling(const model &lda, const unsigned int numBlock, ConfigOptions* cfg, const int device = 0);
+    CUDASampling(const model &lda, const unsigned int numBlock, ConfigOptions* cfg);
     virtual ~CUDASampling();
 
     void run(); //execute one sampling

@@ -769,13 +769,12 @@ void model::cuda_estimate() {
     //cout << "#doc: " << M << endl;
 
     int numBlock = 1024;
-    const unsigned int device = 1;
     CUDATimer timer;
-    cfg->logger.log(debug, "tnumBlock: " + std::to_string(numBlock) + ", device: " +std::to_string(device));
+    cfg->logger.log(debug, "tnumBlock: " + std::to_string(numBlock) + ", device: " +std::to_string(cfg->device));
 
 
     //GoldSampling sample(*this, numBlock);
-    CUDASampling sample(*this, numBlock, cfg, device);
+    CUDASampling sample(*this, numBlock, cfg);
     cfg->logger.log(debug, "Finished sampling");
 
     int last_iter = liter;

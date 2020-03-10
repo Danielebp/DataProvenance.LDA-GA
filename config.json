@@ -3,10 +3,11 @@
     "logFileLevel": "status",
     "runType": "train",
     "perfType": "cpu",
-    "skipPreprocess": false,
+    "skipPreprocess": true,
 
-    "populationSize": 9,
-    "mutationLevel": 0.7,
+    "populationSize": 15,
+    "device": 1,
+     "mutationLevel": 0.5,
     "fitnessThreshold": 0.5,
 
     "dataDir":"txtData",

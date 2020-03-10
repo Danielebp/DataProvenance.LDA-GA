@@ -148,7 +148,7 @@ unsigned long long ParallelSampling::fingerprint(const model& lda) const {
 //-----------------------------------------------------------------------------
 //CUDASampling
 
-CUDASampling::CUDASampling(const model& lda, const unsigned int numBlock, ConfigOptions* cfg, const int device) :
+CUDASampling::CUDASampling(const model& lda, const unsigned int numBlock, ConfigOptions* cfg) :
 ParallelSampling(lda, numBlock, cfg) {
     this->cfg = cfg;
 
@@ -158,7 +158,7 @@ ParallelSampling(lda, numBlock, cfg) {
     _sharedMemSize = max(sizeof (double) *2 * _numThread, sizeof (double) *(lda.K));
 
 
-    checkCudaErrors(cudaSetDevice(device));
+    checkCudaErrors(cudaSetDevice(cfg->device));
 
     const unsigned int M = lda.M;
     const unsigned int V = lda.V;
@@ -342,7 +342,7 @@ unsigned int CUDASampling::computeNumThread(const model& lda) const {
         exit(EXIT_FAILURE);
     }*/
 
-    const unsigned int numThread = lda.K>4 ? (lda.K)/4 : 1;
+    const unsigned int numThread = lda.K>4 ? ceil(lda.K/4) : 1;
 
     return numThread;
 }

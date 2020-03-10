@@ -17,11 +17,28 @@
 #include "config.h"
 
 using namespace std;
+class GeneticAlgorithm {
+	int MAX_TOPICS;
+	int MAX_ITERATIONS;
 
-const int MAX_TOPICS = 20;
-const int MAX_ITERATIONS = 1000;
+	bool calculateCentroids(double* clusterCentroids, multimap <int, int>* clusterMap, TopicModelling* tm, int numberOfTopics);
+	bool getMaxDistancesInsideClusters(double* maxDistanceInsideCluster,
+                                        multimap <int, int>* clusterMap,
+                                        TopicModelling* tm,
+                                        int numberOfTopics);
+	bool getMinDistancesOutsideClusters(double* minDistanceOutsideCluster,
+                                        multimap <int, int>* clusterMap,
+                                        TopicModelling* tm,
+                                        int numberOfTopics, ConfigOptions* cfg);
+	double calculateFitness(TopicModelling* tm, int numberOfTopics, int numberOfDocuments, ConfigOptions* cfg) ;
+	PopulationConfig* mutateToNewPopulation (PopulationConfig* population, ConfigOptions* cfg);
+public:
+        GeneticAlgorithm(){
+                MAX_TOPICS = 15;
+                MAX_ITERATIONS = 1000;
+        }
 
-ResultStatistics geneticLogic(int numberOfDocuments, ConfigOptions* cfg);
-void sortInitialPopulation(PopulationConfig* mInitialPopulation, int size);
-
+	ResultStatistics geneticLogic(int numberOfDocuments, ConfigOptions* cfg);
+	void sortInitialPopulation(PopulationConfig* mInitialPopulation, int size);
+};
 #endif

@@ -26,6 +26,8 @@ public:
 
     // parameters
     int     populationSize;
+    int	    device;
+    double  mutationLevel;
     double  fitnessThreshold;
     bool    skipPreprocess;
 

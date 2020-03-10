@@ -53,6 +53,8 @@ int main(int argc, char* argv[]) {
 	    string outdir = argv[++arg];
             cfg.outputDir = cfg.outputDir + "/" + outdir;
 	}
+        else if(s.compare("-seed") == 0)
+            srand(stoi(argv[++arg]));
         else if(s.compare("-cuda") == 0)
             cfg.perfType = cuda;
         else if(s.compare("-metrics") == 0)
@@ -70,7 +72,7 @@ int main(int argc, char* argv[]) {
 
     cfg.logger.log(debug, "Loading Dataset");
     if(cfg.skipPreprocess){
-        cfg.logger.log(debug, "Skipped preprocess");
+        cfg.logger.log(debug, "Skipped preprocess using " + cfg.preProcessedFile);
         documentsMap = loadPreProcessed(&cfg);
         cfg.logger.log(debug, "Loaded "+std::to_string(documentsMap.size())+" documents");
     }
