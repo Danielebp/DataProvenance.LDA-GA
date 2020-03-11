@@ -152,7 +152,7 @@ PopulationConfig* GeneticAlgorithm::mutateToNewPopulation (PopulationConfig* pop
     //ranking and ordering the chromosomes based on the fitness function.
     //We need only the top 1/3rd of the chromosomes with high fitness values - Silhouette coefficient
     PopulationConfig* newPopulation = new PopulationConfig[cfg->populationSize];
-    int spanSize = cfg->populationSize/4;
+    int spanSize = cfg->populationSize/3;
 
     //copy the top 1/3rd of the chromosomes to the new population
     for(int i = 0 ; i < spanSize ; i++) {
@@ -180,6 +180,7 @@ PopulationConfig* GeneticAlgorithm::mutateToNewPopulation (PopulationConfig* pop
 
         //copy the chromosome with high fitness to the next generation
         newPopulation[i].copy(population[maxFitnessChromosome]);
+	newPopulation[i].seed = time(NULL);
         population[maxFitnessChromosome].fitness_value = INT_MIN;
 
     }
@@ -190,16 +191,14 @@ PopulationConfig* GeneticAlgorithm::mutateToNewPopulation (PopulationConfig* pop
         newPopulation[2*spanSize+i].set_max(MAX_TOPICS, MAX_ITERATIONS);
 
         newPopulation[spanSize+i].number_of_topics = newPopulation[i].number_of_topics;
-        //newPopulation[spanSize+i].number_of_iterations = newPopulation[i].number_of_iterations;
-        //if(getRandomFloat()<cfg->mutationLevel) newPopulation[spanSize+i].random_topic();
-        //if(getRandomFloat()<cfg->mutationLevel) 
-        newPopulation[spanSize+i].random_iteration();
+        newPopulation[spanSize+i].number_of_iterations = newPopulation[i].number_of_iterations;
+        if(getRandomFloat()<cfg->mutationLevel) newPopulation[spanSize+i].random_topic();
+        if(getRandomFloat()<cfg->mutationLevel) newPopulation[spanSize+i].random_iteration();
 
-        //newPopulation[2*spanSize+i].number_of_topics = newPopulation[i].number_of_topics;
+        newPopulation[2*spanSize+i].number_of_topics = newPopulation[i].number_of_topics;
         newPopulation[2*spanSize+i].number_of_iterations = newPopulation[i].number_of_iterations;
-        //if(getRandomFloat()<cfg->mutationLevel) 
-        newPopulation[2*spanSize+i].random_topic();
-        //if(getRandomFloat()<cfg->mutationLevel) newPopulation[2*spanSize+i].random_iteration();
+        if(getRandomFloat()<cfg->mutationLevel) newPopulation[2*spanSize+i].random_topic();
+        if(getRandomFloat()<cfg->mutationLevel) newPopulation[2*spanSize+i].random_iteration();
     }
 
     for(int i = (3*spanSize); i<cfg->populationSize; i++){
@@ -210,12 +209,39 @@ PopulationConfig* GeneticAlgorithm::mutateToNewPopulation (PopulationConfig* pop
     return newPopulation;
 }
 
+PopulationConfig* getMaxFit(PopulationConfig* population, ConfigOptions* cfg){
+    double maxFitness = INT_MIN;
+    int maxFitnessChromosome = -1;
+
+    // gets maxFitness
+    for(int j = 0 ; j < cfg->populationSize ; j++) {
+        if(population[j].fitness_value > maxFitness) {
+            maxFitness = population[j].fitness_value;
+            maxFitnessChromosome = j;
+        }
+    }
+
+    return &(population[maxFitnessChromosome]); 
+}
+
+double getDifference(PopulationConfig* a, PopulationConfig* b){
+    if(a->fitness_value > b->fitness_value) 
+	return (a->fitness_value - b->fitness_value);
+
+    return (b->fitness_value - a->fitness_value);
+}
+
 ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOptions* cfg) {
 
     ResultStatistics result;
-    MAX_TOPICS = numberOfDocuments/2;
-    MAX_ITERATIONS = numberOfDocuments*10;
+    //MAX_TOPICS = numberOfDocuments/2;
+    //MAX_ITERATIONS = numberOfDocuments*10;
     PopulationConfig* population = new PopulationConfig[cfg->populationSize];
+    PopulationConfig currBestConfig(population[0]); // starts on the first config
+
+    double diffThreshold = 0.05;
+    int    maxIddle = 10;
+    int    iddleIterations = 0;
 
     cfg->logger.log(debug, "Starting GA with " + std::to_string(numberOfDocuments) + " files");
     cfg->logger.log(debug, "###########################");
@@ -246,7 +272,7 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
             string tempFileID = "__"+to_string(i)+"__"+to_string(population[i].number_of_topics)+"x"+to_string(population[i].number_of_topics);
 
             // creates TopicModelling obj and runs lda for pair i
-            TopicModelling tm(population[i].number_of_topics, population[i].number_of_iterations, numberOfDocuments, cfg);
+            TopicModelling tm(population[i].number_of_topics, population[i].number_of_iterations, numberOfDocuments, population[i].seed, cfg);
             long ldaTime = tm.LDA(tempFileID);
 
             // updates times
@@ -302,6 +328,32 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
 
         // stops GA as Fitness Threshold was reached
         if(fitnessThresholdFound) break;
+
+	PopulationConfig* newBestConfig = getMaxFit(population, cfg);
+
+	if(newBestConfig->fitness_value > currBestConfig.fitness_value) {
+		currBestConfig.copy(*newBestConfig);
+		iddleIterations = 0;
+	}
+	else iddleIterations++;
+
+	if(iddleIterations > maxIddle){
+		cfg->logger.log(debug, "Re-run LDA");
+                TopicModelling tm(currBestConfig.number_of_topics, currBestConfig.number_of_iterations, numberOfDocuments, currBestConfig.seed, cfg);
+                tm.LDA("");
+                cfg->logger.log(debug, "Ran LDA");
+                tm.WriteFiles(true);
+                cfg->logger.log(debug, "Wrote files");
+
+                cfg->logger.log(info, "the best distribution is "+to_string(currBestConfig.number_of_topics)+" topics and "+to_string(currBestConfig.number_of_iterations)+" iterations and fitness is "+to_string(currBestConfig.fitness_value));
+
+                result.cfg.copy(currBestConfig);
+                cfg->logger.log(debug, "Copied population");
+
+		break;
+	}
+
+        cfg->logger.log(info, "Best LDA Attempt: ["+to_string(currBestConfig.number_of_topics)+"x"+to_string(currBestConfig.number_of_iterations)+"] - Fitness: "+to_string(currBestConfig.fitness_value));
 
         t = clock();
 

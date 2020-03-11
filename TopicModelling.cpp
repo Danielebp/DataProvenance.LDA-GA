@@ -56,7 +56,7 @@ void TopicModelling::WriteFiles(bool isfinal) {
 
 // should write distribution.txt and topics.txt
 long TopicModelling::LDA(string MyCount) {
-// srand(10);
+  srand(seed);
   stringstream ss;
   ss<<"#### Starting LDA with "<<numberOfTopics<<" topics and "<<numberOfIterations<<" iterations ####";
   cfg->logger.log(debug, ss.str());

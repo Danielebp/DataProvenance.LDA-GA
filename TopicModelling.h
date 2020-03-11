@@ -24,12 +24,14 @@ private:
     int numberOfTopics;
     int numberOfIterations;
     int numberOfDocuments;
+    long seed;
     model ldaModel;
 
 public:
-  TopicModelling(int numberOfTopics, int numberOfIterations, int numberOfDocuments, ConfigOptions* cfg){
+  TopicModelling(int numberOfTopics, int numberOfIterations, int numberOfDocuments, long seed, ConfigOptions* cfg){
       this->numberOfTopics = numberOfTopics;
       this->numberOfIterations = numberOfIterations;
+      this->seed = seed;
       this->numberOfDocuments = numberOfDocuments;
       this->cfg = cfg;
   }

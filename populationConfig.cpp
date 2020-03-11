@@ -5,6 +5,7 @@ void PopulationConfig::copy(PopulationConfig rhs) {
 	number_of_iterations = rhs.number_of_iterations;
 	fitness_value = rhs.fitness_value;
 	LDA_execution_milliseconds = rhs.LDA_execution_milliseconds;
+	seed = rhs.seed;
 }
 
 void PopulationConfig::random()
@@ -15,13 +16,15 @@ void PopulationConfig::random()
 
 void PopulationConfig::random_topic()
 {
-	this->number_of_topics = (int) floor(getRandomFloat() * (MAX_TOPIC_COUNT-MIN_TOPIC_COUNT+1) + MIN_TOPIC_COUNT);
+	seed = time(NULL);
+        this->number_of_topics = (int) floor(getRandomFloat() * (MAX_TOPIC_COUNT-MIN_TOPIC_COUNT+1) + MIN_TOPIC_COUNT);
 	this->fitness_value = 0;
 }
 
 void PopulationConfig::random_iteration()
 {
-	this->number_of_iterations = (int) floor(getRandomFloat() * (MAX_ITERATION_COUNT-MIN_ITERATION_COUNT+1) + MIN_ITERATION_COUNT);
+	seed = time(NULL);
+        this->number_of_iterations = (int) floor(getRandomFloat() * (MAX_ITERATION_COUNT-MIN_ITERATION_COUNT+1) + MIN_ITERATION_COUNT);
 	this->fitness_value = 0;
 }
 
@@ -42,7 +45,7 @@ string PopulationConfig::to_string_all()
 PopulationConfig* initArray(int count) {
 	PopulationConfig* array = new PopulationConfig[count];
 	for (int i = 0; i < count; i++) {
-		array[i] = PopulationConfig();
+		array[i] = PopulationConfig(time(NULL));
 	}
 	return array;
 }

@@ -118,13 +118,13 @@ void CheckLDAPerformance(int numberOfDocuments, ConfigOptions *cfg) {
         int number_of_topics = tpcs[i];
 		for (int j = 0; j <5; j++) {
             int number_of_iterations = (j+1)*100;
-            PopulationConfig popCfg;
+            PopulationConfig popCfg(time(NULL));
             popCfg.number_of_topics = number_of_topics;
             popCfg.number_of_iterations = number_of_iterations;
             LDATotTime = 0;
 
             for (int i = 0; i < TEST_COUNT; ++i) {
-                TopicModelling tm(number_of_topics, number_of_iterations, numberOfDocuments, cfg);
+                TopicModelling tm(number_of_topics, number_of_iterations, numberOfDocuments, popCfg.seed, cfg);
                 string id = "__"+to_string(i/2)+"__"+to_string(number_of_topics)+"x"+to_string(number_of_iterations);
 
                 LDATotTime += tm.LDA(id);
