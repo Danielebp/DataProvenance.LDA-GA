@@ -49,6 +49,13 @@ bool Scanner::nextLineClean() {
             line.replace(pos, 2, " ");
             pos = line.find("ms");
         }
+        pos = line.find("(");
+	while(pos!=std::string::npos){
+            int pos2 = line.find(")");
+            line.replace(pos, pos2-pos, " ");
+            pos = line.find("(");
+        }
+
         pos = line.find("calls");
         if(pos!=std::string::npos)line.replace(pos, 5, "calls ");
 

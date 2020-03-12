@@ -6,18 +6,6 @@ int main(int argc, char* argv[]) {
     bool cpp = false;
     bool java = false;
 
-    for (int arg = 0; arg < argc; arg++) {
-        string s = argv[arg];
-        if(s.compare("-log") == 0)
-            filename = argv[++arg];
-        else if(s.compare("-cpp") == 0)
-            cpp = true;
-        else  if(s.compare("-java")==0)
-	        java = true;
-        else if(s.compare("-head")==0)
-        cout<<"nDocs\tnArt\tfitT\tprec\trec\tnTopcs\tnIt\tfit\texecMs\tldaAvgMs\tnGA\tnLDA"<<endl;
-    }
-
     double fitnessThreshold = 0.0;
     int nDocs = 0;
     int nArt = 0;
@@ -31,12 +19,26 @@ int main(int argc, char* argv[]) {
     int nLDA=0;
     int ldaAvgMs=0;
 
+    for (int arg = 0; arg < argc; arg++) {
+        string s = argv[arg];
+        if(s.compare("-log") == 0)
+            filename = argv[++arg];
+        else if(s.compare("-cpp") == 0)
+            cpp = true;
+        else  if(s.compare("-java")==0)
+	        java = true;
+        else if(s.compare("-art")==0)
+            nArt = stoi(argv[++arg]);
+        else if(s.compare("-head")==0)
+        cout<<"nDocs\tnArt\tfitT\tprec\trec\tnTopcs\tnIt\tfit\texecMs\tldaAvgMs\tnGA\tnLDA"<<endl;
+    }
+
 
     Scanner sc(filename);
     if(cpp){
         // has 17 lines
         // interested on lines 3, 6, 7, 11, 12, 13, 14, 15, 16, 17
-        sc.nextLineClean();
+//        sc.nextLineClean();
         sc.nextLineClean();
         fitnessThreshold = sc.nextDouble();
         sc.nextLineClean();
@@ -85,7 +87,6 @@ int main(int argc, char* argv[]) {
         sc.nextLineClean();
         sc.nextInt();
         execMs = sc.nextInt();
-        sc.nextInt();
         prec = sc.nextDouble();
         rec = sc.nextDouble();
         nTopcs = sc.nextInt();
