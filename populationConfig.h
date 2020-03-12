@@ -14,10 +14,12 @@ class PopulationConfig
 
 		int number_of_topics;
 		int number_of_iterations;
+		long seed;
 		double fitness_value;
 		long LDA_execution_milliseconds;
 
-		PopulationConfig() {}
+		PopulationConfig(long _seed) {seed = _seed;}
+                PopulationConfig() {seed = time(NULL);}
 
         void set_max(int max_topic, int max_iteration){
             this->MAX_TOPIC_COUNT = max_topic;
