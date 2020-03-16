@@ -26,7 +26,7 @@ OBJS=		main.o commons.o logger.o config.o document.o cluster.o myutils.o scanner
 
 MAIN=           main
 
-all: $(OBJS)
+all: $(OBJS) $(CUDAOBJS)
 ifdef USE_CUDA
 	$(CXX) -o $(MAIN) $(OBJS) $(CUDAOBJS) ${LIB} ${CXXFLAGS}
 else
