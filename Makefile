@@ -27,11 +27,10 @@ OBJS=		main.o commons.o logger.o config.o document.o cluster.o myutils.o scanner
 MAIN=           main
 
 all: $(OBJS) $(CUDAOBJS)
-ifdef USE_CUDA
 	$(CXX) -o $(MAIN) $(OBJS) $(CUDAOBJS) ${LIB} ${CXXFLAGS}
-else
+
+no_cuda: $(OBJS)
 	$(CXX) -o $(MAIN) $(OBJS) ${CXXFLAGS}
-endif
 
 main.o: ./main.cpp
 	$(CXX) -c -o main.o ./main.cpp $(CXXFLAGS) $(INCLUDE)
@@ -73,10 +72,10 @@ parallelizables.o: ./parallelizables.cpp
 	$(CXX) -c -o parallelizables.o ./parallelizables.cpp $(CXXFLAGS) $(INCLUDE)
 
 TopicModelling.o: ./TopicModelling.cpp
-ifdef USE_CUDA
-	$(CXX) -c -o TopicModelling.o ./TopicModelling.cpp -D USECUDA $(CXXFLAGS) $(INCLUDE)
-else
+ifdef NO_CUDA
 	$(CXX) -c -o TopicModelling.o ./TopicModelling.cpp $(CXXFLAGS)
+else
+	$(CXX) -c -o TopicModelling.o ./TopicModelling.cpp -D USECUDA $(CXXFLAGS) $(INCLUDE)
 endif
 
 
