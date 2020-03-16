@@ -1,8 +1,10 @@
 #include "scanner.h"
+#include <fstream>
 
 int main(int argc, char* argv[]) {
 
-    string filename;
+    string filename_log;
+    string filename_out;
     bool cpp = false;
     bool java = false;
 
@@ -22,7 +24,9 @@ int main(int argc, char* argv[]) {
     for (int arg = 0; arg < argc; arg++) {
         string s = argv[arg];
         if(s.compare("-log") == 0)
-            filename = argv[++arg];
+            filename_log = argv[++arg];
+        if(s.compare("-out") == 0)
+            filename_out = argv[++arg];
         else if(s.compare("-cpp") == 0)
             cpp = true;
         else  if(s.compare("-java")==0)
@@ -33,8 +37,10 @@ int main(int argc, char* argv[]) {
         cout<<"nDocs\tnArt\tfitT\tprec\trec\tnTopcs\tnIt\tfit\texecMs\tldaAvgMs\tnGA\tnLDA"<<endl;
     }
 
-
-    Scanner sc(filename);
+  ofstream outfile;
+  outfile.open(filename_out, std::ios_base::app); // append instead of overwrite
+    
+    Scanner sc(filename_log);
     if(cpp){
         // has 17 lines
         // interested on lines 3, 6, 7, 11, 12, 13, 14, 15, 16, 17
@@ -68,7 +74,7 @@ int main(int argc, char* argv[]) {
         ldaAvgMs = sc.nextInt();
 
 
-        cout<<nDocs           <<"\t"
+        outfile<<nDocs           <<"\t"
             <<nArt            <<"\t"
             <<fitnessThreshold<<"\t"
             <<prec            <<"\t"
@@ -96,7 +102,7 @@ int main(int argc, char* argv[]) {
         ldaAvgMs = sc.nextInt();
 
 
-        cout<<nDocs           <<"\t"
+        outfile<<nDocs           <<"\t"
             <<nArt            <<"\t"
             <<fitnessThreshold<<"\t"
             <<prec            <<"\t"
@@ -111,5 +117,6 @@ int main(int argc, char* argv[]) {
     }
 
     sc.close();
+    outfile.close();
 
 }
