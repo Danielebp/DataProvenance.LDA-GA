@@ -12,7 +12,11 @@
 #include <map>
 #include "config.h"
 #include "utils.h"
+
+#if defined(USECUDA)
 #include "gldaCuda/src/model.h"
+#endif
+
 
 using namespace std;
 
@@ -25,7 +29,10 @@ private:
     int numberOfIterations;
     int numberOfDocuments;
     long seed;
+
+    #if defined(USECUDA)
     model ldaModel;
+    #endif
 
 public:
   TopicModelling(int numberOfTopics, int numberOfIterations, int numberOfDocuments, long seed, ConfigOptions* cfg){
@@ -40,11 +47,19 @@ public:
   }
 
   inline double getDistribution(int topic, int docNum) {
-      return this->ldaModel.getDistribution(docNum, topic);
+      double dist = 0.0;
+      #if defined(USECUDA)
+      dist = this->ldaModel.getDistribution(docNum, topic);
+      #endif
+      return dist;
   }
 
   inline string getDocNameByNumber(int num){
-      return this->ldaModel.getDocName(num);
+      string doc = "";
+      #if defined(USECUDA)
+      doc = this->ldaModel.getDocName(num);
+      #endif
+      return doc;
   }
 
   void WriteFiles(bool isfinal) ;

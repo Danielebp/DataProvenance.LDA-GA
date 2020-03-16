@@ -18,16 +18,20 @@ CUDA_FLAGS      = -O3 -m64 -gencode $(GPU_ARCH_FLAG)
 
 # Project configuration
 INCLUDE		= $(CUDA_INC)
-LIB		= $(CUDA_LIB)
+LIB			= $(CUDA_LIB)
 
 
-
-OBJS=           main.o commons.o logger.o config.o document.o cluster.o myutils.o scanner.o dataProvenance.o geneticAlgorithm.o resultStatistics.o populationConfig.o parallelizables.o TopicModelling.o preProcessing.o wordFilter.o strtokenizer.o dataset.o utils.o model.o CUDASampling.o sample_kernel.o
+CUDAOBJS=	dataset.o utils.o model.o CUDASampling.o sample_kernel.o
+OBJS=		main.o commons.o logger.o config.o document.o cluster.o myutils.o scanner.o dataProvenance.o geneticAlgorithm.o resultStatistics.o populationConfig.o parallelizables.o TopicModelling.o preProcessing.o wordFilter.o strtokenizer.o
 
 MAIN=           main
 
 all: $(OBJS)
-	$(CXX) -o $(MAIN) $(OBJS) ${LIB} ${CXXFLAGS}
+ifdef USE_CUDA
+	$(CXX) -o $(MAIN) $(OBJS) $(CUDAOBJS) ${LIB} ${CXXFLAGS}
+else
+	$(CXX) -o $(MAIN) $(OBJS) ${CXXFLAGS}
+endif
 
 main.o: ./main.cpp
 	$(CXX) -c -o main.o ./main.cpp $(CXXFLAGS) $(INCLUDE)
@@ -69,7 +73,12 @@ parallelizables.o: ./parallelizables.cpp
 	$(CXX) -c -o parallelizables.o ./parallelizables.cpp $(CXXFLAGS) $(INCLUDE)
 
 TopicModelling.o: ./TopicModelling.cpp
-	$(CXX) -c -o TopicModelling.o ./TopicModelling.cpp $(CXXFLAGS) $(INCLUDE)
+ifdef USE_CUDA
+	$(CXX) -c -o TopicModelling.o ./TopicModelling.cpp -D USECUDA $(CXXFLAGS) $(INCLUDE)
+else
+	$(CXX) -c -o TopicModelling.o ./TopicModelling.cpp $(CXXFLAGS)
+endif
+
 
 preProcessing.o: ./preProcessing.cpp
 	$(CXX) -c -o preProcessing.o ./preProcessing.cpp $(CXXFLAGS) $(INCLUDE)
@@ -98,4 +107,5 @@ sample_kernel.o: ./gldaCuda/src/sample_kernel.h ./gldaCuda/src/sample_kernel.cu
 
 clean:
 	rm $(OBJS)
+	rm $(CUDAOBJS)
 	rm $(MAIN)

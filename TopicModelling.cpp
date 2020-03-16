@@ -33,7 +33,8 @@ void TopicModelling::FreeCorpus(LDACorpus* corpus) {
 */
 void TopicModelling::WriteFiles(bool isfinal) {
     string filename = cfg->outputDir + "/distribution" + (isfinal ? "" : outputFile) + ".txt";
-    
+
+    #if defined(USECUDA)
     ofstream fout(filename);
     stringstream out;
     out<<"docID\ttopic\tdist\t..."<<endl;
@@ -49,6 +50,7 @@ void TopicModelling::WriteFiles(bool isfinal) {
         }
     }
     fout<<out.str();;
+    #endif
 
     //ofstream fout(cfg->outputDir + "/model"+outputFile+".txt");
     //fout<<res;
@@ -66,6 +68,7 @@ long TopicModelling::LDA(string MyCount) {
   outputFile = MyCount;
 
   clock_t t = clock();
+  #if defined(USECUDA)
 
   string ntopics = to_string(numberOfTopics);
   string niters = to_string(numberOfIterations);
@@ -97,6 +100,7 @@ long TopicModelling::LDA(string MyCount) {
   }
 
   outTop.close();
+  #endif
   t = clock() - t;
   long time = (((float)t)/(CLOCKS_PER_SEC/1000));
 
