@@ -53,7 +53,7 @@ private:
     //#####################################################
     learning_lda::LDAAccumulativeModel* PLDA_accum_model;
     learning_lda::LDACorpus* PLDA_corpus;
-    map<string, int> PLDA_word_index_map;
+    map<string, int>* PLDA_word_index_map;
 
 
 public:
@@ -84,7 +84,7 @@ public:
       switch (cfg->ldaLibrary) {
           case glda:
             return GLDA_getDocNameByNumber(num);
-          case glda:
+          case plda:
             return PLDA_getDocNameByNumber(num);
       }
   }
@@ -124,7 +124,8 @@ public:
   // should write distribution.txt and topics.txt
   long PLDA_LDA(string MyCount) ;
   double PLDA_getDistribution(int topic, int docNum);
-  learning_lda::LDAAccumulativeModel* PLDA_TrainModel(learning_lda::LDAModel * model) ;
+  string PLDA_getDocNameByNumber(int num);
+  bool PLDA_TrainModel(learning_lda::LDAModel * model) ;
   int PLDA_LoadAndInitTrainingCorpus(const string& corpus_file) ;
   map<string, int> PLDA_AgrupateTokens (string line);
   void PLDA_FreeCorpus();

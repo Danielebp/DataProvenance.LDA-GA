@@ -49,8 +49,8 @@ const TopicCountDistribution& LDAModel::Iterator::Distribution() const {
 }
 
 LDAModel::LDAModel(
-    int num_topics, const map<string, int>& word_index_map) {
-  int vocab_size = word_index_map.size();
+    int num_topics, map<string, int>* word_index_map) {
+  int vocab_size = word_index_map->size();
   memory_alloc_.resize(((int64)(num_topics)) * ((int64) vocab_size + 1), 0);
   // topic_distribution and global_distribution are just accessor pointers
   // and are not responsible for allocating/deleting memory.
@@ -63,7 +63,7 @@ LDAModel::LDAModel(
         TopicCountDistribution(&memory_alloc_[0] + num_topics * i,
                                num_topics);
   }
-  word_index_map_ = word_index_map;
+  word_index_map_ = *word_index_map;
 }
 
 const TopicCountDistribution& LDAModel::GetWordTopicDistribution(

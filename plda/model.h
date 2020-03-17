@@ -66,7 +66,7 @@ class LDAModel {
   };
   friend class Iterator;
 
-  LDAModel(int num_topic, const map<string, int>& word_index_map);
+  LDAModel(int num_topic, map<string, int>* word_index_map);
 
   // Read word topic distribution and global distribution from iframe.
   // Return a map from word string to index. Intenally we use int to represent

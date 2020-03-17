@@ -49,7 +49,6 @@ void LDAAccumulativeModel::AccumulateModel(const LDAModel& source_model, LDACorp
       (*dest_dist)[k] += static_cast<double>(source_dist[k]);
     }
   }
-
   for (int k = 0; k < num_topics(); ++k) {
     global_distribution_[k] +=
         static_cast<double>(source_model.GetGlobalTopicDistribution()[k]);
@@ -104,11 +103,11 @@ LDAAccumulativeModel::GetGlobalTopicDistribution() const {
   return global_distribution_;
 }
 
-void LDAAccumulativeModel::AppendAsString(const map<string, int>& word_index_map,
+void LDAAccumulativeModel::AppendAsString(map<string, int>* word_index_map,
                                           std::ostream& out) const {
-  vector<string> index_word_map(word_index_map.size());
-  for (map<string, int>::const_iterator iter = word_index_map.begin();
-       iter != word_index_map.end(); ++iter) {
+  vector<string> index_word_map(word_index_map->size());
+  for (map<string, int>::const_iterator iter = word_index_map->begin();
+       iter != word_index_map->end(); ++iter) {
     index_word_map[iter->second] = iter->first;
   }
   for (int i = 0; i < topic_distributions_.size(); ++i) {
@@ -159,15 +158,18 @@ void LDAAccumulativeModel::sortWords(int * sortedIdx, int topic, int low, int hi
 
 }
 
-string LDAAccumulativeModel::GetWordsPerTopic(const map<string, int>& word_index_map, int topic, int nWords, string delimiter)  {
-  vector<string> index_word_map(word_index_map.size());
-  for (map<string, int>::const_iterator iter = word_index_map.begin();
-       iter != word_index_map.end(); ++iter) {
+string LDAAccumulativeModel::GetWordsPerTopic(map<string, int>* word_index_map, int topic, int nWords, string delimiter)  {
+  vector<string> index_word_map(word_index_map->size());
+  
+  for (map<string, int>::const_iterator iter = word_index_map->begin();
+       iter != word_index_map->end(); ++iter) {
     index_word_map[iter->second] = iter->first;
   }
 
   int totWords = topic_distributions_.size();
+
   int* sortedIdx = new int[totWords];
+
   for(int i=0; i<totWords; i++)
     sortedIdx[i] = i;
 
