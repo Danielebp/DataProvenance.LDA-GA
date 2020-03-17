@@ -13,6 +13,7 @@ using namespace std;
 NLOHMANN_JSON_SERIALIZE_ENUM(LogLevel, {{error, "error"},{status, "status"},{info, "info"}, {debug,"debug"}})
 NLOHMANN_JSON_SERIALIZE_ENUM(RunType,  {{metric, "metric"}, {train,"train"}})
 NLOHMANN_JSON_SERIALIZE_ENUM(PerfType, {{cpu, "cpu"}, {cuda,"cuda"}})
+NLOHMANN_JSON_SERIALIZE_ENUM(LDALibrary, {{plda, "plda"}, {gibbslda,"gibbslda"}, {glda, "glda"}})
 
 
 class ConfigOptions {
@@ -23,6 +24,7 @@ public:
     LogLevel    logFileLevel;
     RunType     runType;
     PerfType    perfType;
+    LDALibrary  ldaLibrary;
 
     // parameters
     int     populationSize;

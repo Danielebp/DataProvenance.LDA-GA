@@ -7,7 +7,7 @@
 enum LogLevel { error, status, info, debug };
 enum RunType { metric, train };
 enum PerfType { cpu, cuda };
-
+enum LDALibrary { plda, gibbslda, glda };
 
 string getLogLabel(LogLevel level);
 

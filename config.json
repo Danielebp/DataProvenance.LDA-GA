@@ -3,6 +3,7 @@
     "logFileLevel": "status",
     "runType": "train",
     "perfType": "cuda",
+    "ldaLibrary": "plda",
     "skipPreprocess": true,
 
     "populationSize": 9,

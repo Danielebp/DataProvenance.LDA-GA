@@ -25,6 +25,7 @@ ConfigOptions::ConfigOptions(string filename){
     logFileLevel = j["logFileLevel"];
     runType = j["runType"];
     perfType = j["perfType"];
+    ldaLibrary = j["ldaLibrary"];
     skipPreprocess = j["skipPreprocess"];
 
     populationSize      = j["populationSize"];
@@ -48,13 +49,14 @@ ConfigOptions::ConfigOptions(string filename){
     logFileLevel = status;
     runType = train;
     perfType = cpu;
+    ldaLibrary = glda;
 
     populationSize      = 9;
     device		= 0;
     fitnessThreshold    = 0.8;
     mutationLevel	= 0.7;
     skipPreprocess      = false;
-    
+
     dataDir     = "txtData";
     mirrorDir   = "processedData";
     outputDir   = "tempData";
@@ -85,4 +87,3 @@ bool ConfigOptions::start() {
 
     return true;
 }
-
