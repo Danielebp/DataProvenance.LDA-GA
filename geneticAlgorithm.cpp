@@ -8,7 +8,7 @@ bool GeneticAlgorithm::calculateCentroids(double* clusterCentroids, multimap <in
         if(docsOfK <= 0) continue;
 
         std::pair<multimap <int, int> :: iterator,multimap <int, int> :: iterator> result = clusterMap->equal_range(k);
- 
+
         // topic does not have any document
         if(result.first == result.second) continue;
 
@@ -121,7 +121,7 @@ double GeneticAlgorithm::calculateFitness(TopicModelling* tm, int numberOfTopics
 
 
     double* maxDistanceInsideCluster = new double[numberOfDocuments] {};
-    
+
     if(!getMaxDistancesInsideClusters(maxDistanceInsideCluster, &clusterMap, tm, numberOfTopics))
         cfg->logger.log(error, "Error getting distances inside cluster");
 
@@ -156,7 +156,7 @@ PopulationConfig* GeneticAlgorithm::mutateToNewPopulation (PopulationConfig* pop
 
     //copy the top 1/3rd of the chromosomes to the new population
     for(int i = 0 ; i < spanSize ; i++) {
-        double maxFitness = INT_MIN;
+        double maxFitness = -1;
         int maxFitnessChromosome = -1;
 
         // gets maxFitness
@@ -209,8 +209,8 @@ PopulationConfig* GeneticAlgorithm::mutateToNewPopulation (PopulationConfig* pop
     return newPopulation;
 }
 
-PopulationConfig* getMaxFit(PopulationConfig* population, ConfigOptions* cfg){
-    double maxFitness = INT_MIN;
+int getMaxFit(PopulationConfig* population, ConfigOptions* cfg){
+    double maxFitness = -1;
     int maxFitnessChromosome = -1;
 
     // gets maxFitness
@@ -221,11 +221,11 @@ PopulationConfig* getMaxFit(PopulationConfig* population, ConfigOptions* cfg){
         }
     }
 
-    return &(population[maxFitnessChromosome]); 
+    return maxFitnessChromosome;
 }
 
 double getDifference(PopulationConfig* a, PopulationConfig* b){
-    if(a->fitness_value > b->fitness_value) 
+    if(a->fitness_value > b->fitness_value)
 	return (a->fitness_value - b->fitness_value);
 
     return (b->fitness_value - a->fitness_value);
@@ -238,6 +238,7 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
     //MAX_ITERATIONS = numberOfDocuments*10;
     PopulationConfig* population = new PopulationConfig[cfg->populationSize];
     PopulationConfig currBestConfig(population[0]); // starts on the first config
+    currBestConfig.fitness_value = -1;
 
     double diffThreshold = 0.05;
     int    maxIddle = 10;
@@ -298,30 +299,6 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
                 fitnessThresholdFound = true;
                 break;
 
-                // TODO: this should all be done here, it was inside loop that calculates max fitness
-                // when maxFitness satisfies the requirement, stop running GA
-                /*
-                if(maxFitness >= cfg->fitnessThreshold) {
-                    cfg->logger.log(debug, "Re-run LDA");
-                    TopicModelling tm(population[j].number_of_topics, population[j].number_of_iterations, numberOfDocuments, cfg);
-                    tm.LDA("");
-                    cfg->logger.log(debug, "Ran LDA");
-                    tm.WriteFiles();
-                    cfg->logger.log(debug, "Wrote files");
-
-                    cfg->logger.log(info, "the best distribution is "+std::to_string(population[j].number_of_topics)+" topics and "+std::to_string(population[j].number_of_iterations)+" iterations and fitness is "+std::to_string(maxFitness));
-
-                    result.cfg.copy(population[j]);
-                    cfg->logger.log(debug, "Copied population");
-
-                    result.GA_count = GACounter;
-                    result.LDA_count = LDACounter;
-                    result.LDA_time = LDATotTime;
-
-                    return result;
-                }
-                */
-
             }
 
         }
@@ -329,10 +306,9 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
         // stops GA as Fitness Threshold was reached
         if(fitnessThresholdFound) break;
 
-	PopulationConfig* newBestConfig = getMaxFit(population, cfg);
-
-	if(newBestConfig->fitness_value > currBestConfig.fitness_value) {
-		currBestConfig.copy(*newBestConfig);
+	int bestConfig = getMaxFit(population, cfg);
+	if(population[bestConfig].fitness_value > currBestConfig.fitness_value) {
+		currBestConfig.copy(population[bestConfig]);
 		iddleIterations = 0;
 	}
 	else iddleIterations++;
