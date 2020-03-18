@@ -82,6 +82,10 @@ class LDADocument {
     return topic_distribution_;
   }
 
+  double topic_distribution(int topic) const {
+    return ((double)topic_distribution_[topic])/topic_assignments_->words_size();
+  }
+
   void ResetWordIndex(const map<string, int>& word_index_map);
 
   string DebugString();

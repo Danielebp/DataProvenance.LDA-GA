@@ -57,7 +57,7 @@ void LDAAccumulativeModel::AccumulateModel(const LDAModel& source_model, LDACorp
        iter != corpus->end();
        ++iter) {
        for (int k = 0; k < num_topics(); ++k) {
-           doc_distributions_[(*iter)->id][k] += (*iter)->topic_distribution()[k];
+           doc_distributions_[(*iter)->id][k] += (*iter)->topic_distribution(k);
        }
   }
 }

@@ -188,6 +188,7 @@ double TopicModelling::PLDA_getDistribution(int topic, int docNum) {
     double dist = 0.0;
 
     dist = PLDA_accum_model->GetDocTopicDistribution(docNum, topic);
+    if(dist<0 || dist>1)cfg->logger.log(error, "Got bad distribution: " + to_string(dist));
 
     return dist;
 }
