@@ -187,8 +187,9 @@ PopulationConfig* GeneticAlgorithm::mutateToNewPopulation (PopulationConfig* pop
 
     //perform crossover - to fill the rest of the 2/3rd of the initial Population
     for(int i = 0 ; i < spanSize  ; i++ ) {
-        newPopulation[spanSize+i].set_max(MAX_TOPICS, MAX_ITERATIONS);
-        newPopulation[2*spanSize+i].set_max(MAX_TOPICS, MAX_ITERATIONS);
+
+        newPopulation[spanSize+i].set_max(this->MAX_TOPICS, this->MAX_ITERATIONS);
+        newPopulation[2*spanSize+i].set_max(this->MAX_TOPICS, this->MAX_ITERATIONS);
 
         newPopulation[spanSize+i].number_of_topics = newPopulation[i].number_of_topics;
         newPopulation[spanSize+i].number_of_iterations = newPopulation[i].number_of_iterations;
@@ -249,7 +250,7 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
 
     // initialize population
     for (int i = 0; i<cfg->populationSize; i++){
-        population[i].set_max(MAX_TOPICS, MAX_ITERATIONS); // define max of topics and iterations
+        population[i].set_max(this->MAX_TOPICS, this->MAX_ITERATIONS); // define max of topics and iterations
         population[i].random(); // generate random number of topics and iterations
     }
 
@@ -264,7 +265,6 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
     while (GACounter<500){
         GACounter ++;
         cfg->logger.log(info, "GA Attempt: " + std::to_string(GACounter));
-
         // runs LDA for each pair on the population
         for (int i = 0; i<cfg->populationSize; i++){
             LDACounter ++;
@@ -284,6 +284,7 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
             population[i].fitness_value = calculateFitness(&tm, population[i].number_of_topics, numberOfDocuments, cfg);
             cfg->logger.log(info, "LDA Attempt: "+std::to_string(LDACounter)+" ["+to_string(population[i].number_of_topics)+"x"+to_string(population[i].number_of_iterations)+"] - Fitness: "+std::to_string(population[i].fitness_value));
 
+
             if(population[i].fitness_value >= cfg->fitnessThreshold) {
                 cfg->logger.log(info, "Achieved fitness");
                 // if fitness was achieved write dist files
@@ -300,9 +301,7 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
                 break;
 
             }
-
         }
-
         // stops GA as Fitness Threshold was reached
         if(fitnessThresholdFound) break;
 
