@@ -107,6 +107,15 @@ string LDADocument::DebugString() {
   }
   return s;
 }
+LDADocument::LDADocument(const DocumentWordTopicsPB& topics, int num_topics, string name, int id){
+    topic_assignments_ = new DocumentWordTopicsPB;
+    topic_assignments_->CopyFrom(topics);
+    this->name = name;
+    this->id = id;
+
+    topic_distribution_.resize(num_topics);
+    CountTopicDistribution();
+}
 
 LDADocument::LDADocument(const DocumentWordTopicsPB& topics,
                          int num_topics) {

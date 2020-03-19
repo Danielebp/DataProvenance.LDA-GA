@@ -52,12 +52,12 @@ private:
     //################ PLDA Variables #####################
     //#####################################################
     learning_lda::LDAAccumulativeModel* PLDA_accum_model;
-    learning_lda::LDACorpus* PLDA_corpus;
+    learning_lda::LDACorpus PLDA_corpus;
     map<string, int>* PLDA_word_index_map;
 
 
 public:
-  TopicModelling(int numberOfTopics, int numberOfIterations, int numberOfDocuments, long seed, ConfigOptions* cfg){
+  TopicModelling(int numberOfTopics, int numberOfIterations, int numberOfDocuments, long seed, ConfigOptions* cfg):PLDA_corpus(){
       this->numberOfTopics = numberOfTopics;
       this->numberOfIterations = numberOfIterations;
       this->seed = seed;
@@ -66,6 +66,13 @@ public:
   }
 
   ~TopicModelling(){
+      switch (cfg->ldaLibrary) {
+          case glda:
+            break;
+          case plda:
+            PLDA_FreeCorpus();
+            break;
+      }
   }
 
   //#####################################################

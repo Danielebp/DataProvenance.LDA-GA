@@ -102,6 +102,13 @@ const TopicProbDistribution&
 LDAAccumulativeModel::GetGlobalTopicDistribution() const {
   return global_distribution_;
 }
+double LDAAccumulativeModel::GetGlobalTopicDistribution(int topic) const {
+  int totalSum = 0;
+  for (int k = 0; k < num_topics(); ++k) {
+     totalSum += global_distribution_[k];
+  }
+  return ((double)global_distribution_[topic])/totalSum;
+}
 
 void LDAAccumulativeModel::AppendAsString(map<string, int>* word_index_map,
                                           std::ostream& out) const {
@@ -160,7 +167,7 @@ void LDAAccumulativeModel::sortWords(int * sortedIdx, int topic, int low, int hi
 
 string LDAAccumulativeModel::GetWordsPerTopic(map<string, int>* word_index_map, int topic, int nWords, string delimiter)  {
   vector<string> index_word_map(word_index_map->size());
-  
+
   for (map<string, int>::const_iterator iter = word_index_map->begin();
        iter != word_index_map->end(); ++iter) {
     index_word_map[iter->second] = iter->first;

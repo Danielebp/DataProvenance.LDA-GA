@@ -51,6 +51,7 @@ class LDAAccumulativeModel {
 
   // Returns the global topic distribution.
   const TopicProbDistribution& GetGlobalTopicDistribution() const;
+  double GetGlobalTopicDistribution(int topic) const;
 
   double GetDocTopicDistribution(int doc, int topic) const;
 
