@@ -11,8 +11,9 @@ string getLogLabel(LogLevel level){
        case error:
           return "ERROR";
        default :
-          "UNLABELED";
+          return "UNLABELED";
     }
+   return "";
 }
 
 

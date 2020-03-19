@@ -47,4 +47,6 @@ bool Logger::log(LogLevel level, string message){
     if(level<=logFileLevel){
        logFile << getLogLabel(level)<< "\tmessage at "<<getTime()<<": "<<message<<endl;
     }
+
+	return true;
 }

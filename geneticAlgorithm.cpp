@@ -246,7 +246,6 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
     PopulationConfig currBestConfig(population[0]); // starts on the first config
     currBestConfig.fitness_value = -1;
 
-    double diffThreshold = 0.05;
     int    maxIddle = 10;
     int    iddleIterations = 0;
 

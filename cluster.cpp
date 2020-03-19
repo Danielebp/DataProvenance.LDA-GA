@@ -79,7 +79,6 @@ vector<Cluster> ClusterManager::createClusters(ConfigOptions* cfg) {
 // most
 vector<Cluster> ClusterManager::cleanSourceFileCluster(vector<Cluster> clusters, unordered_map<string, SourceFile> sourceFileMap, ConfigOptions* cfg) {
 
-    int clusterNo = 0;
     stringstream ss;
 
     // collect all the source files from clusters without an article

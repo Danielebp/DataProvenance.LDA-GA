@@ -20,10 +20,12 @@ TopicModelling::TopicModelling(int numberOfTopics, int numberOfIterations, int n
 TopicModelling::~TopicModelling(){
       switch (cfg->ldaLibrary) {
           case glda:
+            delete gldaModel;
             break;
           case plda:
             PLDA_FreeCorpus();
 	    delete PLDA_accum_model;
+            delete PLDA_word_index_map;
             break;
       }
   }
@@ -55,10 +57,10 @@ void TopicModelling::GLDA_WriteFiles(bool isfinal) {
     ofstream fout(filename);
     stringstream out;
     out<<"docID\ttopic\tdist\t..."<<endl;
-    for(int docID = 0; docID<this->ldaModel.ptrndata->M; docID++){
-        string name = this->ldaModel.ptrndata->docs[docID]->name;
+    for(int docID = 0; docID<this->gldaModel->ptrndata->M; docID++){
+        string name = this->gldaModel->ptrndata->docs[docID]->name;
         out<<name<<"\t";
-        vector<pair<int, double> > topicsDistribution = this->ldaModel.getDocDistributions(docID);
+        vector<pair<int, double> > topicsDistribution = this->gldaModel->getDocDistributions(docID);
         int count = 0;
         for(auto t=topicsDistribution.begin(); t!=topicsDistribution.end(); ++t){
           out << t->first << "\t" << t->second
@@ -96,11 +98,12 @@ long TopicModelling::GLDA_LDA(string MyCount) {
                 (char*)"-savestep", (char*)"0",
                 (char*)"-dir", const_cast<char*>(cfg->outputDir.c_str()),
                 NULL};
-  this->ldaModel.init(16, args, cfg);
+  this->gldaModel = new model();
+  this->gldaModel->init(16, args, cfg);
   cfg->logger.log(debug, "GLDA setup completed. Starting estimate");
 
-  if(cfg->perfType==cuda) this->ldaModel.cuda_estimate();
-  else this->ldaModel.estimate();
+  if(cfg->perfType==cuda) this->gldaModel->cuda_estimate();
+  else this->gldaModel->estimate();
 
   cfg->logger.log(debug, "GLDA estimate completed");
 
@@ -109,7 +112,7 @@ long TopicModelling::GLDA_LDA(string MyCount) {
   outTop.open (cfg->outputDir + "/topic.txt");
   outTop<<"topic\tdist\twords"<<endl;
   for (int topic = 0; topic < numberOfTopics; topic++) {
-      outTop<<topic<<"\t"<<this->ldaModel.getTopicDistribution(topic)<<"\t"<<this->ldaModel.maptopic2Words[topic]<<endl;
+      outTop<<topic<<"\t"<<this->gldaModel->getTopicDistribution(topic)<<"\t"<<this->gldaModel->maptopic2Words[topic]<<endl;
   }
 
   outTop.close();
@@ -124,14 +127,14 @@ long TopicModelling::GLDA_LDA(string MyCount) {
 double TopicModelling::GLDA_getDistribution(int topic, int docNum) {
     double dist = 0.0;
     #if defined(USECUDA)
-    dist = this->ldaModel.getDistribution(docNum, topic);
+    dist = this->gldaModel->getDistribution(docNum, topic);
     #endif
     return dist;
 }
 string TopicModelling::GLDA_getDocNameByNumber(int num){
     string doc = "";
     #if defined(USECUDA)
-    doc = this->ldaModel.getDocName(num);
+    doc = this->gldaModel->getDocName(num);
     #endif
     return doc;
 }
@@ -169,7 +172,7 @@ long TopicModelling::PLDA_LDA(string MyCount) {
   long time = 0;
   outputFile = MyCount;
   cfg->logger.log(debug, "corpus has size: " + to_string(PLDA_corpus->size()));
-  int docCount = PLDA_LoadAndInitTrainingCorpus(cfg->ldaInputFile);
+  PLDA_LoadAndInitTrainingCorpus(cfg->ldaInputFile);
   cfg->logger.log(debug, "Finished Load -> Start Model");
 
   clock_t t = clock();
@@ -258,6 +261,7 @@ int TopicModelling::PLDA_LoadAndInitTrainingCorpus(const string& corpus_file) {
   // TODO: move reading of files outside, and make the constructor receive the data already
   cfg->logger.log(debug, "Staring to read input file");
   int count = 0;
+  map<string, int>* wordCount = new map<string, int>();
   while (getline(fin, line)) {  // Each line is a training document.
     if (line.size() > 0 &&      // Skip empty lines.
         line[0] != '\r' &&      // Skip empty lines.
@@ -275,8 +279,9 @@ int TopicModelling::PLDA_LoadAndInitTrainingCorpus(const string& corpus_file) {
       int word_index;
 
       // agrupate tokens with count of repetitions
-      map<string, int> wordCount = PLDA_AgrupateTokens(line);
-      for (map<string, int>::iterator it = wordCount.begin(); it != wordCount.end(); it++ ) {
+      wordCount->clear();
+      PLDA_AgrupateTokens(line, wordCount);
+      for (map<string, int>::iterator it = wordCount->begin(); it != wordCount->end(); it++ ) {
         topics.clear();
 
         // for (int i = 0; i < it->second; ++i) {
@@ -297,24 +302,23 @@ int TopicModelling::PLDA_LoadAndInitTrainingCorpus(const string& corpus_file) {
       PLDA_corpus->push_back(new learning_lda::LDADocument(document, numberOfTopics, docName, count++));
     }
   }
-
+  delete wordCount;
   return PLDA_corpus->size();
 }
-map<string, int> TopicModelling::PLDA_AgrupateTokens (string line) {
-  map<string, int> wordCount;
+bool TopicModelling::PLDA_AgrupateTokens (string line, map<string, int>* wordCount) {
   string word;
   stringstream ss(line);
 
   while (ss >> word) {
-    map<string, int>::const_iterator iter = wordCount.find(word);
-    if (iter == wordCount.end()) {
-      (wordCount)[word] = 1;
+    map<string, int>::const_iterator iter = wordCount->find(word);
+    if (iter == wordCount->end()) {
+      (*wordCount)[word] = 1;
     } else {
-      (wordCount)[word] +=1;
+      (*wordCount)[word] +=1;
     }
   }
 
-  return wordCount;
+  return true;
 }
 void TopicModelling::PLDA_FreeCorpus() {
   for (vector<learning_lda::LDADocument*>::iterator iter = PLDA_corpus->begin();

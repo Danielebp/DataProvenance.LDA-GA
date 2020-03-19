@@ -17,6 +17,10 @@
 using namespace std;
 using namespace CUDAUtil;
 
+model::model() {
+    set_default_values();
+}
+
 model::~model() {
     if (p) {
         delete p;

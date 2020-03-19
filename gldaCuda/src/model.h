@@ -71,9 +71,7 @@ public:
     double ** newphi;
     // --------------------------------------
 
-    model() {
-	set_default_values();
-    }
+    model();
 
     ~model();
 

@@ -45,7 +45,7 @@ private:
     //################ GLDA Variables #####################
     //#####################################################
     #if defined(USECUDA)
-    model ldaModel;
+    model* gldaModel;
     #endif
 
     //#####################################################
@@ -72,6 +72,7 @@ public:
           case plda:
             return PLDA_getDistribution(topic, docNum);
       }
+	return 0;
   }
   inline string getDocNameByNumber(int num){
       switch (cfg->ldaLibrary) {
@@ -80,6 +81,7 @@ public:
           case plda:
             return PLDA_getDocNameByNumber(num);
       }
+	return "";
   }
   inline void WriteFiles(bool isfinal) {
       switch (cfg->ldaLibrary) {
@@ -98,6 +100,8 @@ public:
           case plda:
             return PLDA_LDA(MyCount);
       }
+
+      return 0;
   }
 
   int getMainTopic(int docNum);
@@ -121,7 +125,7 @@ public:
   string PLDA_getDocNameByNumber(int num);
   bool PLDA_TrainModel(learning_lda::LDAModel * model) ;
   int PLDA_LoadAndInitTrainingCorpus(const string& corpus_file) ;
-  map<string, int> PLDA_AgrupateTokens (string line);
+  bool PLDA_AgrupateTokens (string line, map<string, int>* wordCount);
   void PLDA_FreeCorpus();
 
   //#####################################################
