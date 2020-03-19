@@ -165,7 +165,8 @@ bool IsValidProbDistribution(const TopicProbDistribution& dist);
 // topic assigned to each occurrence of a word.  In term of Bayesian
 // learning and LDA, the bag of words are ``observable'' data; the
 // topic assignments are ``hidden'' data.
-struct DocumentWordTopicsPB {
+class DocumentWordTopicsPB {
+public:
   // The document unique words list.
   vector<string> words_s_;
   vector<int> words_;

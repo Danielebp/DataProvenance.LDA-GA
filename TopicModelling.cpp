@@ -20,7 +20,9 @@ TopicModelling::TopicModelling(int numberOfTopics, int numberOfIterations, int n
 TopicModelling::~TopicModelling(){
       switch (cfg->ldaLibrary) {
           case glda:
-            delete gldaModel;
+#if defined(USECUDA)
+           delete gldaModel;
+#endif
             break;
           case plda:
             PLDA_FreeCorpus();

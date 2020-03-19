@@ -74,16 +74,16 @@ class LDADocument {
   virtual ~LDADocument();
 
   // Returns the document's topic associations.
-  const DocumentWordTopicsPB& topics() const {
+  inline const DocumentWordTopicsPB& topics() const {
     return *topic_assignments_;
   }
 
   // Returns the document's topic occurrence counts.
-  const vector<int64>& topic_distribution() const {
+  inline const vector<int64>& topic_distribution() const {
     return topic_distribution_;
   }
 
-  double topic_distribution(int topic) const {
+  inline double topic_distribution(int topic) const {
     return ((double)topic_distribution_[topic])/topic_assignments_->words_size();
   }
 
