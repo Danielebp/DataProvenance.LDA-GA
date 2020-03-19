@@ -1,6 +1,11 @@
 
 #include "geneticAlgorithm.h"
 
+GeneticAlgorithm::GeneticAlgorithm(){
+     MAX_TOPICS = 15;
+     MAX_ITERATIONS = 1000;
+}
+
 bool GeneticAlgorithm::calculateCentroids(double* clusterCentroids, multimap <int, int>* clusterMap, TopicModelling* tm, int numberOfTopics){
     for(int k = 0; k<numberOfTopics; k++){
 	int docsOfK = clusterMap->count(k);
@@ -274,7 +279,8 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
 
             // creates TopicModelling obj and runs lda for pair i
             TopicModelling tm(population[i].number_of_topics, population[i].number_of_iterations, numberOfDocuments, population[i].seed, cfg);
-            long ldaTime = tm.LDA(tempFileID);
+            cfg->logger.log(debug, "GA corpus has size: " + to_string(tm.PLDA_corpus->size()));
+            long ldaTime = tm.PLDA_LDA(tempFileID);
 
             // updates times
             population[i].LDA_execution_milliseconds = ldaTime;
@@ -301,6 +307,7 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
                 break;
 
             }
+	    cfg->logger.log(debug, "Embrace for next LDA attempt");
         }
         // stops GA as Fitness Threshold was reached
         if(fitnessThresholdFound) break;

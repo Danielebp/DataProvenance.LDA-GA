@@ -66,6 +66,8 @@ LDAModel::LDAModel(
   word_index_map_ = *word_index_map;
 }
 
+LDAModel::~LDAModel(){}
+
 const TopicCountDistribution& LDAModel::GetWordTopicDistribution(
     int word) const {
   return topic_distributions_[word];

@@ -6,6 +6,28 @@ using namespace std;
 //############## General Functions ####################
 //#####################################################
 
+TopicModelling::TopicModelling(int numberOfTopics, int numberOfIterations, int numberOfDocuments, long seed, ConfigOptions* cfg){
+      this->numberOfTopics = numberOfTopics;
+      this->numberOfIterations = numberOfIterations;
+      this->seed = seed;
+      this->numberOfDocuments = numberOfDocuments;
+      this->cfg = cfg;
+      this->PLDA_corpus = new vector<learning_lda::LDADocument*>();
+      this->PLDA_corpus->clear();
+      cfg->logger.log(debug, "Corpus has size " + to_string(PLDA_corpus->size()));
+  }
+
+TopicModelling::~TopicModelling(){
+      switch (cfg->ldaLibrary) {
+          case glda:
+            break;
+          case plda:
+            PLDA_FreeCorpus();
+	    delete PLDA_accum_model;
+            break;
+      }
+  }
+
 int TopicModelling::getMainTopic(int docNum) {
     double max = 0.0;
     int idMax = -1;
@@ -123,7 +145,7 @@ void TopicModelling::PLDA_WriteFiles(bool isfinal) {
     ofstream distFile(cfg->outputDir + "/distribution" + (isfinal ? "" : outputFile) + ".txt");
     stringstream out;
     out<<"docID\ttopic\tdist\t..."<<endl;
-    for (list<learning_lda::LDADocument*>::iterator iter = PLDA_corpus.begin(); iter != PLDA_corpus.end(); ++iter) {
+    for (vector<learning_lda::LDADocument*>::iterator iter = PLDA_corpus->begin(); iter != PLDA_corpus->end(); ++iter) {
         out<<(*iter)->name<<"\t";
      for(int topic = 0; topic<numberOfTopics; topic++){
          out << topic << "\t" << PLDA_accum_model->GetDocTopicDistribution((*iter)->id, topic)
@@ -140,18 +162,19 @@ void TopicModelling::PLDA_WriteFiles(bool isfinal) {
 // should write distribution.txt and topics.txt
 long TopicModelling::PLDA_LDA(string MyCount) {
   srand(seed);
+    cfg->logger.log(debug, "corpus has size: " + to_string(PLDA_corpus->size()));
   cfg->logger.log(debug, "#### Starting LDA with " + to_string(numberOfTopics)
                 + " topics and " + to_string(numberOfIterations) + " iterations ####");
 
   long time = 0;
   outputFile = MyCount;
-
+  cfg->logger.log(debug, "corpus has size: " + to_string(PLDA_corpus->size()));
   int docCount = PLDA_LoadAndInitTrainingCorpus(cfg->ldaInputFile);
   cfg->logger.log(debug, "Finished Load -> Start Model");
 
   clock_t t = clock();
   learning_lda::LDAModel model(numberOfTopics, PLDA_word_index_map);
-  PLDA_accum_model = new learning_lda::LDAAccumulativeModel(numberOfTopics, PLDA_word_index_map->size(), PLDA_corpus.size());
+  PLDA_accum_model = new learning_lda::LDAAccumulativeModel(numberOfTopics, PLDA_word_index_map->size(), PLDA_corpus->size());
 
   cfg->logger.log(debug, "Finished Model -> Start Train");
 
@@ -196,7 +219,7 @@ double TopicModelling::PLDA_getDistribution(int topic, int docNum) {
 string TopicModelling::PLDA_getDocNameByNumber(int num){
     string doc = "";
 
-    for (list<learning_lda::LDADocument*>::iterator iter = PLDA_corpus.begin(); iter != PLDA_corpus.end(); ++iter) {
+    for (vector<learning_lda::LDADocument*>::iterator iter = PLDA_corpus->begin(); iter != PLDA_corpus->end(); ++iter) {
      if((*iter)->id == num) return (*iter)->name;
     }
 
@@ -207,7 +230,7 @@ bool TopicModelling::PLDA_TrainModel(learning_lda::LDAModel * model) {
     learning_lda::LDASampler sampler(0.01, 0.01, model, PLDA_accum_model);
     int burnInIterations = 10;
 
-    sampler.InitModelGivenTopics(&PLDA_corpus);
+    sampler.InitModelGivenTopics(PLDA_corpus);
 
     for (int iter = 0; iter < numberOfIterations; ++iter) {
       cfg->logger.log(debug, "Iteration " + to_string(iter));
@@ -218,7 +241,7 @@ bool TopicModelling::PLDA_TrainModel(learning_lda::LDAModel * model) {
       //   }
       //   cout << "Loglikelihood: " << loglikelihood << endl;
       // }
-      sampler.DoIteration(&PLDA_corpus, true, iter < burnInIterations);
+      sampler.DoIteration(PLDA_corpus, true, iter < burnInIterations);
     }
     PLDA_accum_model->AverageModel(numberOfIterations - burnInIterations);
 
@@ -270,11 +293,12 @@ int TopicModelling::PLDA_LoadAndInitTrainingCorpus(const string& corpus_file) {
 
         document.add_wordtopics(it->first, word_index, topics);
       }
-      PLDA_corpus.push_back(new learning_lda::LDADocument(document, numberOfTopics, docName, count++));
+      cfg->logger.log(debug, "Finished line: " + docName + " Corpus has size " + to_string(PLDA_corpus->size()));
+      PLDA_corpus->push_back(new learning_lda::LDADocument(document, numberOfTopics, docName, count++));
     }
   }
 
-  return PLDA_corpus.size();
+  return PLDA_corpus->size();
 }
 map<string, int> TopicModelling::PLDA_AgrupateTokens (string line) {
   map<string, int> wordCount;
@@ -293,12 +317,10 @@ map<string, int> TopicModelling::PLDA_AgrupateTokens (string line) {
   return wordCount;
 }
 void TopicModelling::PLDA_FreeCorpus() {
-  for (list<learning_lda::LDADocument*>::iterator iter = PLDA_corpus.begin();
-       iter != PLDA_corpus.end();
+  for (vector<learning_lda::LDADocument*>::iterator iter = PLDA_corpus->begin();
+       iter != PLDA_corpus->end();
        ++iter) {
-    if (*iter != NULL) {
-      delete *iter;
-      *iter = NULL;
-    }
+	delete (*iter);
+	*iter = 0;
   }
 }

@@ -36,10 +36,12 @@ LDAAccumulativeModel::LDAAccumulativeModel(int num_topics, int vocab_size, int c
     doc_distributions_[i].resize(num_topics, 0);
   }
 }
+LDAAccumulativeModel::~LDAAccumulativeModel(){
+}
 
 // Accumulate a model into accumulative_topic_distributions_ and
 // accumulative_global_distributions_.
-void LDAAccumulativeModel::AccumulateModel(const LDAModel& source_model, LDACorpus* corpus) {
+void LDAAccumulativeModel::AccumulateModel(const LDAModel& source_model, vector<LDADocument*>* corpus) {
   CHECK_EQ(num_topics(), source_model.num_topics());
   for (LDAModel::Iterator iter(&source_model); !iter.Done(); iter.Next()) {
     const TopicCountDistribution& source_dist = iter.Distribution();
@@ -53,7 +55,7 @@ void LDAAccumulativeModel::AccumulateModel(const LDAModel& source_model, LDACorp
     global_distribution_[k] +=
         static_cast<double>(source_model.GetGlobalTopicDistribution()[k]);
   }
-  for (list<LDADocument*>::iterator iter = corpus->begin();
+  for (vector<LDADocument*>::iterator iter = corpus->begin();
        iter != corpus->end();
        ++iter) {
        for (int k = 0; k < num_topics(); ++k) {

@@ -52,28 +52,14 @@ private:
     //################ PLDA Variables #####################
     //#####################################################
     learning_lda::LDAAccumulativeModel* PLDA_accum_model;
-    learning_lda::LDACorpus PLDA_corpus;
     map<string, int>* PLDA_word_index_map;
 
 
 public:
-  TopicModelling(int numberOfTopics, int numberOfIterations, int numberOfDocuments, long seed, ConfigOptions* cfg):PLDA_corpus(){
-      this->numberOfTopics = numberOfTopics;
-      this->numberOfIterations = numberOfIterations;
-      this->seed = seed;
-      this->numberOfDocuments = numberOfDocuments;
-      this->cfg = cfg;
-  }
+    vector<learning_lda::LDADocument*>* PLDA_corpus;
+  TopicModelling(int numberOfTopics, int numberOfIterations, int numberOfDocuments, long seed, ConfigOptions* cfg);
 
-  ~TopicModelling(){
-      switch (cfg->ldaLibrary) {
-          case glda:
-            break;
-          case plda:
-            PLDA_FreeCorpus();
-            break;
-      }
-  }
+  ~TopicModelling();
 
   //#####################################################
   //############## General Functions ####################
@@ -105,7 +91,8 @@ public:
   }
 
   inline long LDA(string MyCount = "") {
-      switch (cfg->ldaLibrary) {
+     cfg->logger.log(debug, "Corpus has size " + to_string(PLDA_corpus->size())); 
+     switch (cfg->ldaLibrary) {
           case glda:
             return GLDA_LDA(MyCount);
           case plda:

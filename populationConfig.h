@@ -18,13 +18,10 @@ class PopulationConfig
 		double fitness_value;
 		long LDA_execution_milliseconds;
 
-		PopulationConfig(long _seed) {seed = _seed;}
-                PopulationConfig() {seed = time(NULL);}
+		PopulationConfig(long _seed) ;
+                PopulationConfig() ;
 
-        void set_max(int max_topic, int max_iteration){
-            this->MAX_TOPIC_COUNT = max_topic;
-            this->MAX_ITERATION_COUNT = max_iteration;
-        }
+        void set_max(int max_topic, int max_iteration);
 
 		void copy(PopulationConfig rhs) ;
 

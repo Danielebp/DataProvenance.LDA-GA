@@ -99,20 +99,6 @@ class LDADocument {
   void CountTopicDistribution();
 };
 
-class LDACorpus {
-public:
-    list<LDADocument*> documents;
-    LDACorpus(){
-        documents.clear();
-    }
-
-    list<learning_lda::LDADocument*>::iterator begin(){ return documents.begin();}
-    list<learning_lda::LDADocument*>::iterator end(){ return documents.end();}
-    int size() { return documents.size();}
-    void clear() { documents.clear(); }
-    void push_back(LDADocument* doc) {documents.push_back(doc);}
-
-};
 
 }  // namespace learning_lda
 

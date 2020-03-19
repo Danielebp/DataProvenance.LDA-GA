@@ -1,5 +1,13 @@
 #include "populationConfig.h"
 
+PopulationConfig::PopulationConfig(long _seed) {seed = _seed;}
+PopulationConfig::PopulationConfig() {seed = time(NULL);}
+
+void PopulationConfig::set_max(int max_topic, int max_iteration){
+    this->MAX_TOPIC_COUNT = max_topic;
+    this->MAX_ITERATION_COUNT = max_iteration;
+}
+
 void PopulationConfig::copy(PopulationConfig rhs) {
 	number_of_topics = rhs.number_of_topics;
 	number_of_iterations = rhs.number_of_iterations;

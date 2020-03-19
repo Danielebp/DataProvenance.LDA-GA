@@ -35,11 +35,10 @@ namespace learning_lda {
 class LDAAccumulativeModel {
  public:
   LDAAccumulativeModel(int num_topics, int vocab_size, int corpus_size);
-  ~LDAAccumulativeModel() {}
-
+  ~LDAAccumulativeModel();
   // Accumulate a model into accumulative_topic_distributions_ and
   // accumulative_global_distributions_.
-  void AccumulateModel(const LDAModel& model, LDACorpus* corpus);
+  void AccumulateModel(const LDAModel& model, vector<LDADocument*>* corpus);
 
   // Divide accumulative_topic_distributions_ and
   // accumulative_global_distributions_ by num_estiamte_iterations.

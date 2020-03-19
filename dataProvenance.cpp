@@ -126,6 +126,13 @@ vector<Cluster> performClustering(unordered_map<string, Article> articlesMap,
 ResultStatistics reconstructProvenance(int numberOfDocuments, ConfigOptions * cfg) {
     ResultStatistics result;
     GeneticAlgorithm ga;
+
+    clock_t exTm = clock();
+
+    result = ga.geneticLogic(numberOfDocuments, cfg);
+    clock_t geneticEndTime = clock();
+
+
     stringstream ss;
     unordered_map<string, Article> articlesMap;
     unordered_map<string, SourceFile> sourceFileMap;
@@ -142,10 +149,6 @@ ResultStatistics reconstructProvenance(int numberOfDocuments, ConfigOptions * cf
             sourceFileMap[filename] = SourceFile(filename, keywords); // needs real values for testing
         }
     }
-    clock_t exTm = clock();
-
-    result = ga.geneticLogic(numberOfDocuments, cfg);
-    clock_t geneticEndTime = clock();
 
     ss<< "Genetic algorithm takes " << (geneticEndTime - exTm) << "ms";
     cfg->logger.log(status,ss.str());

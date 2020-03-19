@@ -37,7 +37,7 @@ class LDASampler {
   // Given a corpus, whose every document have been initialized (i.e.,
   // every word occurrences has a (randomly) assigned topic,
   // initialize model_ to count the word-topic co-occurrences.
-  void InitModelGivenTopics(LDACorpus* corpus);
+  void InitModelGivenTopics(vector<LDADocument*>* corpus);
 
   // Performs one round of Gibbs sampling on documents in the corpus
   // by invoking SampleNewTopicsForDocument(...).  If we are to train
@@ -49,7 +49,7 @@ class LDASampler {
   // to accum_model_.  For the first certain number of iterations,
   // where the algorithm has not converged yet, you should set burn_in
   // to false.  After that, we should set burn_in to true.
-  void DoIteration(LDACorpus* corpus, bool train_model, bool burn_in);
+  void DoIteration(vector<LDADocument*>* corpus, bool train_model, bool burn_in);
 
   // Performs one round of Gibbs sampling on a document.  Updates
   // document's topic assignments.  For learning, update_model_=true,

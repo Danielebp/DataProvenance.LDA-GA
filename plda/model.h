@@ -73,7 +73,7 @@ class LDAModel {
   // each word.
   LDAModel(std::istream& in, map<string, int>* word_index_map);
 
-  ~LDAModel() {}
+  ~LDAModel();
 
   // Returns the topic distribution for word.
   const TopicCountDistribution& GetWordTopicDistribution(

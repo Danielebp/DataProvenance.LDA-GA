@@ -31,8 +31,8 @@ LDASampler::LDASampler(double alpha,
   CHECK(model != NULL);
 }
 
-void LDASampler::InitModelGivenTopics(LDACorpus* corpus) {
-  for (list<LDADocument*>::const_iterator iter = corpus->begin();
+void LDASampler::InitModelGivenTopics(vector<LDADocument*>* corpus) {
+  for (vector<LDADocument*>::const_iterator iter = corpus->begin();
        iter != corpus->end();
        ++iter) {
     LDADocument* document = *iter;
@@ -44,10 +44,10 @@ void LDASampler::InitModelGivenTopics(LDACorpus* corpus) {
   }
 }
 
-void LDASampler::DoIteration(LDACorpus* corpus,
+void LDASampler::DoIteration(vector<LDADocument*>* corpus,
                              bool train_model,
                              bool burn_in) {
-  for (list<LDADocument*>::iterator iter = corpus->begin();
+  for (vector<LDADocument*>::iterator iter = corpus->begin();
        iter != corpus->end();
        ++iter) {
     SampleNewTopicsForDocument(*iter, train_model);
