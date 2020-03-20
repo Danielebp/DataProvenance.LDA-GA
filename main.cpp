@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
 
     cfg.logger.log(debug, "Loading Dataset");
     if(cfg.skipPreprocess){
-        cfg.logger.log(debug, "Skipped preprocess using " + cfg.preProcessedFile);
+        cfg.logger.log(debug, "Skipping preprocess using " + cfg.preProcessedFile);
         documentsMap = loadPreProcessed(&cfg);
         cfg.logger.log(debug, "Loaded "+std::to_string(documentsMap.size())+" documents");
     }
