@@ -54,10 +54,13 @@ unordered_map<string,Document> tokenizeFiles (string sourceDir, string destDir, 
 unordered_map<string, Document> loadPreProcessed(ConfigOptions* cfg){
     unordered_map<string,Document> documentsMap;
     ifstream infile (cfg->preProcessedFile);
+	cfg->logger.log(debug, "Opened Input File - " + cfg->preProcessedFile);
     ofstream outfile (cfg->ldaInputFile);
+        cfg->logger.log(debug, "Created Output File - " + cfg->ldaInputFile);
     string line;
 
     while ( getline (infile, line, '\n') ) {
+        cfg->logger.log(debug, line);
         string filename = line.substr(0, line.find(cfg->delimiter));
         string content = line.substr(line.find(cfg->delimiter)+17);
 
@@ -70,7 +73,7 @@ unordered_map<string, Document> loadPreProcessed(ConfigOptions* cfg){
         documentsMap[filename] = newSource;
         outfile<<filename<<cfg->delimiter<<content<<endl;
     }
-
+        cfg->logger.log(debug, "Done loading files");
     outfile.close();
     infile.close();
     return documentsMap;
