@@ -33,7 +33,7 @@ bool Scanner::nextLine() {
 
 bool Scanner::nextLineClean() {
     string line;
-    int pos;
+    unsigned int pos;
     ss.str(std::string());
     ss.clear();
     if(getline (myfile, line, '\n')) {
@@ -93,7 +93,7 @@ int Scanner::nextInt(){
         /* To save from space at the end of string */
         temp = "";
     }
-    return NULL;
+    return 0;
 }
 
 double Scanner::nextDouble(){
@@ -112,7 +112,7 @@ double Scanner::nextDouble(){
         /* To save from space at the end of string */
         temp = "";
     }
-    return NULL;
+    return 0;
 }
 
 string Scanner::nextWord(){

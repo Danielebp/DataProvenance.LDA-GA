@@ -11,7 +11,7 @@ using namespace std;
 class strtokenizer {
 protected:
     vector<string> tokens;
-    int idx;
+    unsigned int idx;
 
 public:
     strtokenizer(string str, string seperators = " ");    
@@ -22,7 +22,7 @@ public:
     string next_token();   
     void start_scan();
 
-    string token(int i);
+    string token(unsigned int i);
 };
 
 #endif

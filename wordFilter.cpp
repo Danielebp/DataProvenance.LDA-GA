@@ -38,7 +38,7 @@ bool WordFilter::isNumber(string s) {
     bool isNumb = false;
     if(isDigit(s[0])) {
         isNumb = true;
-        for (int i=1; i < s.length(); i++) {
+        for (unsigned int i=1; i < s.length(); i++) {
             if(!isDigit(s[i])) {
                 isNumb = false;
                 break;

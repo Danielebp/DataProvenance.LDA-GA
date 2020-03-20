@@ -101,7 +101,7 @@ vector<Cluster> ClusterManager::cleanSourceFileCluster(vector<Cluster> clusters,
         } else {
             // if it has no articles then
 
-            for (int i=0; i < cl.sourceFiles.size(); i++) {
+            for (unsigned int i=0; i < cl.sourceFiles.size(); i++) {
                 if(sourceFileMap.find(cl.sourceFiles[i]) == sourceFileMap.end()){
                     // this should never happen if clusters were generated from same sourceFiles
                     ss<<"SourceFile >>"<<cl.sourceFiles[i]<<"<< not found";
@@ -121,7 +121,7 @@ vector<Cluster> ClusterManager::cleanSourceFileCluster(vector<Cluster> clusters,
 
     // once all the source files have been collected figure out which cluster these
     // files belong to
-    for (int i = 0; i < sourceFiles.size(); i++) {
+    for (unsigned int i = 0; i < sourceFiles.size(); i++) {
         int maxMatch = INT_MIN;
         int maxMatchClusterNo = 0;
 
@@ -129,9 +129,9 @@ vector<Cluster> ClusterManager::cleanSourceFileCluster(vector<Cluster> clusters,
         vector<string> keywords = split(sourceFiles[i].keyWords, ' ');
 
         // find how it matches with the keywords of each of the clusters
-        for (int j = 0; j < clusters.size(); j++) {
+        for (unsigned int j = 0; j < clusters.size(); j++) {
             int count = 0;
-            for (int k = 0; k < keywords.size(); k++) {
+            for (unsigned int k = 0; k < keywords.size(); k++) {
                 if (clusters[j].keywords.find(keywords[k]) != clusters[j].keywords.end()) {
                     count++;
                 }
@@ -192,7 +192,7 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 				// get the articles of this cluster
                 vector<Article> articlesInCluster;
 
-				for (int i = 0; i < cluster.articles.size(); i++) {
+				for (unsigned int i = 0; i < cluster.articles.size(); i++) {
                     if(articleMap.find(cluster.articles[i]) == articleMap.end()){
                         // this should never happen if clusters were generated from same articlesMap
                         ss<<""<<cluster.articles[i];
@@ -212,7 +212,7 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 				// so instead of having the unique words as a set, lets change the unique
 				// words into a hashmap
                 // cout<<"Iterate over articlesMap"<<endl;
-				for (int i = 0; i < articlesInCluster.size(); i++) {
+				for (unsigned int i = 0; i < articlesInCluster.size(); i++) {
 					// cout<<articlesInCluster[i].name<<endl;
 					// cout<<articlesInCluster[i].getKeyWords()<<endl;
                     vector<string> keywordArray = split(articlesInCluster[i].keyWords, ' ');
@@ -220,7 +220,7 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 					articlesInCluster[i].uniqueKeyWordSet = keyWordSet;
 
 					// for every keywords add it to the hashtable
-					for (int j = 0; j < keywordArray.size(); j++) {
+					for (unsigned int j = 0; j < keywordArray.size(); j++) {
 						articlesInCluster[i].totalWordCount = articlesInCluster[i].totalWordCount + 1;
 						if (articlesInCluster[i].uniqueKeyWords.find(keywordArray[j]) != articlesInCluster[i].uniqueKeyWords.end()) {
 							articlesInCluster[i].uniqueKeyWords[keywordArray[j]] = articlesInCluster[i].uniqueKeyWords[keywordArray[j]] + 1;
@@ -235,8 +235,8 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 				// now remove all the common keywords that are there between any two articles
 				// the articles should be left with keywords that are soleley special to them
 				// and do not overlap with the keywords of any other article
-				for (int i = 0; i < articlesInCluster.size(); i++) {
-					for (int j = i + 1; j < articlesInCluster.size(); j++) {
+				for (unsigned int i = 0; i < articlesInCluster.size(); i++) {
+					for (unsigned int j = i + 1; j < articlesInCluster.size(); j++) {
                         for ( auto it = articlesInCluster[j].uniqueKeyWordSet.begin(); it != articlesInCluster[j].uniqueKeyWordSet.end(); ++it ){
                             if(articlesInCluster[i].uniqueKeyWordSet.find(*it)!= articlesInCluster[i].uniqueKeyWordSet.end())articlesInCluster[i].uniqueKeyWordSet.erase(*it);
                         }
@@ -253,7 +253,7 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 
 				// for each of the articles
                 // cout<<"Remove words with lower occurence"<<endl;
-				for (int i = 0; i < articlesInCluster.size(); i++) {
+				for (unsigned int i = 0; i < articlesInCluster.size(); i++) {
 
 					// for every unique word in the article
                     for ( auto it = articlesInCluster[i].uniqueKeyWordSet.begin(); it != articlesInCluster[i].uniqueKeyWordSet.end(); ++it ){
@@ -272,7 +272,7 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 				// get the list of source files in the cluster
 				vector<SourceFile> sourceFilesInCluster;
 				// retrieve the sourcefiles from the SourceFileMap
-				for (int i = 0; i < cluster.sourceFiles.size(); i++) {
+				for (unsigned int i = 0; i < cluster.sourceFiles.size(); i++) {
                     if(sourceFileMap.find(cluster.sourceFiles[i]) == sourceFileMap.end()){
                         // this should never happen if clusters were generated from same sourceFiles
                         ss<<"SourceFile not found: "<<cluster.sourceFiles[i];
@@ -291,7 +291,7 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 				// add this to the new cluster list
 
                 // cout<<"Create new clusters"<<endl;
-				for (int i = 0; i < articlesInCluster.size(); i++) {
+				for (unsigned int i = 0; i < articlesInCluster.size(); i++) {
 					Cluster newCluster;
 					newCluster.clusterNo = cluster.clusterNo + "_" + to_string(i);
 					newCluster.keywords = (unordered_set<string>) articlesInCluster[i].uniqueKeyWordSet;
@@ -303,12 +303,12 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
                 // cout<<"Re-distribute source files"<<endl;
 				// for each source file find the amount of overlap it has with each of the
 				// article
-				for (int i = 0; i < sourceFilesInCluster.size(); i++) {
+				for (unsigned int i = 0; i < sourceFilesInCluster.size(); i++) {
 					// cout<<sourceFilesInCluster[i].getName()<<endl;
 					int max = -1;
 					int clusterOverLapNo = -1;
 					// compare the amount of overlap of the source file with each of the articles
-					for (int j = 0; j < articlesInCluster.size(); j++) {
+					for (unsigned int j = 0; j < articlesInCluster.size(); j++) {
 						int count = 0;
                         for ( auto it = articlesInCluster[j].uniqueKeyWordSet.begin(); it != articlesInCluster[j].uniqueKeyWordSet.end(); ++it ){
 							if (sourceFilesInCluster[i].keyWords.find(" " + (*it) + " ") != string::npos) {

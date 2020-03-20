@@ -16,7 +16,7 @@ public:
 
 	string to_string(string head) ;
 
-	string time_to_str(long milliseconds, long string_min_length) ;
+	string time_to_str(long milliseconds, unsigned long string_min_length) ;
 
 	void OnLDAFinish(PopulationConfig cfg) ;
 };

@@ -24,7 +24,7 @@ ResultStatistics calculatePrecisionRecall(ResultStatistics result, vector<Cluste
     }
     cfg->logger.log(debug, "Finished reading truthfile");
 
-	for (int i = 0; i < clusters.size(); i++) {
+	for (unsigned int i = 0; i < clusters.size(); i++) {
         cfg->logger.log(debug, "Cluster ");
 		precision[i] = 0;
 		recall[i] = 0;
@@ -47,7 +47,7 @@ ResultStatistics calculatePrecisionRecall(ResultStatistics result, vector<Cluste
 		// calculating precision
 		if (sources.size() != 0) {
 			int precise_count = 0;
-			for (int j = 0; j < sources.size(); j++) {
+			for (unsigned int j = 0; j < sources.size(); j++) {
 				if (trueSource.find(sources[j])!=string::npos) {
 					precise_count++;
 				}
@@ -59,7 +59,7 @@ ResultStatistics calculatePrecisionRecall(ResultStatistics result, vector<Cluste
 		// calculate recall
 		// convert the list of source files to a set
 		unordered_set<string> sourceSet;
-		for (int j = 0; j<sources.size(); j++) {
+		for (unsigned int j = 0; j<sources.size(); j++) {
 			sourceSet.insert(sources[j]);
 		}
         cfg->logger.log(debug, "Done converting");
@@ -70,7 +70,7 @@ ResultStatistics calculatePrecisionRecall(ResultStatistics result, vector<Cluste
 			}
 		} else {
 			int recall_count = 0;
-			for (int j = 0; j < trueSourceSplit.size(); j++) {
+			for (unsigned int j = 0; j < trueSourceSplit.size(); j++) {
 				if (sourceSet.find(trueSourceSplit[j]) != sourceSet.end()) {
 					recall_count++;
 				}
@@ -85,7 +85,7 @@ ResultStatistics calculatePrecisionRecall(ResultStatistics result, vector<Cluste
 	float precision_total = 0.0;
 	float recall_total = 0.0;
 
-	for (int i = 0; i < clusters.size(); i++) {
+	for (unsigned int i = 0; i < clusters.size(); i++) {
 		precision_total += precision[i];
 		recall_total += recall[i];
 	}

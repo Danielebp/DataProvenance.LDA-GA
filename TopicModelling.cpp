@@ -29,6 +29,8 @@ TopicModelling::~TopicModelling(){
 	    delete PLDA_accum_model;
             delete PLDA_word_index_map;
             break;
+          case gibbslda:
+	    break;
       }
   }
 
@@ -63,7 +65,7 @@ void TopicModelling::GLDA_WriteFiles(bool isfinal) {
         string name = this->gldaModel->ptrndata->docs[docID]->name;
         out<<name<<"\t";
         vector<pair<int, double> > topicsDistribution = this->gldaModel->getDocDistributions(docID);
-        int count = 0;
+        unsigned int count = 0;
         for(auto t=topicsDistribution.begin(); t!=topicsDistribution.end(); ++t){
           out << t->first << "\t" << t->second
               << ((count < topicsDistribution.size() - 1) ? "\t" : "\n");
@@ -272,7 +274,7 @@ int TopicModelling::PLDA_LoadAndInitTrainingCorpus(const string& corpus_file) {
         line[0] != '\n' &&      // Skip empty lines.
         line[0] != '#') {       // Skip comment lines.
 
-      int pos = line.find(cfg->delimiter);
+      unsigned int pos = line.find(cfg->delimiter);
       if(pos >= line.size()) cfg->logger.log(error, "Delimiter not found");
       string docName = line.substr(0, pos);
       cfg->logger.log(debug, "Read line: " + docName);

@@ -6,7 +6,7 @@ GPU_ARCH_FLAG   = arch=compute_70,code=sm_70
 CXX             = g++
 CXXFLAGS        = -O0 -g -Wall -std=c++11
 PLDAFLAGS	= -O0 -g -Wall -Wno-sign-compare
-
+GLDAFLAGS        = -O0 -g -std=c++11
 
 # CUDA compiler configuration
 NVCC_HOME       = /usr/local/cuda
@@ -91,22 +91,22 @@ strtokenizer.o: ./gldaCuda/src/strtokenizer.h ./gldaCuda/src/strtokenizer.cpp
 	$(CXX) -c -o strtokenizer.o ./gldaCuda/src/strtokenizer.cpp $(CXXFLAGS) $(INCLUDE)
 
 glda_dataset.o: ./gldaCuda/src/dataset.h ./gldaCuda/src/dataset.cpp
-	$(CXX) -c -o glda_dataset.o ./gldaCuda/src/dataset.cpp $(CXXFLAGS) $(INCLUDE)
+	$(CXX) -c -o glda_dataset.o ./gldaCuda/src/dataset.cpp $(GLDAFLAGS) $(INCLUDE)
 
 glda_utils.o: ./gldaCuda/src/utils.h ./gldaCuda/src/utils.cpp
-	$(CXX) -c -o glda_utils.o ./gldaCuda/src/utils.cpp $(CXXFLAGS) $(INCLUDE)
+	$(CXX) -c -o glda_utils.o ./gldaCuda/src/utils.cpp $(GLDAFLAGS) $(INCLUDE)
 
 glda_model.o: ./gldaCuda/src/model.h ./gldaCuda/src/model.cpp
-	$(CXX) -c -o glda_model.o ./gldaCuda/src/model.cpp $(CXXFLAGS) $(INCLUDE)
+	$(CXX) -c -o glda_model.o ./gldaCuda/src/model.cpp $(GLDAFLAGS) $(INCLUDE)
 
 glda_CUDASampling.o: ./gldaCuda/src/CUDASampling.h ./gldaCuda/src/CUDASampling.cpp
-	$(CXX) -c -o glda_CUDASampling.o ./gldaCuda/src/CUDASampling.cpp $(CXXFLAGS) $(INCLUDE)
+	$(CXX) -c -o glda_CUDASampling.o ./gldaCuda/src/CUDASampling.cpp $(GLDAFLAGS) $(INCLUDE)
 
 glda_sample_kernel.o: ./gldaCuda/src/sample_kernel.h ./gldaCuda/src/sample_kernel.cu
 	$(NVCC) -c -o glda_sample_kernel.o ./gldaCuda/src/sample_kernel.cu $(INCLUDE) $(CUDA_FLAGS)
 
 plda_accumulative_model.o: ./plda/accumulative_model.h ./plda/accumulative_model.cc
-	$(CXX) -c -o plda_accumulative_model.o ./plda/accumulative_model.cc $(CXXFLAGS)
+	$(CXX) -c -o plda_accumulative_model.o ./plda/accumulative_model.cc $(PLDAFLAGS)
 
 plda_cmd_flags.o: ./plda/cmd_flags.h ./plda/cmd_flags.cc
 	$(CXX) -c -o plda_cmd_flags.o ./plda/cmd_flags.cc $(PLDAFLAGS)

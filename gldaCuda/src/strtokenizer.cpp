@@ -44,7 +44,7 @@ string strtokenizer::next_token() {
     }
 }
 
-string strtokenizer::token(int i) {
+string strtokenizer::token(unsigned int i) {
     if (i >= 0 && i < tokens.size()) {
 	return tokens[i];
     } else {

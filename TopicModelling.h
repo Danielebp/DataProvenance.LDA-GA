@@ -71,6 +71,8 @@ public:
             return GLDA_getDistribution(topic, docNum);
           case plda:
             return PLDA_getDistribution(topic, docNum);
+          case gibbslda:
+	    return 0;
       }
 	return 0;
   }
@@ -80,6 +82,8 @@ public:
             return GLDA_getDocNameByNumber(num);
           case plda:
             return PLDA_getDocNameByNumber(num);
+	  case gibbslda:
+	    return "";
       }
 	return "";
   }
@@ -89,6 +93,8 @@ public:
             return GLDA_WriteFiles(isfinal);
           case plda:
             return PLDA_WriteFiles(isfinal);
+	  case gibbslda:
+	    return;
       }
   }
 
@@ -99,6 +105,8 @@ public:
             return GLDA_LDA(MyCount);
           case plda:
             return PLDA_LDA(MyCount);
+	  case gibbslda:
+	    return 0;
       }
 
       return 0;

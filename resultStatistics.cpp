@@ -22,7 +22,7 @@ string ResultStatistics::to_string(string head) {
 	return str;
 }
 
-string ResultStatistics::time_to_str(long milliseconds, long string_min_length) {
+string ResultStatistics::time_to_str(long milliseconds, unsigned long string_min_length) {
 	long hours = milliseconds / 1000 / 60 / 60;
 	long minutes = (milliseconds / 1000 / 60) % 60;
 	long seconds = (milliseconds / 1000) % 60;
