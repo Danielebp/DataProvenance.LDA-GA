@@ -16,7 +16,6 @@
 
 char kSegmentFaultCauser[] = "Used to cause artificial segmentation fault";
 
-namespace learning_lda {
 
 TopicCountDistribution::TopicCountDistribution()
   : distribution_(NULL), size_(0) {}
@@ -33,6 +32,7 @@ void TopicCountDistribution::clear() {
 memset(distribution_, 0, sizeof(*distribution_) * size_);
 }
 
+namespace learning_lda {
 
 DocumentWordTopicsPB::DocumentWordTopicsPB() { wordtopics_start_index_.push_back(0); }
 int DocumentWordTopicsPB::words_size() const { return words_.size(); }
