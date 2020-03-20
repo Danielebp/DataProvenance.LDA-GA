@@ -4,8 +4,8 @@ GPU_ARCH_FLAG   = arch=compute_70,code=sm_70
 
 # C++ compiler configuration
 CXX             = g++
-CXXFLAGS        = -O3 -std=c++11
-PLDAFLAGS		= -O3 -Wall -Wno-sign-compare
+CXXFLAGS        = -O0 -g -Wall -std=c++11
+PLDAFLAGS	= -O0 -g -Wall -Wno-sign-compare
 
 
 # CUDA compiler configuration
