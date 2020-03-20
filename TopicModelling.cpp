@@ -258,7 +258,9 @@ int TopicModelling::PLDA_LoadAndInitTrainingCorpus(const string& corpus_file) {
   PLDA_word_index_map = new map<string, int>();
   cfg->logger.log(debug, "Done");
 
+  cfg->logger.log(debug, corpus_file);
   ifstream fin(corpus_file.c_str());
+  cfg->logger.log(debug, "file loaded");
   string line;
   // TODO: move reading of files outside, and make the constructor receive the data already
   cfg->logger.log(debug, "Staring to read input file");
@@ -274,7 +276,8 @@ int TopicModelling::PLDA_LoadAndInitTrainingCorpus(const string& corpus_file) {
       if(pos >= line.size()) cfg->logger.log(error, "Delimiter not found");
       string docName = line.substr(0, pos);
       cfg->logger.log(debug, "Read line: " + docName);
-      line.erase(0, pos + 17);
+      line = line.substr(pos + 17);
+      cfg->logger.log(debug, line);
 
       learning_lda::DocumentWordTopicsPB document;
       vector<int32> topics;
@@ -304,6 +307,7 @@ int TopicModelling::PLDA_LoadAndInitTrainingCorpus(const string& corpus_file) {
       PLDA_corpus->push_back(new learning_lda::LDADocument(document, numberOfTopics, docName, count++));
     }
   }
+  fin.close();
   delete wordCount;
   return PLDA_corpus->size();
 }

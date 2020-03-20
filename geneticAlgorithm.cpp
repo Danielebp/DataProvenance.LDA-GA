@@ -278,7 +278,6 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
 
             // creates TopicModelling obj and runs lda for pair i
             TopicModelling tm(population[i].number_of_topics, population[i].number_of_iterations, numberOfDocuments, population[i].seed, cfg);
-            cfg->logger.log(debug, "GA corpus has size: " + to_string(tm.PLDA_corpus->size()));
             long ldaTime = tm.PLDA_LDA(tempFileID);
 
             // updates times

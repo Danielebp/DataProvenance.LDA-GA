@@ -181,19 +181,19 @@ public:
   // wordtopics_start_index_:     |       \      |
   // wordtopics_:                 0 3 4 0  0 3   1
   vector<int> wordtopics_start_index_;
-  DocumentWordTopicsPB() { wordtopics_start_index_.push_back(0); }
-  int words_size() const { return words_.size(); }
-  int wordtopics_count(int word_index) const {
+inline  DocumentWordTopicsPB() { wordtopics_start_index_.push_back(0); }
+inline  int words_size() const { return words_.size(); }
+inline  int wordtopics_count(int word_index) const {
     return wordtopics_start_index_[word_index + 1] - wordtopics_start_index_[word_index];
   }
-  int word_last_topic_index(int word_index) const {
+inline  int word_last_topic_index(int word_index) const {
     return wordtopics_start_index_[word_index + 1] - 1;
   }
-  int word(int word_index) const { return words_[word_index]; }
-  int32 wordtopics(int index) const { return wordtopics_[index]; }
-  int32* mutable_wordtopics(int index) { return &wordtopics_[index]; }
+inline  int word(int word_index) const { return words_[word_index]; }
+inline  int32 wordtopics(int index) const { return wordtopics_[index]; }
+inline  int32* mutable_wordtopics(int index) { return &wordtopics_[index]; }
 
-  void add_wordtopics(const string& word_s,
+inline  void add_wordtopics(const string& word_s,
                       int word, const vector<int32>& topics) {
     words_s_.push_back(word_s);
     words_.push_back(word);
@@ -204,7 +204,7 @@ public:
     }
     wordtopics_start_index_.push_back(wordtopics_.size());
   }
-  void CopyFrom(const DocumentWordTopicsPB& instance) { *this = instance; }
+ inline  void CopyFrom(const DocumentWordTopicsPB& instance) { *this = instance; }
 };
 
 // Generate a random float value in the range of [0,1) from the
