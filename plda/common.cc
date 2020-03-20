@@ -18,6 +18,48 @@ char kSegmentFaultCauser[] = "Used to cause artificial segmentation fault";
 
 namespace learning_lda {
 
+TopicCountDistribution::TopicCountDistribution()
+  : distribution_(NULL), size_(0) {}
+TopicCountDistribution::TopicCountDistribution(int64* distribution, int size)
+  : distribution_(distribution), size_(size) {}
+void TopicCountDistribution::Reset(int64* distribution, int size) {
+    distribution_ = distribution;
+    size_ = size;
+}
+int TopicCountDistribution::size() const {
+return size_;
+}
+void TopicCountDistribution::clear() {
+memset(distribution_, 0, sizeof(*distribution_) * size_);
+}
+
+
+DocumentWordTopicsPB::DocumentWordTopicsPB() { wordtopics_start_index_.push_back(0); }
+int DocumentWordTopicsPB::words_size() const { return words_.size(); }
+int DocumentWordTopicsPB::wordtopics_count(int word_index) const {
+    return wordtopics_start_index_[word_index + 1] - wordtopics_start_index_[word_index];
+}
+int DocumentWordTopicsPB::word_last_topic_index(int word_index) const {
+    return wordtopics_start_index_[word_index + 1] - 1;
+}
+int DocumentWordTopicsPB::word(int word_index) const { return words_[word_index]; }
+int32 DocumentWordTopicsPB::wordtopics(int index) const { return wordtopics_[index]; }
+int32* DocumentWordTopicsPB::mutable_wordtopics(int index) { return &wordtopics_[index]; }
+
+void DocumentWordTopicsPB::add_wordtopics(const string& word_s,
+                  int word, const vector<int32>& topics) {
+words_s_.push_back(word_s);
+words_.push_back(word);
+wordtopics_start_index_.pop_back();
+wordtopics_start_index_.push_back(wordtopics_.size());
+for (size_t i = 0; i < topics.size(); ++i) {
+  wordtopics_.push_back(topics[i]);
+}
+wordtopics_start_index_.push_back(wordtopics_.size());
+}
+void DocumentWordTopicsPB::CopyFrom(const DocumentWordTopicsPB& instance) { *this = instance; }
+
+
 bool IsValidProbDistribution(const TopicProbDistribution& dist) {
   const double kUnificationError = 0.00001;
   double sum_distribution = 0;

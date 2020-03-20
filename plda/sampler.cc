@@ -30,7 +30,7 @@ LDASampler::LDASampler(double alpha,
   CHECK_LT(0.0, beta);
   CHECK(model != NULL);
 }
-
+LDASampler::~LDASampler() {}
 void LDASampler::InitModelGivenTopics(vector<LDADocument*>* corpus) {
   for (vector<LDADocument*>::const_iterator iter = corpus->begin();
        iter != corpus->end();

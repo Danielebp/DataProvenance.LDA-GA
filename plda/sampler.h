@@ -32,7 +32,7 @@ class LDASampler {
              LDAModel* model,
              LDAAccumulativeModel* accum_model);
 
-  ~LDASampler() {}
+  ~LDASampler();
 
   // Given a corpus, whose every document have been initialized (i.e.,
   // every word occurrences has a (randomly) assigned topic,

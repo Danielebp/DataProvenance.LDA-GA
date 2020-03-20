@@ -133,21 +133,12 @@ using std::string;
 // No memory allocation here, just keep pointers.
 class TopicCountDistribution {
  public:
-  TopicCountDistribution()
-      : distribution_(NULL), size_(0) {}
-  TopicCountDistribution(int64* distribution, int size)
-      : distribution_(distribution), size_(size) {}
-  void Reset(int64* distribution, int size) {
-    distribution_ = distribution;
-    size_ = size;
-  }
-  int size() const {
-    return size_;
-  }
+  TopicCountDistribution();
+  TopicCountDistribution(int64* distribution, int size);
+  void Reset(int64* distribution, int size);
+  int size() const;
   inline int64& operator[](int index) const { return distribution_[index]; }
-  void clear() {
-    memset(distribution_, 0, sizeof(*distribution_) * size_);
-  }
+  void clear();
  private:
   int64* distribution_;
   int size_;
@@ -181,30 +172,17 @@ public:
   // wordtopics_start_index_:     |       \      |
   // wordtopics_:                 0 3 4 0  0 3   1
   vector<int> wordtopics_start_index_;
-inline  DocumentWordTopicsPB() { wordtopics_start_index_.push_back(0); }
-inline  int words_size() const { return words_.size(); }
-inline  int wordtopics_count(int word_index) const {
-    return wordtopics_start_index_[word_index + 1] - wordtopics_start_index_[word_index];
-  }
-inline  int word_last_topic_index(int word_index) const {
-    return wordtopics_start_index_[word_index + 1] - 1;
-  }
-inline  int word(int word_index) const { return words_[word_index]; }
-inline  int32 wordtopics(int index) const { return wordtopics_[index]; }
-inline  int32* mutable_wordtopics(int index) { return &wordtopics_[index]; }
+  DocumentWordTopicsPB() ;
+  int words_size() const ;
+  int wordtopics_count(int word_index) const ;
+  int word_last_topic_index(int word_index) const ;
+  int word(int word_index) const ;
+  int32 wordtopics(int index) const ;
+  int32* mutable_wordtopics(int index) ;
 
-inline  void add_wordtopics(const string& word_s,
-                      int word, const vector<int32>& topics) {
-    words_s_.push_back(word_s);
-    words_.push_back(word);
-    wordtopics_start_index_.pop_back();
-    wordtopics_start_index_.push_back(wordtopics_.size());
-    for (size_t i = 0; i < topics.size(); ++i) {
-      wordtopics_.push_back(topics[i]);
-    }
-    wordtopics_start_index_.push_back(wordtopics_.size());
-  }
- inline  void CopyFrom(const DocumentWordTopicsPB& instance) { *this = instance; }
+  void add_wordtopics(const string& word_s,
+                      int word, const vector<int32>& topics) ;
+   void CopyFrom(const DocumentWordTopicsPB& instance) ;
 };
 
 // Generate a random float value in the range of [0,1) from the
