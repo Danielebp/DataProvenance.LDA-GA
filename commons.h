@@ -10,5 +10,6 @@ enum PerfType { cpu, cuda };
 enum LDALibrary { plda, gibbslda, glda };
 
 string getLogLabel(LogLevel level);
+string getLibraryLabel(LDALibrary library);
 
 #endif

@@ -16,4 +16,14 @@ string getLogLabel(LogLevel level){
    return "";
 }
 
-
+string getLibraryLabel(LDALibrary library){
+	switch(library) {
+		case plda: 
+			return "PLDA";
+		case gibbslda:
+			return "GibbsLDA++";
+		case glda:
+			return "GLDA";
+	}
+	return "";
+}

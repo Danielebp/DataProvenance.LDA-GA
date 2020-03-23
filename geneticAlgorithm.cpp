@@ -265,6 +265,8 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
 
     clock_t t;
 
+    TopicModelling* tm;
+
     // add a limit of 1000 GA iterations, it should not run infinitly
     while (GACounter<500){
         GACounter ++;
@@ -277,22 +279,22 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
             string tempFileID = "__"+to_string(i)+"__"+to_string(population[i].number_of_topics)+"x"+to_string(population[i].number_of_topics);
 
             // creates TopicModelling obj and runs lda for pair i
-            TopicModelling tm(population[i].number_of_topics, population[i].number_of_iterations, numberOfDocuments, population[i].seed, cfg);
-            long ldaTime = tm.PLDA_LDA(tempFileID);
+            tm = new TopicModelling(population[i].number_of_topics, population[i].number_of_iterations, numberOfDocuments, population[i].seed, cfg);
+            long ldaTime = tm->LDA(tempFileID);
 
             // updates times
             population[i].LDA_execution_milliseconds = ldaTime;
             LDATotTime += population[i].LDA_execution_milliseconds;
 
             // calculates fitness value to determine wether to stop or try next pair
-            population[i].fitness_value = calculateFitness(&tm, population[i].number_of_topics, numberOfDocuments, cfg);
+            population[i].fitness_value = calculateFitness(tm, population[i].number_of_topics, numberOfDocuments, cfg);
             cfg->logger.log(info, "LDA Attempt: "+std::to_string(LDACounter)+" ["+to_string(population[i].number_of_topics)+"x"+to_string(population[i].number_of_iterations)+"] - Fitness: "+std::to_string(population[i].fitness_value));
 
 
             if(population[i].fitness_value >= cfg->fitnessThreshold) {
                 cfg->logger.log(info, "Achieved fitness");
                 // if fitness was achieved write dist files
-                tm.WriteFiles(true);
+                tm->WriteFiles(true);
                 cfg->logger.log(debug, "Wrote files");
 
                 cfg->logger.log(info, "the best distribution is "+std::to_string(population[i].number_of_topics)+" topics and "+std::to_string(population[i].number_of_iterations)+" iterations and fitness is "+std::to_string(population[i].fitness_value));
@@ -316,13 +318,14 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
 		iddleIterations = 0;
 	}
 	else iddleIterations++;
-
+	
+	delete tm;
 	if(iddleIterations > maxIddle){
 		cfg->logger.log(debug, "Re-run LDA");
-                TopicModelling tm(currBestConfig.number_of_topics, currBestConfig.number_of_iterations, numberOfDocuments, currBestConfig.seed, cfg);
-                tm.LDA("");
+                tm = new TopicModelling(currBestConfig.number_of_topics, currBestConfig.number_of_iterations, numberOfDocuments, currBestConfig.seed, cfg);
+                tm->LDA("");
                 cfg->logger.log(debug, "Ran LDA");
-                tm.WriteFiles(true);
+                tm->WriteFiles(true);
                 cfg->logger.log(debug, "Wrote files");
 
                 cfg->logger.log(info, "the best distribution is "+to_string(currBestConfig.number_of_topics)+" topics and "+to_string(currBestConfig.number_of_iterations)+" iterations and fitness is "+to_string(currBestConfig.fitness_value));
@@ -330,6 +333,7 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
                 result.cfg.copy(currBestConfig);
                 cfg->logger.log(debug, "Copied population");
 
+		delete tm;
 		break;
 	}
 
@@ -344,7 +348,6 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
 
         t = clock() - t;
         cfg->logger.log(info, "GA iteration "+std::to_string(GACounter)+ " took " + std::to_string(((float)t)/(CLOCKS_PER_SEC/1000)) + "ms");
-
    }
 
     result.GA_count = GACounter;

@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
     cfg.logger.log(status, "Population Size: " + std::to_string(cfg.populationSize));
     cfg.logger.log(status, "Running on "+ std::string(cfg.perfType == cuda ? "GPU" : "CPU"));
     cfg.logger.log(status, "Number of Documents: " + std::to_string(documentsMap.size()));
-    cfg.logger.log(status, "Library: " + to_string(cfg.ldaLibrary));
+    cfg.logger.log(status, "Library: " + getLibraryLabel(cfg.ldaLibrary));
 
     int articlesCount = 0;
     for (std::pair<std::string, Document> element : documentsMap)

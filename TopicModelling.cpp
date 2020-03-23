@@ -12,9 +12,20 @@ TopicModelling::TopicModelling(int numberOfTopics, int numberOfIterations, int n
       this->seed = seed;
       this->numberOfDocuments = numberOfDocuments;
       this->cfg = cfg;
-      this->PLDA_corpus = new vector<learning_lda::LDADocument*>();
-      this->PLDA_corpus->clear();
-      cfg->logger.log(debug, "Corpus has size " + to_string(PLDA_corpus->size()));
+      switch (cfg->ldaLibrary) {
+          case glda:
+#if defined(USECUDA)
+      		this->gldaModel = new model();
+#endif
+            break;
+          case plda:
+		this->PLDA_corpus = new vector<learning_lda::LDADocument*>();
+      		this->PLDA_corpus->clear();
+      		cfg->logger.log(debug, "Corpus has size " + to_string(PLDA_corpus->size()));
+            break;
+          case gibbslda:
+            break;
+      }
   }
 
 TopicModelling::~TopicModelling(){
@@ -102,7 +113,6 @@ long TopicModelling::GLDA_LDA(string MyCount) {
                 (char*)"-savestep", (char*)"0",
                 (char*)"-dir", const_cast<char*>(cfg->outputDir.c_str()),
                 NULL};
-  this->gldaModel = new model();
   this->gldaModel->init(16, args, cfg);
   cfg->logger.log(debug, "GLDA setup completed. Starting estimate");
 

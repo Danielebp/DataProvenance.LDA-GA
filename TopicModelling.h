@@ -99,7 +99,6 @@ public:
   }
 
   inline long LDA(string MyCount = "") {
-     cfg->logger.log(debug, "Corpus has size " + to_string(PLDA_corpus->size())); 
      switch (cfg->ldaLibrary) {
           case glda:
             return GLDA_LDA(MyCount);
