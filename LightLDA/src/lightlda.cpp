@@ -11,6 +11,12 @@
 #include <multiverso/barrier.h>
 #include <multiverso/log.h>
 #include <multiverso/row.h>
+#include <map>
+#include <fstream>
+#include "../../gldaCuda/src/strtokenizer.h"
+#include "../../config.h"
+
+#define	BUFF_SIZE_LONG	1000000
 
 namespace multiverso { namespace lightlda
 {     
@@ -161,6 +167,148 @@ namespace multiverso { namespace lightlda
                 }
                 data_stream->EndDataAccess();
             }
+        }
+
+        static int GetMainTopic(int docID, int block = 0)
+        {
+            int maxDist = 0;
+            int maxID = -1;
+            Row<int32_t> doc_topic_counter(0, Format::Sparse, kMaxDocLength);
+            if (block < Config::num_blocks)
+            {
+                data_stream->BeforeDataAccess();
+                DataBlock& data_block = data_stream->CurrDataBlock();
+                if (docID < data_block.Size())
+                {
+                    Document* doc = data_block.GetOneDoc(docID);
+                    doc_topic_counter.Clear();
+                    doc->GetDocTopicVector(doc_topic_counter);
+                    Row<int32_t>::iterator iter = doc_topic_counter.Iterator();
+                    while (iter.HasNext())
+                    {
+                        if(iter.Value() > maxDist){
+                            maxID = iter.Key();
+                            maxDist = iter.Value();
+                        }
+                        iter.Next();
+                    }
+                }
+                data_stream->EndDataAccess();
+            }
+	    return maxID;
+        }
+
+        static double GetDocTopicDistribution(int docID, int topicID, int block = 0)
+        {
+            int totalWords = 0;
+            int topicWords = 0;
+            Row<int32_t> doc_topic_counter(0, Format::Sparse, kMaxDocLength);
+            if (block < Config::num_blocks)
+            {
+                data_stream->BeforeDataAccess();
+                DataBlock& data_block = data_stream->CurrDataBlock();
+                if (docID < data_block.Size())
+                {
+                    Document* doc = data_block.GetOneDoc(docID);
+                    doc_topic_counter.Clear();
+                    doc->GetDocTopicVector(doc_topic_counter);
+                    Row<int32_t>::iterator iter = doc_topic_counter.Iterator();
+                    while (iter.HasNext())
+                    {
+                        if(iter.Key() == topicID){
+                            topicWords = iter.Value();
+                        }
+                        totalWords += iter.Value();
+                        iter.Next();
+                    }
+                }
+                data_stream->EndDataAccess();
+            }
+            return ((double)topicWords)/totalWords;
+        }
+
+        static int createLibsvmFile(std::string dfile, std::string libsvmFile, std::string wordmapfile, int ndocs, ConfigOptions* cfg) {
+            std::map<std::string, int> word2id;
+            std::map<int, std::string> id2doc;
+            std::map<int, int>* wordCountDoc;
+            std::map<int, int>wordCountTot;
+
+            FILE * fin = fopen(dfile.c_str(), "r");
+            if (!fin) {
+            //cfg->logger.log(error, "Cannot open file "+dfile+" to read!");
+            return 1;
+            }
+
+            std::map<std::string, int>::iterator wordmapIt;
+            char buff[BUFF_SIZE_LONG];
+            std::string line;
+
+            std::ofstream outDocMap;
+            outDocMap.open (cfg->outputDir + libsvmFile);
+
+
+            for (int docID = 0; docID < ndocs; docID++) {
+                fgets(buff, BUFF_SIZE_LONG - 1, fin);
+
+                line = buff;
+                int pos = line.find(cfg->delimiter);
+                std::string fname = line.substr(0, pos);
+                id2doc.insert(std::pair<int, std::string>(docID, fname));
+                if(pos!=std::string::npos)
+                    line.erase(0, pos + 17);
+
+                strtokenizer strtok(line, " \t\r\n");
+                int length = strtok.count_tokens();
+
+                if (length <= 0) {
+                    cfg->logger.log(error, "Invalid (empty) document: " + fname);
+                    ndocs--;
+                    docID--;
+                    continue;
+                }
+
+                wordCountDoc = new std::map<int, int>();
+
+                for (int token = 0; token < length; token++) {
+                    wordmapIt = word2id.find(strtok.token(token));
+                    if (wordmapIt == word2id.end()) { 
+                    // word not found, i.e., new word
+                    wordCountDoc->insert(std::pair<int, int>(word2id.size(), 1));
+                    word2id.insert(std::pair<std::string, int>(strtok.token(token), word2id.size()));
+                    } else {
+                        (*wordCountDoc)[wordmapIt->second] = (*wordCountDoc)[wordmapIt->second]+1;
+                    }
+                }
+
+                // write libsvm file
+                outDocMap<<docID<<"\t";
+                for (std::pair<int, int> element : (*wordCountDoc)) {
+                    outDocMap<<element.first<<":"<<element.second<<" ";
+
+                    // update total count
+                    if (wordCountTot.find(element.first) == wordCountTot.end()) { 
+                        // word not found, i.e., new word
+                        wordCountTot.insert(std::pair<int, int>(element.first, element.second));
+                    } else {
+                        wordCountTot[element.first] = wordCountTot[element.first]+element.second;
+                    }
+                }
+                outDocMap<<std::endl;
+
+                delete wordCountDoc;
+            }
+
+            outDocMap.close();
+            fclose(fin);
+
+            std::ofstream outWordMap;
+            outWordMap.open (cfg->outputDir + wordmapfile);
+            for (std::pair<std::string, int> element : word2id) {
+                outWordMap<<element.second<<"\t"<<element.first<<"\t"<<wordCountTot[element.second]<<std::endl;
+            }
+            outWordMap.close();
+
+            return 0;
         }
 
         static void CreateTable()
