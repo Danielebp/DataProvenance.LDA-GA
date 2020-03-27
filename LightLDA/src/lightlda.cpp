@@ -1,29 +1,11 @@
-﻿#include "common.h"
-#include "trainer.h"
-#include "alias_table.h"
-#include "data_stream.h"
-#include "data_block.h"
-#include "document.h"
-#include "meta.h"
-#include "util.h"
-#include <vector>
-#include <iostream>
-#include <multiverso/barrier.h>
-#include <multiverso/log.h>
-#include <multiverso/row.h>
-#include <map>
-#include <fstream>
-#include "../../gldaCuda/src/strtokenizer.h"
-#include "../../config.h"
+﻿#include "lightlda.h"
 
-#define	BUFF_SIZE_LONG	1000000
+using namespace multiverso::lightlda;     
 
-namespace multiverso { namespace lightlda
-{     
-    class LightLDA
-    {
-    public:
-        static void Run(int argc, char** argv)
+IDataStream* LightLDA::data_stream = nullptr;
+Meta LightLDA::meta;
+        
+void LightLDA::Run(int argc, char** argv)
         {
             Config::Init(argc, argv);
             
@@ -62,12 +44,17 @@ namespace multiverso { namespace lightlda
             
             DumpDocTopic();
 
+std::cout<<"Main Topic for Doc 0"<<multiverso::lightlda::LightLDA::GetMainTopic(0)<<std::endl;
+        std::cout<<"Distributions for Doc 0:"<<std::endl;
+        for(int i=0; i<1000; i++)
+        std::cout<<i<<": "<<multiverso::lightlda::LightLDA::GetDocTopicDistribution(0, i)<<std::endl;
+
             delete data_stream;
             delete barrier;
             delete alias_table;
         }
-    private:
-        static void Train()
+        
+void LightLDA::Train()
         {
             Multiverso::BeginTrain();
             for (int32_t i = 0; i < Config::num_iterations; ++i)
@@ -99,7 +86,7 @@ namespace multiverso { namespace lightlda
             Multiverso::EndTrain();
         }
 
-        static void InitMultiverso()
+void LightLDA::InitMultiverso()
         {
             Multiverso::BeginConfig();
             CreateTable();
@@ -108,7 +95,7 @@ namespace multiverso { namespace lightlda
             Multiverso::EndConfig();
         }
 
-        static void Initialize()
+void LightLDA::Initialize()
         {
             xorshift_rng rng;
             for (int32_t block = 0; block < Config::num_blocks; ++block)
@@ -143,7 +130,7 @@ namespace multiverso { namespace lightlda
             }
         }
 
-        static void DumpDocTopic()
+void LightLDA::DumpDocTopic()
         {
             Row<int32_t> doc_topic_counter(0, Format::Sparse, kMaxDocLength); 
             for (int32_t block = 0; block < Config::num_blocks; ++block)
@@ -169,15 +156,19 @@ namespace multiverso { namespace lightlda
             }
         }
 
-        static int GetMainTopic(int docID, int block = 0)
+int LightLDA::GetMainTopic(int docID, int block)
         {
+	    std::cout<<"Start Get Main"<<std::endl;
             int maxDist = 0;
             int maxID = -1;
             Row<int32_t> doc_topic_counter(0, Format::Sparse, kMaxDocLength);
+	    std::cout<<"Created Row"<<std::endl;
             if (block < Config::num_blocks)
             {
                 data_stream->BeforeDataAccess();
+                std::cout<<"Created Stream"<<std::endl;
                 DataBlock& data_block = data_stream->CurrDataBlock();
+                std::cout<<"Got current"<<std::endl;
                 if (docID < data_block.Size())
                 {
                     Document* doc = data_block.GetOneDoc(docID);
@@ -198,7 +189,7 @@ namespace multiverso { namespace lightlda
 	    return maxID;
         }
 
-        static double GetDocTopicDistribution(int docID, int topicID, int block = 0)
+double LightLDA::GetDocTopicDistribution(int docID, int topicID, int block)
         {
             int totalWords = 0;
             int topicWords = 0;
@@ -227,91 +218,7 @@ namespace multiverso { namespace lightlda
             return ((double)topicWords)/totalWords;
         }
 
-        static int createLibsvmFile(std::string dfile, std::string libsvmFile, std::string wordmapfile, int ndocs, ConfigOptions* cfg) {
-            std::map<std::string, int> word2id;
-            std::map<int, std::string> id2doc;
-            std::map<int, int>* wordCountDoc;
-            std::map<int, int>wordCountTot;
-
-            FILE * fin = fopen(dfile.c_str(), "r");
-            if (!fin) {
-            //cfg->logger.log(error, "Cannot open file "+dfile+" to read!");
-            return 1;
-            }
-
-            std::map<std::string, int>::iterator wordmapIt;
-            char buff[BUFF_SIZE_LONG];
-            std::string line;
-
-            std::ofstream outDocMap;
-            outDocMap.open (cfg->outputDir + libsvmFile);
-
-
-            for (int docID = 0; docID < ndocs; docID++) {
-                fgets(buff, BUFF_SIZE_LONG - 1, fin);
-
-                line = buff;
-                int pos = line.find(cfg->delimiter);
-                std::string fname = line.substr(0, pos);
-                id2doc.insert(std::pair<int, std::string>(docID, fname));
-                if(pos!=std::string::npos)
-                    line.erase(0, pos + 17);
-
-                strtokenizer strtok(line, " \t\r\n");
-                int length = strtok.count_tokens();
-
-                if (length <= 0) {
-                    cfg->logger.log(error, "Invalid (empty) document: " + fname);
-                    ndocs--;
-                    docID--;
-                    continue;
-                }
-
-                wordCountDoc = new std::map<int, int>();
-
-                for (int token = 0; token < length; token++) {
-                    wordmapIt = word2id.find(strtok.token(token));
-                    if (wordmapIt == word2id.end()) { 
-                    // word not found, i.e., new word
-                    wordCountDoc->insert(std::pair<int, int>(word2id.size(), 1));
-                    word2id.insert(std::pair<std::string, int>(strtok.token(token), word2id.size()));
-                    } else {
-                        (*wordCountDoc)[wordmapIt->second] = (*wordCountDoc)[wordmapIt->second]+1;
-                    }
-                }
-
-                // write libsvm file
-                outDocMap<<docID<<"\t";
-                for (std::pair<int, int> element : (*wordCountDoc)) {
-                    outDocMap<<element.first<<":"<<element.second<<" ";
-
-                    // update total count
-                    if (wordCountTot.find(element.first) == wordCountTot.end()) { 
-                        // word not found, i.e., new word
-                        wordCountTot.insert(std::pair<int, int>(element.first, element.second));
-                    } else {
-                        wordCountTot[element.first] = wordCountTot[element.first]+element.second;
-                    }
-                }
-                outDocMap<<std::endl;
-
-                delete wordCountDoc;
-            }
-
-            outDocMap.close();
-            fclose(fin);
-
-            std::ofstream outWordMap;
-            outWordMap.open (cfg->outputDir + wordmapfile);
-            for (std::pair<std::string, int> element : word2id) {
-                outWordMap<<element.second<<"\t"<<element.first<<"\t"<<wordCountTot[element.second]<<std::endl;
-            }
-            outWordMap.close();
-
-            return 0;
-        }
-
-        static void CreateTable()
+void LightLDA::CreateTable()
         {
             int32_t num_vocabs = Config::num_vocabs;
             int32_t num_topics = Config::num_topics;
@@ -331,7 +238,7 @@ namespace multiverso { namespace lightlda
                 longlong_type, dense_format);
         }
         
-        static void ConfigTable()
+void LightLDA::ConfigTable()
         {
             multiverso::Format dense_format = multiverso::Format::Dense;
             multiverso::Format sparse_format = multiverso::Format::Sparse;
@@ -365,21 +272,3 @@ namespace multiverso { namespace lightlda
                 }
             }
         }
-    private:
-        /*! \brief training data access */
-        static IDataStream* data_stream;
-        /*! \brief training data meta information */
-        static Meta meta;
-    };
-    IDataStream* LightLDA::data_stream = nullptr;
-    Meta LightLDA::meta;
-
-} // namespace lightlda
-} // namespace multiverso
-
-
-int main(int argc, char** argv)
-{
-    multiverso::lightlda::LightLDA::Run(argc, argv);
-    return 0;
-}

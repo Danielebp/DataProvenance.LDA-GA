@@ -9,8 +9,11 @@
 #include "utils.h"
 #include "config.h"
 #include "wordFilter.h"
+#include "LightLDA/preprocess/dump_binary.h"
 
 using namespace std;
 
 unordered_map<string, Document> preProcess(ConfigOptions* cfg);
 unordered_map<string, Document> loadPreProcessed(ConfigOptions* cfg);
+void createLightLDAFiles(ConfigOptions* cfg, int ndocs, string dir);
+

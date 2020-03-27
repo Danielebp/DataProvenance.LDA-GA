@@ -3,7 +3,7 @@
     "logFileLevel": "status",
     "runType": "train",
     "perfType": "cpu",
-    "ldaLibrary": "glda",
+    "ldaLibrary": "plda",
     "skipPreprocess": true,
 
     "populationSize": 9,

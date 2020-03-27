@@ -5,108 +5,10 @@
  *    dump_binary <libsvm_input> <word_dict_file_input> <binary_output_dir> <output_file_offset>
  */
 
-#include <algorithm>
-#include <chrono>
-#include <cstdint>
-#include <cstring>
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <unordered_map>
-#include <vector>
+#include "dump_binary.h"
 
-namespace lightlda
-{
-    /* 
-     * Output file format:
-     * 1, the first 4 byte indicates the number of docs in this block
-     * 2, the 4 * (doc_num + 1) bytes indicate the offset of reach doc
-     * an example
-     * 3    // there are 3 docs in this block
-     * 0    // the offset of the 1-st doc
-     * 10   // the offset of the 2-nd doc, with this we know the length of the 1-st doc is 5 = 10/2
-     * 16   // the offset of the 3-rd doc, with this we know the length of the 2-nd doc is 3 = (16-10)/2
-     * 24   // with this, we know the length of the 3-rd doc is 4 = (24 - 16)/2
-     * w11 t11 w12 t12 w13 t13 w14 t14 w15 t15  // the token-topic list of the 1-st doc
-     * w21 t21 w22 t22 w23 t23                     // the token-topic list of the 2-nd doc
-     * w31 t31 w32 t32 w33 t33 w34 t34             // the token-topic list of the 3-rd doc
 
-     * the class block_stream helps generate such binary format file, usage:
-     * int doc_num = 3;
-     * int64_t* offset_buf = new int64_t[doc_num + 1];
-     *
-     * block_stream bs;
-     * bs.open("block");
-     * bs.write_empty_header(offset_buf, doc_num);
-     * ...
-     * // update offset_buf and doc_num...
-
-     * bs.write_doc(doc_buf, doc_idx);
-     * ...
-     * bs.write_real_header(offset_buf, doc_num);
-     * bs.close();
-     */
-    class block_stream
-    {
-    public:
-        block_stream();
-        ~block_stream();
-        bool open(const std::string file_name);
-        bool write_doc(int32_t* int32_buf, int32_t count);
-        bool write_empty_header(int64_t* int64_buf, int64_t count);
-        bool write_real_header(int64_t* int64_buf, int64_t count);
-        bool seekp(int64_t pos);
-        bool close();
-    private:
-        // assuming each doc has 500 tokens in average, 
-        // the block_buf_ will hold 1 million document,
-        // needs 0.8GB RAM.
-        const int32_t block_buf_size_ = 1024 * 1024 * 2 * 100;
-
-        std::ofstream stream_;
-        std::string file_name_;
-
-        int32_t *block_buf_;
-        int32_t buf_idx_;
-
-        block_stream(const block_stream& other) = delete;
-        block_stream& operator=(const block_stream& other) = delete;
-    };
-
-    /*
-    (1) open an utf-8 encoded file in binary mode,
-    get its content line by line. Working around the CTRL-Z issue in Windows text file reading.
-    (2) assuming each line ends with '\n'
-    */
-    class utf8_stream
-    {
-    public:
-        utf8_stream();
-        ~utf8_stream();
-
-        bool open(const std::string& file_name);
-
-        /*
-        return true if successfully get a line (may be empty), false if not.
-        It is user's task to verify whether a line is empty or not.
-        */
-        bool getline(std::string &line);
-        int64_t count_line();
-        bool close();
-    private:
-        bool block_is_empty();
-        bool fill_block();
-        std::ifstream stream_;
-        std::string file_name_;
-        const int32_t block_buf_size_ = 1024 * 1024 * 800;
-        // const int32_t block_buf_size_ = 2;
-        std::string block_buf_;
-        std::string::size_type buf_idx_;
-        std::string::size_type buf_end_;
-
-        utf8_stream(const utf8_stream& other) = delete;
-        utf8_stream& operator=(const utf8_stream& other) = delete;
-    };
+using namespace lightlda;
 
     block_stream::block_stream()
         : buf_idx_(0)
@@ -266,12 +168,7 @@ namespace lightlda
         stream_.close();
         return true;
     }
-}
 
-struct Token {
-    int32_t word_id;
-    int32_t topic_id;
-};
 
 int Compare(const Token& token1, const Token& token2) {
     return token1.word_id < token2.word_id;
@@ -284,7 +181,7 @@ double get_time()
     return std::chrono::duration_cast<std::chrono::duration<double, std::ratio<1, 1>>>(since_epoch).count();
 }
 
-void split_string(std::string& line, char separator, std::vector<std::string>& output, bool trimEmpty = false)
+void split_string(std::string& line, char separator, std::vector<std::string>& output, bool trimEmpty)
 {
     output.clear();
 
@@ -384,7 +281,90 @@ void load_global_tf(std::unordered_map<int32_t, int32_t>& global_tf_map,
     stream.close();
 }
 
-int main(int argc, char* argv[])
+int createLibsvmFile(std::string dfile, std::string libsvmFile, std::string wordmapfile, int ndocs, std::string delimiter) {
+            std::map<std::string, int> word2id;
+            std::map<int, std::string> id2doc;
+            std::map<int, int>* wordCountDoc;
+            std::map<int, int>wordCountTot;
+
+            FILE * fin = fopen(dfile.c_str(), "r");
+            if (!fin) {
+            //cfg->logger.log(error, "Cannot open file "+dfile+" to read!");
+            return 1;
+            }
+
+            std::map<std::string, int>::iterator wordmapIt;
+            char buff[BUFF_SIZE_LONG];
+            std::string line;
+
+            std::ofstream outDocMap;
+            outDocMap.open (libsvmFile);
+
+
+            for (int docID = 0; docID < ndocs; docID++) {
+                fgets(buff, BUFF_SIZE_LONG - 1, fin);
+
+                line = buff;
+                int pos = line.find(delimiter);
+                std::string fname = line.substr(0, pos);
+                id2doc.insert(std::pair<int, std::string>(docID, fname));
+                if(pos!=std::string::npos)
+                    line.erase(0, pos + 17);
+
+                strtokenizer strtok(line, " \t\r\n");
+                int length = strtok.count_tokens();
+
+                if (length <= 0) {
+                    //cfg->logger.log(error, "Invalid (empty) document: " + fname);
+                    ndocs--;
+                    docID--;
+                    continue;
+                }
+                wordCountDoc = new std::map<int, int>();
+
+                for (int token = 0; token < length; token++) {
+                    wordmapIt = word2id.find(strtok.token(token));
+                    if (wordmapIt == word2id.end()) {
+                    // word not found, i.e., new word
+                    wordCountDoc->insert(std::pair<int, int>(word2id.size(), 1));
+                    word2id.insert(std::pair<std::string, int>(strtok.token(token), word2id.size()));
+                    } else {
+                        (*wordCountDoc)[wordmapIt->second] = (*wordCountDoc)[wordmapIt->second]+1;
+                    }
+                }
+
+                // write libsvm file
+                outDocMap<<docID<<"\t";
+                for (std::pair<int, int> element : (*wordCountDoc)) {
+                    outDocMap<<element.first<<":"<<element.second<<" ";
+
+                    // update total count
+                    if (wordCountTot.find(element.first) == wordCountTot.end()) {
+                        // word not found, i.e., new word
+                        wordCountTot.insert(std::pair<int, int>(element.first, element.second));
+                    } else {
+                        wordCountTot[element.first] = wordCountTot[element.first]+element.second;
+                    }
+                }
+                outDocMap<<std::endl;
+
+                delete wordCountDoc;
+            }
+
+            outDocMap.close();
+            fclose(fin);
+
+            std::ofstream outWordMap;
+            outWordMap.open (wordmapfile);
+            for (std::pair<std::string, int> element : word2id) {
+                outWordMap<<element.second<<"\t"<<element.first<<"\t"<<wordCountTot[element.second]<<std::endl;
+            }
+            outWordMap.close();
+
+            return 0;
+}
+
+int createBinaryFile(int argc, char* argv[])
 {
     if (argc != 5)
     {

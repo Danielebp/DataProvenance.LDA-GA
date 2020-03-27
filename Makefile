@@ -26,10 +26,12 @@ GLDAOBJS=	glda_dataset.o glda_utils.o glda_model.o glda_CUDASampling.o glda_samp
 PLDAOBJS=	plda_accumulative_model.o plda_cmd_flags.o plda_common.o plda_document.o plda_model.o plda_sampler.o
 OBJS=		main.o commons.o logger.o config.o document.o cluster.o myutils.o scanner.o dataProvenance.o geneticAlgorithm.o resultStatistics.o populationConfig.o parallelizables.o TopicModelling.o preProcessing.o wordFilter.o strtokenizer.o
 
+LIGHTLDAOBJS=  LightLDA/bin/dump_binary LightLDA/bin/lightlda 
+
 MAIN=           main
 
 all: $(OBJS) $(GLDAOBJS) $(PLDAOBJS)
-	$(CXX) -o $(MAIN) $(OBJS) $(GLDAOBJS) $(PLDAOBJS) ${LIB} ${CXXFLAGS}
+	$(CXX) -o $(MAIN) $(OBJS) $(GLDAOBJS) $(PLDAOBJS) $(LIGHTLDAOBJS) ${LIB} ${CXXFLAGS}
 
 no_cuda: $(OBJS) $(PLDAOBJS)
 	$(CXX) -o $(MAIN) $(OBJS) $(PLDAOBJS) ${CXXFLAGS}

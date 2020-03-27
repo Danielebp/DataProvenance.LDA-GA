@@ -98,3 +98,15 @@ unordered_map<string, Document> preProcess(ConfigOptions* cfg){
 
     return documentsMap;
 }
+
+void createLightLDAFiles(ConfigOptions* cfg, int ndocs, string dir){
+	createLibsvmFile(cfg->ldaInputFile, cfg->libsvmFile, cfg->wordmapFile, ndocs, cfg->delimiter) ;
+
+	char* args[] = {
+		const_cast<char*>(cfg->libsvmFile.c_str(),
+		const_cast<char*>(cfg->wordmapFile.c_str())), 
+		const_cast<char*>(dir.c_str()), 
+		(char*)"0", NULL};
+	createBinaryFile(4, args);
+}
+

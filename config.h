@@ -43,6 +43,8 @@ public:
     string preProcessedFile;
     string  ldaInputFile;//   = "./tempData/input1.txt";
     string  loggerFile;//   = "log.txt";
+    string wordmapFile;
+    string libsvmFile;
     string  delimiter;//      = "##lda_delimiter##";
 
     Logger logger;
