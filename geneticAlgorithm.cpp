@@ -358,7 +358,7 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
    }
 
 #if defined (_MPI_VERSION_)
-MPI_Finalize();
+//MPI_Finalize();
 #endif
 
     result.GA_count = GACounter;

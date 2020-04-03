@@ -37,7 +37,7 @@ namespace multiverso
     // Finalizes MPI environment
     void MPIUtil::Close()
     {
-//        MPI_Finalize();
+        MPI_Finalize();
     }
 
     std::shared_ptr<MsgPack> MPIUtil::ProbeAndRecv()

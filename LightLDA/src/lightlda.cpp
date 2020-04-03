@@ -10,14 +10,12 @@ LightLDA::LightLDA(){
 }
 
 LightLDA::~LightLDA(){
-        std::cout<<"Data stream is being deleted"<<std::endl;
 	delete data_stream;
 }
         
 void LightLDA::Run(int argc, char** argv, std::string outDir)
         {
             multiverso::lightlda::Config::Init(argc, argv);
-            
             AliasTable* alias_table = new AliasTable();
             Barrier* barrier = new Barrier(multiverso::lightlda::Config::num_local_workers);
             meta.Init();
@@ -52,10 +50,9 @@ void LightLDA::Run(int argc, char** argv, std::string outDir)
             }
             delete param_loader;
             delete barrier;
-            delete alias_table;            
+            delete alias_table;          
 
             DumpDocTopic(outDir);
-
         }
         
 void LightLDA::Train()
