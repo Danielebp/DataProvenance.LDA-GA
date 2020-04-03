@@ -12,13 +12,10 @@ Scanner::Scanner (string filename) {
 }
 
 void Scanner::open (string filename) {
-    cout<<"Trying to open file "<<filename<<endl;
     string line;
     if(myfile)
     myfile.open(filename);
     else
-    cout<<"ifstream is void"<<endl;
-    cout<<"File openned, trying to read line"<<endl;
     getline (myfile, line, '\n');
     ss.str(line);
 }
