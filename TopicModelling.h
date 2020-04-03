@@ -12,6 +12,7 @@
 #include <map>
 #include "config.h"
 #include "utils.h"
+#include "scanner.h"
 
 #if defined(USECUDA)
 #include "gldaCuda/src/model.h"
@@ -22,6 +23,7 @@
 #include "plda/accumulative_model.h"
 #include "plda/sampler.h"
 #include "plda/cmd_flags.h"
+#include "LightLDA/src/lightlda.h"
 
 using namespace std;
 
@@ -54,7 +56,11 @@ private:
     learning_lda::LDAAccumulativeModel* PLDA_accum_model;
     map<string, int>* PLDA_word_index_map;
 
-
+    //#####################################################
+    //############### LightLDA Variables ##################
+    //#####################################################
+    multiverso::lightlda::LightLDA* lightldaModel;
+    map<int, string>* LLDA_doc_index_map;
 public:
     vector<learning_lda::LDADocument*>* PLDA_corpus;
   TopicModelling(int numberOfTopics, int numberOfIterations, int numberOfDocuments, long seed, ConfigOptions* cfg);
@@ -65,52 +71,10 @@ public:
   //############## General Functions ####################
   //#####################################################
 
-  inline double getDistribution(int topic, int docNum){
-      switch (cfg->ldaLibrary) {
-          case glda:
-            return GLDA_getDistribution(topic, docNum);
-          case plda:
-            return PLDA_getDistribution(topic, docNum);
-          case gibbslda:
-	    return 0;
-      }
-	return 0;
-  }
-  inline string getDocNameByNumber(int num){
-      switch (cfg->ldaLibrary) {
-          case glda:
-            return GLDA_getDocNameByNumber(num);
-          case plda:
-            return PLDA_getDocNameByNumber(num);
-	  case gibbslda:
-	    return "";
-      }
-	return "";
-  }
-  inline void WriteFiles(bool isfinal) {
-      switch (cfg->ldaLibrary) {
-          case glda:
-            return GLDA_WriteFiles(isfinal);
-          case plda:
-            return PLDA_WriteFiles(isfinal);
-	  case gibbslda:
-	    return;
-      }
-  }
-
-  inline long LDA(string MyCount = "") {
-     switch (cfg->ldaLibrary) {
-          case glda:
-            return GLDA_LDA(MyCount);
-          case plda:
-            return PLDA_LDA(MyCount);
-	  case gibbslda:
-	    return 0;
-      }
-
-      return 0;
-  }
-
+  double getDistribution(int topic, int docNum);
+  string getDocNameByNumber(int num);
+  void WriteFiles(bool isfinal);
+  long LDA(string MyCount = "");
   int getMainTopic(int docNum);
 
 
@@ -136,10 +100,11 @@ public:
   void PLDA_FreeCorpus();
 
   //#####################################################
-  //############## Gibbs LDA Functions ##################
+  //############### LIGHTLDA Functions ##################
   //#####################################################
-
-
+  void LLDA_WriteFiles(bool isfinal) ;
+  long LIGHT_LDA(string MyCount);
+  double LLDA_getDistribution(int topic);
 };
 
 #endif

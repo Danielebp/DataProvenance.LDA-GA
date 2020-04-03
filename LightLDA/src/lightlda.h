@@ -18,22 +18,22 @@
 #include <fstream>
 
 
-using namespace multiverso;
-using namespace multiverso::lightlda;
+namespace multiverso{ namespace lightlda{
 
     class LightLDA
     {
     public:
 	LightLDA();
 	~LightLDA();
-        void Run(int argc, char** argv);
+        void Run(int argc, char** argv, std::string outDir);
         double GetDocTopicDistribution(int docID, int topicID, int block = 0);
         int GetMainTopic(int docID, int block = 0);
+        std::vector<double> GetTopicDistributions(int numDocs, int numTopics, int block = 0);
     private:
         void Train();
         void InitMultiverso();
         void Initialize();
-        void DumpDocTopic();
+        void DumpDocTopic(std::string outDir);
         void CreateTable();
         void ConfigTable();
     public:
@@ -45,8 +45,8 @@ using namespace multiverso::lightlda;
     //IDataStream* LightLDA::data_stream = nullptr;
     //Meta LightLDA::meta;
 
-//} // namespace lightlda
-//} // namespace multiverso
+} // namespace lightlda
+} // namespace multiverso
 
 #endif
 

@@ -60,7 +60,6 @@ unordered_map<string, Document> loadPreProcessed(ConfigOptions* cfg){
     string line;
 
     while ( getline (infile, line, '\n') ) {
-        cfg->logger.log(debug, line);
         string filename = line.substr(0, line.find(cfg->delimiter));
         string content = line.substr(line.find(cfg->delimiter)+17);
 
@@ -99,13 +98,15 @@ unordered_map<string, Document> preProcess(ConfigOptions* cfg){
     return documentsMap;
 }
 
-void createLightLDAFiles(ConfigOptions* cfg, int ndocs, string dir){
-	createLibsvmFile(cfg->ldaInputFile, cfg->libsvmFile, cfg->wordmapFile, ndocs, cfg->delimiter) ;
+void createLightLDAFiles(ConfigOptions* cfg, int ndocs){
+        cfg->logger.log(debug, "Create Libsvm Files");
+	createLibsvmFile(cfg->ldaInputFile, cfg->libsvmFile, cfg->wordmapFile, cfg->docmapFile, ndocs, cfg->delimiter) ;
 
+        cfg->logger.log(debug, "Create Binary Dump");
 	char* args[] = {
-		const_cast<char*>(cfg->libsvmFile.c_str(),
-		const_cast<char*>(cfg->wordmapFile.c_str())), 
-		const_cast<char*>(dir.c_str()), 
+		const_cast<char*>(cfg->libsvmFile.c_str()),
+		const_cast<char*>(cfg->wordmapFile.c_str()), 
+		const_cast<char*>(cfg->inputDir.c_str()), 
 		(char*)"0", NULL};
 	createBinaryFile(4, args);
 }

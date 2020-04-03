@@ -135,7 +135,7 @@ void load_global_tf(std::unordered_map<int32_t, int32_t>& global_tf_map,
     std::string word_tf_file,
     int64_t& global_tf_count);
 
-int createLibsvmFile(std::string dfile, std::string libsvmFile, std::string wordmapfile, int ndocs, std::string delimiter) ;
+int createLibsvmFile(std::string dfile, std::string libsvmFile, std::string wordmapfile, std::string docMapFile, int ndocs, std::string delimiter) ;
 
 int createBinaryFile(int argc, char* argv[]);
 

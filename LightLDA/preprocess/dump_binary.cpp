@@ -281,7 +281,7 @@ void load_global_tf(std::unordered_map<int32_t, int32_t>& global_tf_map,
     stream.close();
 }
 
-int createLibsvmFile(std::string dfile, std::string libsvmFile, std::string wordmapfile, int ndocs, std::string delimiter) {
+int createLibsvmFile(std::string dfile, std::string libsvmFile, std::string wordmapfile, std::string docMapFile, int ndocs, std::string delimiter) {
             std::map<std::string, int> word2id;
             std::map<int, std::string> id2doc;
             std::map<int, int>* wordCountDoc;
@@ -297,8 +297,8 @@ int createLibsvmFile(std::string dfile, std::string libsvmFile, std::string word
             char buff[BUFF_SIZE_LONG];
             std::string line;
 
-            std::ofstream outDocMap;
-            outDocMap.open (libsvmFile);
+	    std::ofstream outLibsvm;
+	    outLibsvm.open (libsvmFile);
 
 
             for (int docID = 0; docID < ndocs; docID++) {
@@ -334,9 +334,9 @@ int createLibsvmFile(std::string dfile, std::string libsvmFile, std::string word
                 }
 
                 // write libsvm file
-                outDocMap<<docID<<"\t";
+                outLibsvm<<docID<<"\t";
                 for (std::pair<int, int> element : (*wordCountDoc)) {
-                    outDocMap<<element.first<<":"<<element.second<<" ";
+                    outLibsvm<<element.first<<":"<<element.second<<" ";
 
                     // update total count
                     if (wordCountTot.find(element.first) == wordCountTot.end()) {
@@ -346,12 +346,12 @@ int createLibsvmFile(std::string dfile, std::string libsvmFile, std::string word
                         wordCountTot[element.first] = wordCountTot[element.first]+element.second;
                     }
                 }
-                outDocMap<<std::endl;
+                outLibsvm<<std::endl;
 
                 delete wordCountDoc;
             }
 
-            outDocMap.close();
+            outLibsvm.close();
             fclose(fin);
 
             std::ofstream outWordMap;
@@ -361,21 +361,28 @@ int createLibsvmFile(std::string dfile, std::string libsvmFile, std::string word
             }
             outWordMap.close();
 
+            std::ofstream outDocMap;
+            outDocMap.open (docMapFile);
+            for (std::pair<int, std::string> element : id2doc) {
+                outDocMap<<element.first<<"\t"<<element.second<<std::endl;
+            }
+            outDocMap.close();
+
             return 0;
 }
 
 int createBinaryFile(int argc, char* argv[])
 {
-    if (argc != 5)
+    if (argc != 4)
     {
-        printf("Usage: dump_binary <libsvm_input> <word_dict_file_input> <binary_output_dir> <output_file_offset>\n");
+        printf("Usage: <libsvm_input> <word_dict_file_input> <binary_output_dir> <output_file_offset>\n");
         exit(1);
     }
 
-    std::string libsvm_file_name(argv[1]);
-    std::string word_dict_file_name(argv[2]);
-    std::string output_dir(argv[3]);
-    int32_t output_offset = atoi(argv[4]);
+    std::string libsvm_file_name(argv[0]);
+    std::string word_dict_file_name(argv[1]);
+    std::string output_dir(argv[2]);
+    int32_t output_offset = atoi(argv[3]);
     const int32_t kMaxDocLength = 8192;
 
     // 1. count how many documents in the data set
@@ -388,10 +395,10 @@ int createBinaryFile(int argc, char* argv[])
     int64_t global_tf_count = 0;
     load_global_tf(global_tf_map, word_dict_file_name, global_tf_count);
     int32_t word_num = global_tf_map.size();
-    std::cout << "There are totally " << word_num 
-			<< " words in the vocabulary" << std::endl;
-    std::cout << "There are maximally totally " << global_tf_count 
-			<< " tokens in the data set" << std::endl;
+    //std::cout << "There are totally " << word_num 
+    //			<< " words in the vocabulary" << std::endl;
+    //std::cout << "There are maximally totally " << global_tf_count 
+    //			<< " tokens in the data set" << std::endl;
 
     // 3. transform the libsvm -> binary block
     int64_t* offset_buf = new int64_t[doc_num + 1];
@@ -527,8 +534,8 @@ int createBinaryFile(int argc, char* argv[])
             vocab_file.write(reinterpret_cast<char*> (&i), sizeof(int32_t));
         }
     }
-    std::cout << "The number of tokens in the output block is: " << block_token_num << std::endl;
-    std::cout << "Local vocab_size for the output block is: " << non_zero_count << std::endl;
+    //std::cout << "The number of tokens in the output block is: " << block_token_num << std::endl;
+    //std::cout << "Local vocab_size for the output block is: " << non_zero_count << std::endl;
 
     // write global tf
     for (int i = 0; i < word_num; ++i)
@@ -561,7 +568,7 @@ int createBinaryFile(int argc, char* argv[])
     txt_vocab_file.close();
 
     double dump_end = get_time();
-    std::cout << "Elapsed seconds for dump blocks: " << (dump_end - dump_start) << std::endl;
+    //std::cout << "Elapsed seconds for dump blocks: " << (dump_end - dump_start) << std::endl;
 
     // close file and release resource
     libsvm_file.close();

@@ -3,7 +3,7 @@
     "logFileLevel": "status",
     "runType": "train",
     "perfType": "cpu",
-    "ldaLibrary": "plda",
+    "ldaLibrary": "llda",
     "skipPreprocess": true,
 
     "populationSize": 9,
@@ -14,6 +14,11 @@
     "dataDir":"txtData",
     "mirrorDir":"processedData",
     "outputDir":"",
+
+    "inputDir":   "./data/data_10/",
+    "wordmapFile":"input1.word_id.dict",
+    "docmapFile":"input1.id_doc.dict",
+    "libsvmFile": "input1.libsvm",
 
     "stopWordsFile":"stopwords.txt",
     "loggerFile":"execution.log",

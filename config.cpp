@@ -37,6 +37,11 @@ ConfigOptions::ConfigOptions(string filename){
     mirrorDir   = j["mirrorDir"];
     outputDir   = j["outputDir"];
 
+    inputDir     = j["inputDir"];
+    wordmapFile  = j["wordmapFile"];
+    docmapFile  = j["docmapFile"];
+    libsvmFile   = j["libsvmFile"];
+
     stopWordsFile = j["stopWordsFile"];
     truthFile     = j["truthFile"];
     ldaInputFile  = j["ldaInputFile"];
@@ -61,6 +66,11 @@ ConfigOptions::ConfigOptions(string filename){
     mirrorDir   = "processedData";
     outputDir   = "tempData";
 
+    inputDir     = "./data/data_10/";
+    wordmapFile  = "input1.word_id.dict";
+    docmapFile  = "input1.id_doc.dict";
+    libsvmFile   = "input1.libsvm";
+
     stopWordsFile = "stopwords.txt";
     loggerFile    = "log.txt";
     truthFile     = "truthfile.txt";
@@ -72,6 +82,17 @@ ConfigOptions::ConfigOptions(string filename){
 }
 
 bool ConfigOptions::start() {
+    
+    truthFile       = inputDir + truthFile;
+    dataDir         = inputDir + dataDir;
+    preProcessedFile= inputDir + preProcessedFile;
+    mirrorDir       = inputDir + mirrorDir;
+    ldaInputFile    = inputDir + ldaInputFile;
+    outputDir       = inputDir + outputDir;
+    wordmapFile     = inputDir + wordmapFile;
+    docmapFile     = inputDir + docmapFile;
+    libsvmFile      = inputDir + libsvmFile;
+
     cout<<"Start up dir.."<<endl;
     if(!(stat(outputDir.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode)) ){
         mkdir(outputDir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);

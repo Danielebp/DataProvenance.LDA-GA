@@ -41,13 +41,7 @@ int main(int argc, char* argv[]) {
 	else if(s.compare("-f") == 0)
             cfg.fitnessThreshold = stod(argv[++arg]);
         else if(s.compare("-dir")==0){
-	    string dir = argv[++arg];
-            cfg.truthFile	= dir + cfg.truthFile; 
-            cfg.dataDir		= dir + cfg.dataDir;
-            cfg.preProcessedFile= dir + cfg.preProcessedFile;
-            cfg.mirrorDir	= dir + cfg.mirrorDir;
-            cfg.ldaInputFile	= dir + cfg.ldaInputFile;
-            cfg.outputDir	= dir + cfg.outputDir;
+	    cfg.inputDir = argv[++arg];
 	}
         else if(s.compare("-out")==0){
 	    string outdir = argv[++arg];
@@ -79,6 +73,11 @@ int main(int argc, char* argv[]) {
     else{
        cfg.logger.log(debug, "Starting preprocess");
        documentsMap = preProcess(&cfg);
+    }
+
+    if(cfg.ldaLibrary == llda) {
+        cfg.logger.log(debug, "Creating LightLDA files");
+	createLightLDAFiles(&cfg, documentsMap.size());
     }
 
     cfg.logger.log(status, "Running Provenance with the following configuration:");

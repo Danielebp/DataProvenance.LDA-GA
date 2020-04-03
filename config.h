@@ -13,7 +13,7 @@ using namespace std;
 NLOHMANN_JSON_SERIALIZE_ENUM(LogLevel, {{error, "error"},{status, "status"},{info, "info"}, {debug,"debug"}})
 NLOHMANN_JSON_SERIALIZE_ENUM(RunType,  {{metric, "metric"}, {train,"train"}})
 NLOHMANN_JSON_SERIALIZE_ENUM(PerfType, {{cpu, "cpu"}, {cuda,"cuda"}})
-NLOHMANN_JSON_SERIALIZE_ENUM(LDALibrary, {{plda, "plda"}, {gibbslda,"gibbslda"}, {glda, "glda"}})
+NLOHMANN_JSON_SERIALIZE_ENUM(LDALibrary, {{plda, "plda"}, {llda,"llda"}, {glda, "glda"}})
 
 
 class ConfigOptions {
@@ -41,9 +41,11 @@ public:
     string  stopWordsFile;//  = "stopwords.txt";
     string  truthFile;//  = "truthfile.txt";
     string preProcessedFile;
+    string inputDir;
     string  ldaInputFile;//   = "./tempData/input1.txt";
     string  loggerFile;//   = "log.txt";
     string wordmapFile;
+    string docmapFile;
     string libsvmFile;
     string  delimiter;//      = "##lda_delimiter##";
 

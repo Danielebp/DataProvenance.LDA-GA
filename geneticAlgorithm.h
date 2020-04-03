@@ -15,6 +15,9 @@
 #include "TopicModelling.h"
 #include "cluster.h"
 #include "config.h"
+#if defined (_MPI_VERSION_)
+#include <mpi.h>
+#endif
 
 using namespace std;
 class GeneticAlgorithm {

@@ -3,8 +3,8 @@
 int main(int argc, char** argv)
 {
 
-       LightLDA mylda;
-       mylda.Run(argc, argv);
+       multiverso::lightlda::LightLDA mylda;
+       mylda.Run(argc, argv, "./");
 
     	std::cout<<"Main Topic for Doc 0"<<mylda.GetMainTopic(0)<<std::endl;
         std::cout<<"Distributions for Doc 0:"<<std::endl;

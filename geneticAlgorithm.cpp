@@ -113,6 +113,7 @@ double GeneticAlgorithm::calculateFitness(TopicModelling* tm, int numberOfTopics
     int mainTopic;
     int topicLess = 0;
 
+    cfg->logger.log(debug, "Calculating fitness");
     // cluster docs by main topic to calculate fitness
     for(int d = 0; d < numberOfDocuments; d++){
         mainTopic = tm->getMainTopic(d);
@@ -122,8 +123,14 @@ double GeneticAlgorithm::calculateFitness(TopicModelling* tm, int numberOfTopics
             cfg->logger.log(error, "Document " + tm->getDocNameByNumber(d) + " is topicless.");
         }
     }
-    if(topicLess>0)cfg->logger.log(info, "Documents without topic: "+std::to_string(topicLess)+"/"+std::to_string(numberOfDocuments));
+    //TODO: this is a test
+    cfg->logger.log(debug, "Test Main topic");
+    tm->getMainTopic(0);
+    cfg->logger.log(debug, "Test Distribution");
+    tm->getDistribution(0, 0);
 
+    if(topicLess>0)cfg->logger.log(info, "Documents without topic: "+std::to_string(topicLess)+"/"+std::to_string(numberOfDocuments));
+    cfg->logger.log(debug, "Got main topics");
 
     double* maxDistanceInsideCluster = new double[numberOfDocuments] {};
 
@@ -349,6 +356,10 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
         t = clock() - t;
         cfg->logger.log(info, "GA iteration "+std::to_string(GACounter)+ " took " + std::to_string(((float)t)/(CLOCKS_PER_SEC/1000)) + "ms");
    }
+
+#if defined (_MPI_VERSION_)
+MPI_Finalize();
+#endif
 
     result.GA_count = GACounter;
     result.LDA_count = LDACounter;

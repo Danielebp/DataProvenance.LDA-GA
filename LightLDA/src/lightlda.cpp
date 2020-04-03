@@ -10,10 +10,11 @@ LightLDA::LightLDA(){
 }
 
 LightLDA::~LightLDA(){
+        std::cout<<"Data stream is being deleted"<<std::endl;
 	delete data_stream;
 }
         
-void LightLDA::Run(int argc, char** argv)
+void LightLDA::Run(int argc, char** argv, std::string outDir)
         {
             multiverso::lightlda::Config::Init(argc, argv);
             
@@ -35,7 +36,8 @@ void LightLDA::Run(int argc, char** argv)
 
             Multiverso::Init(trainers, param_loader, config, &argc, &argv);
 
-            Log::ResetLogFile("LightLDA."
+	    Log::ResetLogLevel(LogLevel::Error);
+            Log::ResetLogFile(outDir + "LightLDA."
                 + std::to_string(clock()) + ".log");
 
             data_stream = CreateDataStream();
@@ -52,7 +54,7 @@ void LightLDA::Run(int argc, char** argv)
             delete barrier;
             delete alias_table;            
 
-            DumpDocTopic();
+            DumpDocTopic(outDir);
 
         }
         
@@ -132,12 +134,12 @@ void LightLDA::Initialize()
             }
         }
 
-void LightLDA::DumpDocTopic()
+void LightLDA::DumpDocTopic(std::string outDir)
         {
             Row<int32_t> doc_topic_counter(0, Format::Sparse, kMaxDocLength); 
             for (int32_t block = 0; block < multiverso::lightlda::Config::num_blocks; ++block)
             {
-                std::ofstream fout("doc_topic." + std::to_string(block));
+                std::ofstream fout(outDir + "doc_topic." + std::to_string(block));
                 data_stream->BeforeDataAccess();
                 DataBlock& data_block = data_stream->CurrDataBlock();
                 for (int i = 0; i < data_block.Size(); ++i)
@@ -160,17 +162,13 @@ void LightLDA::DumpDocTopic()
 
 int LightLDA::GetMainTopic(int docID, int block)
         {
-	    std::cout<<"Start Get Main"<<std::endl;
             int maxDist = 0;
             int maxID = -1;
             Row<int32_t> doc_topic_counter(0, Format::Sparse, kMaxDocLength);
-	    std::cout<<"Created Row"<<std::endl;
             if (block < multiverso::lightlda::Config::num_blocks)
             {
                 data_stream->BeforeDataAccess();
-                std::cout<<"Created Stream"<<std::endl;
                 DataBlock& data_block = data_stream->CurrDataBlock();
-                std::cout<<"Got current"<<std::endl;
                 if (docID < data_block.Size())
                 {
                     Document* doc = data_block.GetOneDoc(docID);
@@ -193,9 +191,9 @@ int LightLDA::GetMainTopic(int docID, int block)
 
 double LightLDA::GetDocTopicDistribution(int docID, int topicID, int block)
         {
-            int totalWords = 0;
-            int topicWords = 0;
             Row<int32_t> doc_topic_counter(0, Format::Sparse, kMaxDocLength);
+            int totalWords = 0;
+            double topicDist = 0.0;
             if (block < multiverso::lightlda::Config::num_blocks)
             {
                 data_stream->BeforeDataAccess();
@@ -209,7 +207,7 @@ double LightLDA::GetDocTopicDistribution(int docID, int topicID, int block)
                     while (iter.HasNext())
                     {
                         if(iter.Key() == topicID){
-                            topicWords = iter.Value();
+                            topicDist = iter.Value();
                         }
                         totalWords += iter.Value();
                         iter.Next();
@@ -217,7 +215,42 @@ double LightLDA::GetDocTopicDistribution(int docID, int topicID, int block)
                 }
                 data_stream->EndDataAccess();
             }
-            return ((double)topicWords)/totalWords;
+            return topicDist/totalWords;
+
+        }
+
+std::vector<double> LightLDA::GetTopicDistributions(int numDocs, int numTopics, int block)
+        {
+            std::vector<double> topicDist(numTopics, 0.0);
+            Row<int32_t> doc_topic_counter(0, Format::Sparse, kMaxDocLength);
+            int totalWords = 0;
+            if (block < multiverso::lightlda::Config::num_blocks)
+            {
+                data_stream->BeforeDataAccess();
+                DataBlock& data_block = data_stream->CurrDataBlock();
+                for(int docID=0; docID<numDocs; docID++){
+                if (docID < data_block.Size())
+                {
+                    Document* doc = data_block.GetOneDoc(docID);
+                    doc_topic_counter.Clear();
+                    doc->GetDocTopicVector(doc_topic_counter);
+                    Row<int32_t>::iterator iter = doc_topic_counter.Iterator();
+                    while (iter.HasNext())
+                    {
+                        if(iter.Key() < numTopics){
+                            topicDist[iter.Key()] += iter.Value();
+                        }
+                        totalWords += iter.Value();
+                        iter.Next();
+                    }
+                }}
+                data_stream->EndDataAccess();
+            }
+            for(int topic = 0; topic<numTopics; topic++){
+		topicDist[topic] /= totalWords;
+	    }
+            return topicDist;
+	    
         }
 
 void LightLDA::CreateTable()
