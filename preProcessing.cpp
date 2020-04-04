@@ -87,7 +87,7 @@ unordered_map<string, Document> preProcess(ConfigOptions* cfg){
     unordered_map<string,Document> documentsMap = tokenizeFiles(cfg->dataDir, cfg->mirrorDir, wordFilter, cfg);
     t = clock() - t;
     // Output the time it took to find all article's titles and keywords
-    cfg->logger.log(status, "Preprocessing takes " + std::to_string(((float)t)/(CLOCKS_PER_SEC/1000)) + "ms");
+    cfg->logger.log(status, "Preprocessing takes " + to_string(((float)t)/(CLOCKS_PER_SEC/1000)) + "ms");
 
     // write input file for LDA
     ofstream outfile (cfg->ldaInputFile);
@@ -105,9 +105,114 @@ void createLightLDAFiles(ConfigOptions* cfg, int ndocs){
         cfg->logger.log(debug, "Create Binary Dump");
 	char* args[] = {
 		const_cast<char*>(cfg->libsvmFile.c_str()),
-		const_cast<char*>(cfg->wordmapFile.c_str()), 
-		const_cast<char*>(cfg->inputDir.c_str()), 
+		const_cast<char*>(cfg->wordmapFile.c_str()),
+		const_cast<char*>(cfg->inputDir.c_str()),
 		(char*)"0", NULL};
 	createBinaryFile(4, args);
 }
 
+void createBleiLDAFiles(ConfigOptions* cfg){
+        cfg->logger.log(debug, "Create BleiLDA Files");
+
+        map<string, int> word2id;
+        map<int, int>* wordCountDoc;
+        map<int, int>wordCountTot;
+        map<string, int>::iterator wordmapIt;
+
+        int docID = 0;
+        string line;
+        ifstream infile (cfg->ldaInputFile);
+        ofstream outLibsvm(cfg->libsvmFile);
+        ofstream outDocMap(cfg->docmapFile);
+
+        while ( getline (infile, line, '\n') ) {
+
+            int pos = line.find(cfg->delimiter);
+            string fname = line.substr(0, pos);
+
+            if(pos!=string::npos)
+                line.erase(0, pos + 17);
+
+            strtokenizer strtok(line, " \t\r\n");
+            int length = strtok.count_tokens();
+
+            if (length <= 0) {
+                cfg->logger.log(info, "Invalid (empty) document: " + fname);
+                continue;
+            }
+
+            outDocMap<<docID++<<"\t"<<fname<<endl;
+
+            // start processing each word of this line and adding them to a  map
+            wordCountDoc = new map<int, int>();
+            for (int token = 0; token < length; token++) {
+                wordmapIt = word2id.find(strtok.token(token));
+                if (wordmapIt == word2id.end()) {
+                // word not found, i.e., new word
+                wordCountDoc->insert(pair<int, int>(word2id.size(), 1));
+                word2id.insert(pair<string, int>(strtok.token(token), word2id.size()));
+                } else {
+                    (*wordCountDoc)[wordmapIt->second] = (*wordCountDoc)[wordmapIt->second]+1;
+                }
+            }
+
+            // write processed line to libsvm file
+            outLibsvm<<wordCountDoc->size()<<"\t";
+            for (pair<int, int> element : (*wordCountDoc)) {
+                outLibsvm<<element.first<<":"<<element.second<<" ";
+
+                // update total count
+                if (wordCountTot.find(element.first) == wordCountTot.end()) {
+                    // word not found, i.e., new word
+                    wordCountTot.insert(pair<int, int>(element.first, element.second));
+                } else {
+                    wordCountTot[element.first] = wordCountTot[element.first]+element.second;
+                }
+            }
+            outLibsvm<<endl;
+
+            delete wordCountDoc;
+        }
+
+        outLibsvm.close();
+        outDocMap.close();
+        infile.close();
+
+        // write word map
+        ofstream outWordMap;
+        outWordMap.open (cfg->wordmapfile);
+        for (pair<string, int> element : word2id) {
+            outWordMap<<element.second<<"\t"<<element.first<<"\t"<<wordCountTot[element.second]<<endl;
+        }
+        outWordMap.close();
+
+        return 0;
+
+}
+
+unordered_map<string, Document> prepareData(ConfigOptions* cfg){
+    unordered_map<string, Document> documentsMap;
+    if(cfg->skipPreprocess){
+        cfg->logger.log(debug, "Skipping preprocess using " + cfg->preProcessedFile);
+        documentsMap = loadPreProcessed(cfg);
+        cfg->logger.log(debug, "Loaded "+std::to_string(documentsMap.size())+" documents");
+    }
+    else{
+       cfg->logger.log(debug, "Starting preprocess");
+       documentsMap = preProcess(cfg);
+    }
+
+    switch (cfg->ldaLibrary) {
+         case llda:
+            cfg.logger.log(debug, "Creating LightLDA files");
+            createLightLDAFiles(&cfg, documentsMap.size());
+            break;
+         case blda:
+            createBleiLDAFiles(cfg);
+            break;
+         default:
+           break;
+     }
+
+     return documentsMap;
+}

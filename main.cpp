@@ -65,20 +65,7 @@ int main(int argc, char* argv[]) {
     cfg.start();
 
     cfg.logger.log(debug, "Loading Dataset");
-    if(cfg.skipPreprocess){
-        cfg.logger.log(debug, "Skipping preprocess using " + cfg.preProcessedFile);
-        documentsMap = loadPreProcessed(&cfg);
-        cfg.logger.log(debug, "Loaded "+std::to_string(documentsMap.size())+" documents");
-    }
-    else{
-       cfg.logger.log(debug, "Starting preprocess");
-       documentsMap = preProcess(&cfg);
-    }
-
-    if(cfg.ldaLibrary == llda) {
-        cfg.logger.log(debug, "Creating LightLDA files");
-	createLightLDAFiles(&cfg, documentsMap.size());
-    }
+    documentsMap = prepareData(&cfg);
 
     cfg.logger.log(status, "Running Provenance with the following configuration:");
     cfg.logger.log(status, "Fitness Threshold: " + std::to_string(cfg.fitnessThreshold));

@@ -27,6 +27,8 @@ TopicModelling::TopicModelling(int numberOfTopics, int numberOfIterations, int n
 		this->lightldaModel = new multiverso::lightlda::LightLDA();
 		this->LLDA_doc_index_map = new map<int, string>();
             break;
+          default:
+            break;
       }
   }
 
@@ -46,6 +48,8 @@ TopicModelling::~TopicModelling(){
 	    delete lightldaModel;
 	    delete LLDA_doc_index_map;
 	    break;
+        default:
+                break;
       }
   }
 
@@ -74,6 +78,8 @@ double TopicModelling::getDistribution(int topic, int docNum){
             return PLDA_getDistribution(topic, docNum);
           case llda:
             return lightldaModel->GetDocTopicDistribution(docNum, topic);
+          default:
+            break;
       }
         return 0;
   }
@@ -86,6 +92,8 @@ double TopicModelling::getDistribution(int topic, int docNum){
             return PLDA_getDocNameByNumber(num);
           case llda:
             return (*LLDA_doc_index_map)[num];
+          default:
+            break;
       }
         return "";
   }
@@ -97,6 +105,8 @@ double TopicModelling::getDistribution(int topic, int docNum){
             return PLDA_WriteFiles(isfinal);
           case llda:
             return LLDA_WriteFiles(isfinal);
+          default:
+            break;
       }
   }
 
@@ -108,6 +118,8 @@ double TopicModelling::getDistribution(int topic, int docNum){
             return PLDA_LDA(MyCount);
           case llda:
             return LIGHT_LDA(MyCount);
+          default:
+            break;
       }
 
       return 0;
@@ -416,7 +428,7 @@ long TopicModelling::LIGHT_LDA(string MyCount){
     string niters = to_string(numberOfIterations);
     string ndocs = to_string(numberOfDocuments);
 
-    cfg->logger.log(debug, "Reading Doc Map: " + cfg->docmapFile); 
+    cfg->logger.log(debug, "Reading Doc Map: " + cfg->docmapFile);
 
     Scanner sc2;
     try {
@@ -465,7 +477,7 @@ long TopicModelling::LIGHT_LDA(string MyCount){
     }
     outTop.close();
     cfg->logger.log(debug, "Wrote Topic Dist");
-    
+
     t = clock() - t;
     long time = (((float)t)/(CLOCKS_PER_SEC/1000));
 
@@ -493,3 +505,42 @@ void TopicModelling::LLDA_WriteFiles(bool isfinal) {
     modelFile<<fout.str();
 }
 
+
+// #######################################################
+// ###################### BleiLDA ########################
+// #######################################################
+long TopicModelling::BLDA_LDA(string MyCount) {
+  srand(seed);
+  cfg->logger.log(debug, "#### Starting LDA with " + to_string(numberOfTopics)
+                + " topics and " + to_string(numberOfIterations) + " iterations ####");
+
+  outputFile = MyCount;
+
+  clock_t t = clock();
+
+  corpus* ldacorpus = read_data(const_cast<cahr*>(cfg->libsvmFile.c_str()));
+  LDA_Estimate blda_model;
+
+  cfg->logger.log(debug, "BLDA setup completed. Starting estimate");
+
+  blda_model.runLDA(ldacorpus, numberOfTopics, numberOfIterations, 0.1, cfg->outputDir);
+
+  cfg->logger.log(debug, "BLDA estimate completed");
+
+  // write topic.txt
+  ofstream outTop;
+  outTop.open (cfg->outputDir + "/topic.txt");
+  outTop<<"topic\tdist\twords"<<endl;
+  for (int topic = 0; topic < numberOfTopics; topic++) {
+      outTop<<topic<<"\t"<<this->gldaModel->getTopicDistribution(topic)<<"\t"<<this->gldaModel->maptopic2Words[topic]<<endl;
+  }
+
+  outTop.close();
+  #endif
+  t = clock() - t;
+  long time = (((float)t)/(CLOCKS_PER_SEC/1000));
+
+  cfg->logger.log(debug, "#### Ending LDA ####");
+
+  return time;
+}

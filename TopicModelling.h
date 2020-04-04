@@ -24,6 +24,7 @@
 #include "plda/sampler.h"
 #include "plda/cmd_flags.h"
 #include "LightLDA/src/lightlda.h"
+#include "BleiLDA/lda-estimate.h"
 
 using namespace std;
 
