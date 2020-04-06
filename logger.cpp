@@ -42,7 +42,7 @@ string getTime(){
 
 bool Logger::log(LogLevel level, string message){
     if(level<=logLevel){
-       cout << (level==error ? RED : (level==status ? GREEN : (level==info ? BLUE : WHITE))) << getLogLabel(level)<< "\tmessage at "<<getTime()<<": "<<message<<RESET<<endl;
+       cout << (level==error ? RED : (level==status ? GREEN : (level==info ? CYAN : WHITE))) << getLogLabel(level)<< "\tmessage at "<<getTime()<<": "<<message<<RESET<<endl;
     }
     if(level<=logFileLevel){
        logFile << getLogLabel(level)<< "\tmessage at "<<getTime()<<": "<<message<<endl;

@@ -15,7 +15,9 @@ using namespace std;
 
 unordered_map<string, Document> preProcess(ConfigOptions* cfg);
 unordered_map<string, Document> loadPreProcessed(ConfigOptions* cfg);
+#ifdef USELLDA
 void createLightLDAFiles(ConfigOptions* cfg, int ndocs);
+#endif
 void createBleiLDAFiles(ConfigOptions* cfg);
 
 unordered_map<string, Document> prepareData(ConfigOptions* cfg);

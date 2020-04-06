@@ -98,6 +98,7 @@ unordered_map<string, Document> preProcess(ConfigOptions* cfg){
     return documentsMap;
 }
 
+#ifdef USELLDA
 void createLightLDAFiles(ConfigOptions* cfg, int ndocs){
         cfg->logger.log(debug, "Create Libsvm Files");
 	createLibsvmFile(cfg->ldaInputFile, cfg->libsvmFile, cfg->wordmapFile, cfg->docmapFile, ndocs, cfg->delimiter) ;
@@ -110,6 +111,7 @@ void createLightLDAFiles(ConfigOptions* cfg, int ndocs){
 		(char*)"0", NULL};
 	createBinaryFile(4, args);
 }
+#endif
 
 void createBleiLDAFiles(ConfigOptions* cfg){
         cfg->logger.log(debug, "Create BleiLDA Files");
@@ -203,10 +205,12 @@ unordered_map<string, Document> prepareData(ConfigOptions* cfg){
     }
 
     switch (cfg->ldaLibrary) {
+#ifdef USELLDA
          case llda:
             cfg->logger.log(debug, "Creating LightLDA files");
             createLightLDAFiles(cfg, documentsMap.size());
             break;
+#endif
          case blda:
             createBleiLDAFiles(cfg);
             break;

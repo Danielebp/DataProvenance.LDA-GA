@@ -13,20 +13,22 @@ TopicModelling::TopicModelling(int numberOfTopics, int numberOfIterations, int n
       this->numberOfDocuments = numberOfDocuments;
       this->cfg = cfg;
       switch (cfg->ldaLibrary) {
-          case glda:
 #if defined(USECUDA)
+          case glda:
       		this->gldaModel = new model();
-#endif
             break;
+#endif
           case plda:
 		this->PLDA_corpus = new vector<learning_lda::LDADocument*>();
       		this->PLDA_corpus->clear();
       		cfg->logger.log(debug, "Corpus has size " + to_string(PLDA_corpus->size()));
             break;
+#if defined(USELLDA)
           case llda:
 		this->lightldaModel = new multiverso::lightlda::LightLDA();
 		this->LLDA_doc_index_map = new map<int, string>();
             break;
+#endif
           case blda:
             blda_model = new LDA_Estimate(numberOfDocuments, numberOfTopics);
             break;
@@ -37,20 +39,22 @@ TopicModelling::TopicModelling(int numberOfTopics, int numberOfIterations, int n
 
 TopicModelling::~TopicModelling(){
       switch (cfg->ldaLibrary) {
-          case glda:
 #if defined(USECUDA)
+          case glda:
            delete gldaModel;
-#endif
             break;
+#endif
           case plda:
             PLDA_FreeCorpus();
 	    delete PLDA_accum_model;
             delete PLDA_word_index_map;
             break;
+#if defined(USELLDA)
           case llda:
 	    delete lightldaModel;
 	    delete LLDA_doc_index_map;
 	    break;
+#endif
         case blda:
           delete blda_model;
           break;
@@ -61,10 +65,12 @@ TopicModelling::~TopicModelling(){
 
 int TopicModelling::getMainTopic(int docNum) {
   switch (cfg->ldaLibrary) {
+#if defined(USELLDA)
     case llda:
-      return lightldaModel->GetMainTopic(docNum);  
+      return lightldaModel->GetMainTopic(docNum);
+#endif
     case blda:
-      return blda_model->getMainTopic(docNum); 
+      return blda_model->getMainTopic(docNum);
     default:
       double max = 0.0;
       int idMax = -1;
@@ -81,12 +87,16 @@ int TopicModelling::getMainTopic(int docNum) {
 
 double TopicModelling::getDistribution(int topic, int docNum){
       switch (cfg->ldaLibrary) {
+#if defined(USECUDA)
           case glda:
             return GLDA_getDistribution(topic, docNum);
+#endif
           case plda:
             return PLDA_getDistribution(topic, docNum);
+#if defined(USELLDA)
           case llda:
             return lightldaModel->GetDocTopicDistribution(docNum, topic);
+#endif
           case blda:
             return blda_model->getDocTopDist(docNum, topic);
           default:
@@ -97,12 +107,16 @@ double TopicModelling::getDistribution(int topic, int docNum){
 
  string TopicModelling::getDocNameByNumber(int num){
       switch (cfg->ldaLibrary) {
+#if defined(USECUDA)
           case glda:
             return GLDA_getDocNameByNumber(num);
+#endif
           case plda:
             return PLDA_getDocNameByNumber(num);
+#if defined(USELLDA)
           case llda:
             return (*LLDA_doc_index_map)[num];
+#endif
           default:
             break;
       }
@@ -110,12 +124,16 @@ double TopicModelling::getDistribution(int topic, int docNum){
   }
   void TopicModelling::WriteFiles(bool isfinal) {
       switch (cfg->ldaLibrary) {
+#if defined(USECUDA)
           case glda:
             return GLDA_WriteFiles(isfinal);
+#endif
           case plda:
             return PLDA_WriteFiles(isfinal);
+#if defined(USELLDA)
           case llda:
             return LLDA_WriteFiles(isfinal);
+#endif
           case blda:
             return BLDA_WriteFiles(isfinal);
           default:
@@ -125,12 +143,16 @@ double TopicModelling::getDistribution(int topic, int docNum){
 
   long TopicModelling::LDA(string MyCount) {
      switch (cfg->ldaLibrary) {
+ #if defined(USECUDA)
           case glda:
             return GLDA_LDA(MyCount);
+#endif
           case plda:
             return PLDA_LDA(MyCount);
+#if defined(USELLDA)
           case llda:
             return LIGHT_LDA(MyCount);
+#endif
           case blda:
             return BLDA_LDA(MyCount);
           default:
@@ -144,10 +166,10 @@ double TopicModelling::getDistribution(int topic, int docNum){
 //############## GLDA Functions #######################
 //#####################################################
 
+#if defined(USECUDA)
 void TopicModelling::GLDA_WriteFiles(bool isfinal) {
     string filename = cfg->outputDir + "/distribution" + (isfinal ? "" : outputFile) + ".txt";
 
-    #if defined(USECUDA)
     ofstream fout(filename);
     stringstream out;
     out<<"docID\ttopic\tdist\t..."<<endl;
@@ -163,7 +185,6 @@ void TopicModelling::GLDA_WriteFiles(bool isfinal) {
         }
     }
     fout<<out.str();
-    #endif
 
     //ofstream fout(cfg->outputDir + "/model"+outputFile+".txt");
     //fout<<res;
@@ -177,7 +198,6 @@ long TopicModelling::GLDA_LDA(string MyCount) {
   outputFile = MyCount;
 
   clock_t t = clock();
-  #if defined(USECUDA)
 
   string ntopics = to_string(numberOfTopics);
   string niters = to_string(numberOfIterations);
@@ -209,7 +229,6 @@ long TopicModelling::GLDA_LDA(string MyCount) {
   }
 
   outTop.close();
-  #endif
   t = clock() - t;
   long time = (((float)t)/(CLOCKS_PER_SEC/1000));
 
@@ -219,18 +238,15 @@ long TopicModelling::GLDA_LDA(string MyCount) {
 }
 double TopicModelling::GLDA_getDistribution(int topic, int docNum) {
     double dist = 0.0;
-    #if defined(USECUDA)
     dist = this->gldaModel->getDistribution(docNum, topic);
-    #endif
     return dist;
 }
 string TopicModelling::GLDA_getDocNameByNumber(int num){
     string doc = "";
-    #if defined(USECUDA)
     doc = this->gldaModel->getDocName(num);
-    #endif
     return doc;
 }
+#endif
 
 //#####################################################
 //############## PLDA Functions #######################
@@ -428,7 +444,7 @@ void TopicModelling::PLDA_FreeCorpus() {
 // #######################################################
 // ##################### LightLDA ########################
 // #######################################################
-
+#if defined(USELLDA)
 long TopicModelling::LIGHT_LDA(string MyCount){
 
     srand(seed);
@@ -519,6 +535,7 @@ void TopicModelling::LLDA_WriteFiles(bool isfinal) {
     PLDA_accum_model->AppendAsString(PLDA_word_index_map, fout);
     modelFile<<fout.str();
 }
+#endif
 
 
 // #######################################################

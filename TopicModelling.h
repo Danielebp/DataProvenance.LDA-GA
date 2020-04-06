@@ -23,7 +23,9 @@
 #include "plda/accumulative_model.h"
 #include "plda/sampler.h"
 #include "plda/cmd_flags.h"
+#if defined(USELLDA)
 #include "LightLDA/src/lightlda.h"
+#endif
 #include "BleiLDA/lda-estimate.h"
 
 using namespace std;
@@ -60,9 +62,10 @@ private:
     //#####################################################
     //############### LightLDA Variables ##################
     //#####################################################
+#if defined(USELLDA)
     multiverso::lightlda::LightLDA* lightldaModel;
     map<int, string>* LLDA_doc_index_map;
-
+#endif
     //#####################################################
     //############### BleiLDA Variables ###################
     //#####################################################
@@ -77,21 +80,21 @@ public:
   //#####################################################
   //############## General Functions ####################
   //#####################################################
-
   double getDistribution(int topic, int docNum);
   string getDocNameByNumber(int num);
   void WriteFiles(bool isfinal);
   long LDA(string MyCount = "");
   int getMainTopic(int docNum);
 
-
   //#####################################################
   //############## GLDA Functions #######################
   //#####################################################
+#if defined(USECUDA)
   double GLDA_getDistribution(int topic, int docNum);
   string GLDA_getDocNameByNumber(int num);
   void GLDA_WriteFiles(bool isfinal) ;
   long GLDA_LDA(string MyCount = "") ;
+#endif
 
   //#####################################################
   //############## PLDA Functions #######################
@@ -109,9 +112,11 @@ public:
   //#####################################################
   //############### LIGHTLDA Functions ##################
   //#####################################################
+  #if defined(USELLDA)
   void LLDA_WriteFiles(bool isfinal) ;
   long LIGHT_LDA(string MyCount);
   double LLDA_getDistribution(int topic);
+  #endif
 
   //#####################################################
   //############### BleiLDA Functions ##################

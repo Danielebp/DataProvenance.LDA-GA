@@ -116,7 +116,7 @@ LDA_Estimate::LDA_Estimate(int ndocs, int ntopics){
 LDA_Estimate::~LDA_Estimate(){
     for (int d = 0; d < NDOCS; d++)
         free(docTopDist[d]);
-    
+
     free(docTopDist);
     free(topDist);
 }
@@ -320,6 +320,8 @@ void LDA_Estimate::init_settings(float convergence, int alpha)
 {
     EM_CONVERGED = convergence;
     ESTIMATE_ALPHA = alpha;
+    VAR_CONVERGED = 0.000001;
+    VAR_MAX_ITER = 20;
 }
 
 
