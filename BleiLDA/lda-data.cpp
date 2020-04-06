@@ -25,7 +25,6 @@ blda_corpus* read_data(char* data_filename)
     int length, count, word, n, nd, nw;
     blda_corpus* c;
 
-    printf("reading data from %s\n", data_filename);
     c = (blda_corpus*)malloc(sizeof(blda_corpus));
     c->docs = 0;
     c->num_terms = 0;
@@ -53,8 +52,6 @@ blda_corpus* read_data(char* data_filename)
     fclose(fileptr);
     c->num_docs = nd;
     c->num_terms = nw;
-    printf("number of docs    : %d\n", nd);
-    printf("number of terms   : %d\n", nw);
     return(c);
 }
 
