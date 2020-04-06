@@ -44,6 +44,7 @@ private:
     int numberOfIterations;
     int numberOfDocuments;
     long seed;
+    map<int, string>* doc_index_map;
 
 
     //#####################################################
@@ -64,7 +65,6 @@ private:
     //#####################################################
 #if defined(USELLDA)
     multiverso::lightlda::LightLDA* lightldaModel;
-    map<int, string>* LLDA_doc_index_map;
 #endif
     //#####################################################
     //############### BleiLDA Variables ###################

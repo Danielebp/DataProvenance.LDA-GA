@@ -26,11 +26,12 @@ TopicModelling::TopicModelling(int numberOfTopics, int numberOfIterations, int n
 #if defined(USELLDA)
           case llda:
 		this->lightldaModel = new multiverso::lightlda::LightLDA();
-		this->LLDA_doc_index_map = new map<int, string>();
+		this->doc_index_map = new map<int, string>();
             break;
 #endif
           case blda:
             blda_model = new LDA_Estimate(numberOfDocuments, numberOfTopics);
+    		this->doc_index_map = new map<int, string>();
             break;
           default:
             break;
@@ -52,11 +53,12 @@ TopicModelling::~TopicModelling(){
 #if defined(USELLDA)
           case llda:
 	    delete lightldaModel;
-	    delete LLDA_doc_index_map;
+	    delete doc_index_map;
 	    break;
 #endif
         case blda:
           delete blda_model;
+          delete doc_index_map;
           break;
         default:
                 break;
@@ -115,8 +117,10 @@ double TopicModelling::getDistribution(int topic, int docNum){
             return PLDA_getDocNameByNumber(num);
 #if defined(USELLDA)
           case llda:
-            return (*LLDA_doc_index_map)[num];
+            return (*doc_index_map)[num];
 #endif
+          case blda:
+            return (*doc_index_map)[num];
           default:
             break;
       }
@@ -469,7 +473,7 @@ long TopicModelling::LIGHT_LDA(string MyCount){
         do {
             int idx = sc2.nextInt();
             string name = sc2.nextWord();
-           (*LLDA_doc_index_map)[idx] = name;
+           (*doc_index_map)[idx] = name;
         } while(sc2.nextLine());
     } catch (exception& e) {
 
@@ -522,7 +526,7 @@ void TopicModelling::LLDA_WriteFiles(bool isfinal) {
     stringstream out;
     out<<"docID\ttopic\tdist\t..."<<endl;
     for (int doc = 0; doc<numberOfDocuments; doc++) {
-        out<<(*LLDA_doc_index_map)[doc]<<"\t";
+        out<<(*doc_index_map)[doc]<<"\t";
      for(int topic = 0; topic<numberOfTopics; topic++){
          out << topic << "\t" << lightldaModel->GetDocTopicDistribution(doc, topic)
          << ((topic < (numberOfTopics - 1)) ? "\t" : "\n");
@@ -557,6 +561,23 @@ long TopicModelling::BLDA_LDA(string MyCount) {
 
   cfg->logger.log(debug, "BLDA estimate completed");
 
+  Scanner sc2;
+  try {
+      cfg->logger.log(debug, "Oppenning file");
+      sc2.open(cfg->docmapFile);
+  cfg->logger.log(debug, "Oppened file");
+      do {
+          int idx = sc2.nextInt();
+          string name = sc2.nextWord();
+         (*doc_index_map)[idx] = name;
+      } while(sc2.nextLine());
+  } catch (exception& e) {
+
+      cfg->logger.log(error, "Hit error while reading the Doc Map File");
+      cfg->logger.log(error, e.what());
+  }
+  sc2.close();
+
   // write topic.txt
   ofstream outTop;
   outTop.open (cfg->outputDir + "/topic.txt");
@@ -578,8 +599,9 @@ void TopicModelling::BLDA_WriteFiles(bool isfinal) {
     ofstream distFile(cfg->outputDir + "/distribution" + (isfinal ? "" : outputFile) + ".txt");
     stringstream out;
     out<<"docID\ttopic\tdist\t..."<<endl;
+
     for (int d=0; d<numberOfDocuments; d++) {
-        out<<d<<"\t";
+        out<<(*doc_index_map)[d]<<"\t";
         for(int topic = 0; topic<numberOfTopics; topic++){
             out << topic << "\t" << blda_model->getDocTopDist(d, topic)
                 << ((topic < (numberOfTopics - 1)) ? "\t" : "\n");

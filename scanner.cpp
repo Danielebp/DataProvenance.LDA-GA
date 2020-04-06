@@ -14,8 +14,8 @@ Scanner::Scanner (string filename) {
 void Scanner::open (string filename) {
     string line;
     if(myfile)
-    myfile.open(filename);
-    else
+        myfile.open(filename);
+
     getline (myfile, line, '\n');
     ss.str(line);
 }

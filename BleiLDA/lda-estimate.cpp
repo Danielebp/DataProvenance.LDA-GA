@@ -164,7 +164,6 @@ void LDA_Estimate::run_em(char* start, char* directory, blda_corpus* corpus)
     double **phi;
 
     // allocate variational parameters
-    printf("allocating parameters\n");
 
     int max_length = max_corpus_length(corpus);
     phi = (double**)malloc(sizeof(double*)*max_length);
@@ -172,7 +171,6 @@ void LDA_Estimate::run_em(char* start, char* directory, blda_corpus* corpus)
 	      phi[n] = (double*)malloc(sizeof(double) * NTOPICS);
 
     // initialize model
-    printf("initializing model\n");
 
     char filename[100];
 
@@ -208,11 +206,9 @@ void LDA_Estimate::run_em(char* start, char* directory, blda_corpus* corpus)
     }
 
     sprintf(filename,"%s/000",directory);
-    printf("saving %s\n", filename);
     save_lda_model(model, filename);
 
     // run expectation maximization
-    printf("run\n");
 
     int i = 0;
     double likelihood, likelihood_old = 0, converged = 1;
@@ -222,7 +218,7 @@ void LDA_Estimate::run_em(char* start, char* directory, blda_corpus* corpus)
 
     while (((converged < 0) || (converged > EM_CONVERGED) || (i <= 2)) && (i <= EM_MAX_ITER))
     {
-        i++; printf("**** em iteration %d ****\n", i);
+        i++;
         likelihood = 0;
         zero_initialize_ss(ss, model);
 
@@ -230,7 +226,6 @@ void LDA_Estimate::run_em(char* start, char* directory, blda_corpus* corpus)
 
         for (d = 0; d < corpus->num_docs; d++)
         {
-            if ((d % (corpus->num_docs/10)) == 0) printf("document %d\n",d);
             likelihood += doc_e_step(&(corpus->docs[d]),
                                      docTopDist[d],
                                      phi,
@@ -280,7 +275,6 @@ void LDA_Estimate::run_em(char* start, char* directory, blda_corpus* corpus)
     FILE* w_asgn_file = fopen(filename, "w");
     for (d = 0; d < corpus->num_docs; d++)
     {
-        if ((d % 100) == 0) printf("final e step document %d\n",d);
         likelihood += lda_inference(&(corpus->docs[d]), model, docTopDist[d], phi);
         write_word_assignment(w_asgn_file, &(corpus->docs[d]), phi, model);
     }
@@ -338,11 +332,8 @@ void LDA_Estimate::init_settings(float convergence, int alpha)
      EM_MAX_ITER = iter;
      INITIAL_ALPHA = iniAlpha;
      NTOPICS = ntopics;
-     printf("create folder\n");
      char* dir = const_cast<char*>(outFolder.c_str());
-     printf("run\n");
      run_em("random", dir, corpus);
-     printf("return\n");
 
      return(0);
  }

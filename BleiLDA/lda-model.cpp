@@ -48,7 +48,6 @@ void lda_mle(blda_model* model, blda_suffstats* ss, int estimate_alpha)
                                  ss->num_docs,
                                  model->num_topics);
 
-        printf("new alpha = %5.5f\n", model->alpha);
     }
 }
 
@@ -144,7 +143,6 @@ void corpus_initialize_ss(blda_suffstats* ss, blda_model* model, blda_corpus* c)
             } while (already_selected);
             seen[k][i] = d;
 
-            printf("initialized with document %d\n", d);
             doc = &(c->docs[d]);
             for (n = 0; n < doc->length; n++)
             {
@@ -170,7 +168,6 @@ void manual_initialize_ss(char *seedfile, blda_suffstats* ss, blda_model* model,
       printf("Couldn't find manual seeds in %s.\n", seedfile);
       exit(1);
     }
-    printf("Loading seeds from %s\n", seedfile);
 
     for (k = 0; k < num_topics; k++)
     {
@@ -187,7 +184,6 @@ void manual_initialize_ss(char *seedfile, blda_suffstats* ss, blda_model* model,
               exit(3);
             }
 
-            printf("initialized with document %d\n", d);
             doc = &(c->docs[d]);
             for (n = 0; n < doc->length; n++)
             {
@@ -285,7 +281,6 @@ blda_model* load_lda_model(char* model_root)
     float x, alpha;
 
     sprintf(filename, "%s.other", model_root);
-    printf("loading %s\n", filename);
     fileptr = fopen(filename, "r");
     fscanf(fileptr, "num_topics %d\n", &num_topics);
     fscanf(fileptr, "num_terms %d\n", &num_terms);
@@ -296,7 +291,6 @@ blda_model* load_lda_model(char* model_root)
     model->alpha = alpha;
 
     sprintf(filename, "%s.beta", model_root);
-    printf("loading %s\n", filename);
     fileptr = fopen(filename, "r");
     for (i = 0; i < num_topics; i++)
     {
