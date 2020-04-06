@@ -26,15 +26,15 @@ typedef struct
     int* counts;
     int length;
     int total;
-} document;
+} blda_document;
 
 
 typedef struct
 {
-    document* docs;
+    blda_document* docs;
     int num_terms;
     int num_docs;
-} corpus;
+} blda_corpus;
 
 
 typedef struct
@@ -43,7 +43,7 @@ typedef struct
     double** log_prob_w;
     int num_topics;
     int num_terms;
-} lda_model;
+} blda_model;
 
 
 typedef struct
@@ -52,6 +52,6 @@ typedef struct
     double* class_total;
     double alpha_suffstats;
     int num_docs;
-} lda_suffstats;
+} blda_suffstats;
 
 #endif

@@ -10,10 +10,10 @@
 
 #include "lda.h"
 #include "lda-data.h"
-#include "lda-estimate.h"
 #include "lda-model.h"
 #include "lda-alpha.h"
 #include "utils.h"
+#include "lda-inference.h"
 
 class LDA_Estimate {
 public:
@@ -24,12 +24,21 @@ int EM_MAX_ITER;
 int ESTIMATE_ALPHA;
 double INITIAL_ALPHA;
 int NTOPICS;
+int NDOCS;
+double** docTopDist;
+double* topDist;
 
-double doc_e_step(document* doc,
+LDA_Estimate(int ndocs, int ntopics);
+~LDA_Estimate();
+double getDocTopDist(int doc, int topic);
+double getTopicDist(int topic);
+int getMainTopic(int doc);
+
+double doc_e_step(blda_document* doc,
                   double* gamma,
                   double** phi,
-                  lda_model* model,
-                  lda_suffstats* ss);
+                  blda_model* model,
+                  blda_suffstats* ss);
 
 void save_gamma(char* filename,
                 double** gamma,
@@ -38,16 +47,16 @@ void save_gamma(char* filename,
 
 void run_em(char* start,
             char* directory,
-            corpus* corpus);
-
+            blda_corpus* corpus);
 void read_settings(char* filename);
 void init_settings(float convergence, int alpha);
 
 void infer(char* model_root,
            char* save,
-           corpus* corpus);
+           blda_corpus* corpus);
 
-int runLDA(corpus* corpus, int ntopics, int iter, float iniAlpha);
+int runLDA(blda_corpus* corpus, int ntopics, int iter, float iniAlpha, string outFolder);
 };
 
 #endif
+

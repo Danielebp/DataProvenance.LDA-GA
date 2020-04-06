@@ -19,14 +19,14 @@
 
 #include "lda-data.h"
 
-corpus* read_data(char* data_filename)
+blda_corpus* read_data(char* data_filename)
 {
     FILE *fileptr;
     int length, count, word, n, nd, nw;
-    corpus* c;
+    blda_corpus* c;
 
     printf("reading data from %s\n", data_filename);
-    c = (corpus*)malloc(sizeof(corpus));
+    c = (blda_corpus*)malloc(sizeof(blda_corpus));
     c->docs = 0;
     c->num_terms = 0;
     c->num_docs = 0;
@@ -34,7 +34,7 @@ corpus* read_data(char* data_filename)
     nd = 0; nw = 0;
     while ((fscanf(fileptr, "%10d", &length) != EOF))
     {
-	c->docs = (document*) realloc(c->docs, sizeof(document)*(nd+1));
+	c->docs = (blda_document*) realloc(c->docs, sizeof(blda_document)*(nd+1));
 	c->docs[nd].length = length;
 	c->docs[nd].total = 0;
 	c->docs[nd].words = (int*)malloc(sizeof(int)*length);
@@ -58,7 +58,7 @@ corpus* read_data(char* data_filename)
     return(c);
 }
 
-int max_corpus_length(corpus* c)
+int max_corpus_length(blda_corpus* c)
 {
     int n, max = 0;
     for (n = 0; n < c->num_docs; n++)

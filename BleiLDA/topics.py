@@ -13,7 +13,7 @@ def print_topics(beta_file, vocab_file, nwords = 25):
     # get the vocabulary
 
     vocab = file(vocab_file, 'r').readlines()
-    # vocab = map(lambda x: x.split()[0], vocab)
+    vocab = map(lambda x: x.split()[1], vocab)
     vocab = map(lambda x: x.strip(), vocab)
 
     # for each line in the beta file

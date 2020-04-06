@@ -27,6 +27,9 @@ TopicModelling::TopicModelling(int numberOfTopics, int numberOfIterations, int n
 		this->lightldaModel = new multiverso::lightlda::LightLDA();
 		this->LLDA_doc_index_map = new map<int, string>();
             break;
+          case blda:
+            blda_model = new LDA_Estimate(numberOfDocuments, numberOfTopics);
+            break;
           default:
             break;
       }
@@ -48,26 +51,32 @@ TopicModelling::~TopicModelling(){
 	    delete lightldaModel;
 	    delete LLDA_doc_index_map;
 	    break;
+        case blda:
+          delete blda_model;
+          break;
         default:
                 break;
       }
   }
 
 int TopicModelling::getMainTopic(int docNum) {
-    if(cfg->ldaLibrary == llda)
-	return lightldaModel->GetMainTopic(docNum);
+  switch (cfg->ldaLibrary) {
+    case llda:
+      return lightldaModel->GetMainTopic(docNum);  
+    case blda:
+      return blda_model->getMainTopic(docNum); 
+    default:
+      double max = 0.0;
+      int idMax = -1;
 
-    double max = 0.0;
-    int idMax = -1;
-
-    for(int i = 0; i<numberOfTopics; i++) {
+      for(int i = 0; i<numberOfTopics; i++) {
         if(getDistribution (i, docNum) > max) {
             max = getDistribution (i, docNum);
             idMax = i;
         }
-    }
-
-    return idMax;
+      }
+      return idMax;
+  }
 }
 
 double TopicModelling::getDistribution(int topic, int docNum){
@@ -78,6 +87,8 @@ double TopicModelling::getDistribution(int topic, int docNum){
             return PLDA_getDistribution(topic, docNum);
           case llda:
             return lightldaModel->GetDocTopicDistribution(docNum, topic);
+          case blda:
+            return blda_model->getDocTopDist(docNum, topic);
           default:
             break;
       }
@@ -105,6 +116,8 @@ double TopicModelling::getDistribution(int topic, int docNum){
             return PLDA_WriteFiles(isfinal);
           case llda:
             return LLDA_WriteFiles(isfinal);
+          case blda:
+            return BLDA_WriteFiles(isfinal);
           default:
             break;
       }
@@ -118,6 +131,8 @@ double TopicModelling::getDistribution(int topic, int docNum){
             return PLDA_LDA(MyCount);
           case llda:
             return LIGHT_LDA(MyCount);
+          case blda:
+            return BLDA_LDA(MyCount);
           default:
             break;
       }
@@ -518,12 +533,10 @@ long TopicModelling::BLDA_LDA(string MyCount) {
 
   clock_t t = clock();
 
-  corpus* ldacorpus = read_data(const_cast<cahr*>(cfg->libsvmFile.c_str()));
-  LDA_Estimate blda_model;
-
+  blda_corpus* ldacorpus = read_data(const_cast<char*>(cfg->libsvmFile.c_str()));
   cfg->logger.log(debug, "BLDA setup completed. Starting estimate");
 
-  blda_model.runLDA(ldacorpus, numberOfTopics, numberOfIterations, 0.1, cfg->outputDir);
+  blda_model->runLDA(ldacorpus, numberOfTopics, numberOfIterations, 0.1, cfg->outputDir);
 
   cfg->logger.log(debug, "BLDA estimate completed");
 
@@ -532,15 +545,28 @@ long TopicModelling::BLDA_LDA(string MyCount) {
   outTop.open (cfg->outputDir + "/topic.txt");
   outTop<<"topic\tdist\twords"<<endl;
   for (int topic = 0; topic < numberOfTopics; topic++) {
-      outTop<<topic<<"\t"<<this->gldaModel->getTopicDistribution(topic)<<"\t"<<this->gldaModel->maptopic2Words[topic]<<endl;
+      outTop<<topic<<"\t"<<this->blda_model->getTopicDist(topic)<<"\t"<<"a b c d e f g h i j k l m n o p q r s t"<<endl;
   }
 
   outTop.close();
-  #endif
   t = clock() - t;
   long time = (((float)t)/(CLOCKS_PER_SEC/1000));
 
   cfg->logger.log(debug, "#### Ending LDA ####");
 
   return time;
+}
+
+void TopicModelling::BLDA_WriteFiles(bool isfinal) {
+    ofstream distFile(cfg->outputDir + "/distribution" + (isfinal ? "" : outputFile) + ".txt");
+    stringstream out;
+    out<<"docID\ttopic\tdist\t..."<<endl;
+    for (int d=0; d<numberOfDocuments; d++) {
+        out<<d<<"\t";
+        for(int topic = 0; topic<numberOfTopics; topic++){
+            out << topic << "\t" << blda_model->getDocTopDist(d, topic)
+                << ((topic < (numberOfTopics - 1)) ? "\t" : "\n");
+        }
+    }
+    distFile<<out.str();
 }

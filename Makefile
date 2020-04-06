@@ -22,7 +22,6 @@ LIGHTLDA_HEADERS = $(shell find $(PROJECT)/LightLDA/src -type f -name "*.h")
 LIGHTLDA_SRC     = $(shell find $(PROJECT)/LightLDA/src -type f -name "*.cpp")
 LIGHTLDA_OBJ = $(LIGHTLDA_SRC:.cpp=.o)
 
-
 DUMP_BINARY_SRC = $(shell find $(PROJECT)/LightLDA/preprocess -type f -name "*.cpp")
 
 BIN_DIR = $(PROJECT)/LightLDA/bin
@@ -55,7 +54,6 @@ CUDA_LIB        = -L$(NVCC_HOME)/lib64 -lcuda -lcudart
 CUDA_FLAGS      = -O3 -m64 -gencode $(GPU_ARCH_FLAG)
 
 
-
 # Project configuration
 INCLUDE		= $(CUDA_INC)
 LIB			= $(CUDA_LIB)
@@ -64,16 +62,17 @@ LIB			= $(CUDA_LIB)
 GLDAOBJS=	glda_dataset.o glda_utils.o glda_model.o glda_CUDASampling.o glda_sample_kernel.o
 PLDAOBJS=	plda_accumulative_model.o plda_cmd_flags.o plda_common.o plda_document.o plda_model.o plda_sampler.o
 OBJS=		main.o commons.o logger.o config.o document.o cluster.o myutils.o scanner.o dataProvenance.o geneticAlgorithm.o resultStatistics.o populationConfig.o parallelizables.o TopicModelling.o preProcessing.o wordFilter.o strtokenizer.o
+BLDA_OBJS= BleiLDA/lda-alpha.o BleiLDA/lda-data.o BleiLDA/lda-inference.o BleiLDA/utils.o BleiLDA/lda-estimate.o BleiLDA/lda-model.o
 
 LIGHTLDAOBJS=  LightLDA/bin/dump_binary LightLDA/src/alias_table.o LightLDA/src/document.o LightLDA/src/meta.o LightLDA/src/common.o LightLDA/src/eval.o LightLDA/src/model.o LightLDA/src/data_block.o LightLDA/src/sampler.o LightLDA/src/data_stream.o LightLDA/src/lightlda.o LightLDA/src/trainer.o LightLDA/multiverso/src/multiverso/aggregator.o LightLDA/multiverso/src/multiverso/barrier.o LightLDA/multiverso/src/multiverso/communicator.o LightLDA/multiverso/src/multiverso/data_block.o LightLDA/multiverso/src/multiverso/delta_pool.o LightLDA/multiverso/src/multiverso/endpoint_list.o LightLDA/multiverso/src/multiverso/lock.o LightLDA/multiverso/src/multiverso/log.o LightLDA/multiverso/src/multiverso/mpi_util.o LightLDA/multiverso/src/multiverso/msg_pack.o LightLDA/multiverso/src/multiverso/multiverso.o LightLDA/multiverso/src/multiverso/parameter_loader.o LightLDA/multiverso/src/multiverso/row_iter.o LightLDA/multiverso/src/multiverso/row.o LightLDA/multiverso/src/multiverso/server.o LightLDA/multiverso/src/multiverso/stop_watch.o LightLDA/multiverso/src/multiverso/table_iter.o LightLDA/multiverso/src/multiverso/table.o LightLDA/multiverso/src/multiverso/trainer.o LightLDA/multiverso/src/multiverso/vector_clock.o LightLDA/multiverso/src/multiverso/zmq_util.o
 
 MAIN=           main
 
 all: $(OBJS) $(GLDAOBJS) $(PLDAOBJS)
-	$(CXX) -o $(MAIN) $(OBJS) $(GLDAOBJS) $(PLDAOBJS) $(LIGHTLDAOBJS) ${LIB} ${CXXFLAGS}
+	$(CXX) -o $(MAIN) $(OBJS) $(GLDAOBJS) $(PLDAOBJS) $(BLDA_OBJS) $(LIGHTLDAOBJS) ${LIB} ${CXXFLAGS}
 
 no_cuda: $(OBJS) $(PLDAOBJS)
-	$(CXX) -o $(MAIN) $(OBJS) $(PLDAOBJS) ${CXXFLAGS}
+	$(CXX) -o $(MAIN) $(OBJS) $(PLDAOBJS) $(BLDA_OBJS) ${CXXFLAGS}
 
 main.o: ./main.cpp
 	$(CXX) -c -o main.o ./main.cpp $(CXXFLAGS)
@@ -103,7 +102,7 @@ dataProvenance.o: ./dataProvenance.cpp
 	$(CXX) -c -o dataProvenance.o ./dataProvenance.cpp $(CXXFLAGS)
 
 geneticAlgorithm.o: ./geneticAlgorithm.cpp
-	$(CXX) -c -o geneticAlgorithm.o ./geneticAlgorithm.cpp $(CXXFLAGS) $(LLDAFLAGS) $(INC_FLAGS) $(LD_FLAGS)
+	$(CXX) -c -o geneticAlgorithm.o ./geneticAlgorithm.cpp $(CXXFLAGS)
 
 resultStatistics.o: ./resultStatistics.cpp
 	$(CXX) -c -o resultStatistics.o ./resultStatistics.cpp $(CXXFLAGS)

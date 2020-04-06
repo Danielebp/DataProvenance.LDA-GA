@@ -25,8 +25,8 @@
  */
 
 
-double LDA_Estimate::doc_e_step(document* doc, double* gamma, double** phi,
-                  lda_model* model, lda_suffstats* ss)
+double LDA_Estimate::doc_e_step(blda_document* doc, double* gamma, double** phi,
+                  blda_model* model, blda_suffstats* ss)
 {
     double likelihood;
     int n, k;
@@ -65,7 +65,7 @@ double LDA_Estimate::doc_e_step(document* doc, double* gamma, double** phi,
  *
  */
 
-void write_word_assignment(FILE* f, document* doc, double** phi, lda_model* model)
+void write_word_assignment(FILE* f, blda_document* doc, double** phi, blda_model* model)
 {
     int n;
 
@@ -104,35 +104,79 @@ void LDA_Estimate::save_gamma(char* filename, double** gamma, int num_docs, int 
 }
 
 
+LDA_Estimate::LDA_Estimate(int ndocs, int ntopics){
+    NDOCS = ndocs;
+    NTOPICS = ntopics;
+    docTopDist = (double**)malloc(sizeof(double*)*(NDOCS));
+    for (int d = 0; d < NDOCS; d++)
+        docTopDist[d] = (double*)malloc(sizeof(double) * NTOPICS);
+    topDist = (double*)malloc(sizeof(double)*NTOPICS);
+}
+
+LDA_Estimate::~LDA_Estimate(){
+    for (int d = 0; d < NDOCS; d++)
+        free(docTopDist[d]);
+    
+    free(docTopDist);
+    free(topDist);
+}
+
+double LDA_Estimate::getDocTopDist(int doc, int topic){
+    double total = 0;
+    for (int t = 0; t < NTOPICS; t++){
+        total += docTopDist[doc][t];
+    }
+
+    return (docTopDist[doc][topic]/total);
+}
+
+int LDA_Estimate::getMainTopic(int doc){
+    int maxID = -1;
+    int maxDist = -1;
+    for (int t = 0; t < NTOPICS; t++){
+        if(docTopDist[doc][t]>maxDist){
+            maxID = t;
+            maxDist = docTopDist[doc][t];
+        }
+    }
+
+    return maxID;
+}
+
+double LDA_Estimate::getTopicDist(int topic){
+    double total = 0;
+    for (int t = 0; t < NTOPICS; t++){
+        total += topDist[t];
+    }
+
+    return (topDist[topic]/total);
+}
+
 /*
  * run_em
  *
  */
 
-void LDA_Estimate::run_em(char* start, char* directory, corpus* corpus)
+void LDA_Estimate::run_em(char* start, char* directory, blda_corpus* corpus)
 {
     int d, n;
-    lda_model *model = NULL;
-    double **var_gamma, **phi;
+    blda_model *model = NULL;
+    double **phi;
 
     // allocate variational parameters
     printf("allocating parameters\n");
 
-    var_gamma = (double**)malloc(sizeof(double*)*(corpus->num_docs));
-    for (d = 0; d < corpus->num_docs; d++)
-	var_gamma[d] = (double*)malloc(sizeof(double) * NTOPICS);
-
     int max_length = max_corpus_length(corpus);
     phi = (double**)malloc(sizeof(double*)*max_length);
     for (n = 0; n < max_length; n++)
-	phi[n] = (double*)malloc(sizeof(double) * NTOPICS);
+	      phi[n] = (double*)malloc(sizeof(double) * NTOPICS);
 
     // initialize model
     printf("initializing model\n");
 
     char filename[100];
 
-    lda_suffstats* ss = NULL;
+    blda_suffstats* ss = NULL;
     if (strcmp(start, "seeded")==0)
     {
         model = new_lda_model(corpus->num_terms, NTOPICS);
@@ -186,9 +230,9 @@ void LDA_Estimate::run_em(char* start, char* directory, corpus* corpus)
 
         for (d = 0; d < corpus->num_docs; d++)
         {
-            if ((d % 1000) == 0) printf("document %d\n",d);
+            if ((d % (corpus->num_docs/10)) == 0) printf("document %d\n",d);
             likelihood += doc_e_step(&(corpus->docs[d]),
-                                     var_gamma[d],
+                                     docTopDist[d],
                                      phi,
                                      model,
                                      ss);
@@ -213,7 +257,7 @@ void LDA_Estimate::run_em(char* start, char* directory, corpus* corpus)
             sprintf(filename,"%s/%03d",directory, i);
             save_lda_model(model, filename);
             sprintf(filename,"%s/%03d.gamma",directory, i);
-            save_gamma(filename, var_gamma, corpus->num_docs, model->num_topics);
+            save_gamma(filename, docTopDist, corpus->num_docs, model->num_topics);
         }
     }
 
@@ -222,7 +266,13 @@ void LDA_Estimate::run_em(char* start, char* directory, corpus* corpus)
     sprintf(filename,"%s/final",directory);
     save_lda_model(model, filename);
     sprintf(filename,"%s/final.gamma",directory);
-    save_gamma(filename, var_gamma, corpus->num_docs, model->num_topics);
+    save_gamma(filename, docTopDist, corpus->num_docs, model->num_topics);
+
+    // copies topic distribution
+    // TODO: investigate this, class_total might not be the distribution
+    for(int t=0; t<NTOPICS; t++){
+        topDist[t] = ss->class_total[t];
+    }
 
     // output the word assignments (for visualization)
 
@@ -231,7 +281,7 @@ void LDA_Estimate::run_em(char* start, char* directory, corpus* corpus)
     for (d = 0; d < corpus->num_docs; d++)
     {
         if ((d % 100) == 0) printf("final e step document %d\n",d);
-        likelihood += lda_inference(&(corpus->docs[d]), model, var_gamma[d], phi);
+        likelihood += lda_inference(&(corpus->docs[d]), model, docTopDist[d], phi);
         write_word_assignment(w_asgn_file, &(corpus->docs[d]), phi, model);
     }
     fclose(w_asgn_file);
@@ -279,7 +329,7 @@ void LDA_Estimate::init_settings(float convergence, int alpha)
  */
 
 
- int LDA_Estimate::runLDA(corpus* corpus, int ntopics, int iter, float iniAlpha, string outFolder)
+ int LDA_Estimate::runLDA(blda_corpus* corpus, int ntopics, int iter, float iniAlpha, string outFolder)
  {
      init_settings(0.0001, 1);
 

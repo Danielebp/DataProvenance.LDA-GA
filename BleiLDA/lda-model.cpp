@@ -24,7 +24,7 @@
  *
  */
 
-void lda_mle(lda_model* model, lda_suffstats* ss, int estimate_alpha)
+void lda_mle(blda_model* model, blda_suffstats* ss, int estimate_alpha)
 {
     int k; int w;
 
@@ -57,13 +57,13 @@ void lda_mle(lda_model* model, lda_suffstats* ss, int estimate_alpha)
  *
  */
 
-lda_suffstats* new_lda_suffstats(lda_model* model)
+blda_suffstats* new_lda_suffstats(blda_model* model)
 {
     int num_topics = model->num_topics;
     int num_terms = model->num_terms;
     int i,j;
 
-    lda_suffstats* ss = (lda_suffstats*)malloc(sizeof(lda_suffstats));
+    blda_suffstats* ss = (blda_suffstats*)malloc(sizeof(blda_suffstats));
     ss->class_total = (double*)malloc(sizeof(double)*num_topics);
     ss->class_word = (double**)malloc(sizeof(double*)*num_topics);
     for (i = 0; i < num_topics; i++)
@@ -84,7 +84,7 @@ lda_suffstats* new_lda_suffstats(lda_model* model)
  *
  */
 
-void zero_initialize_ss(lda_suffstats* ss, lda_model* model)
+void zero_initialize_ss(blda_suffstats* ss, blda_model* model)
 {
     int k, w;
     for (k = 0; k < model->num_topics; k++)
@@ -100,7 +100,7 @@ void zero_initialize_ss(lda_suffstats* ss, lda_model* model)
 }
 
 
-void random_initialize_ss(lda_suffstats* ss, lda_model* model)
+void random_initialize_ss(blda_suffstats* ss, blda_model* model)
 {
     int num_topics = model->num_topics;
     int num_terms = model->num_terms;
@@ -116,11 +116,11 @@ void random_initialize_ss(lda_suffstats* ss, lda_model* model)
 }
 
 
-void corpus_initialize_ss(lda_suffstats* ss, lda_model* model, corpus* c)
+void corpus_initialize_ss(blda_suffstats* ss, blda_model* model, blda_corpus* c)
 {
     int num_topics = model->num_topics;
     int i, j, k, d, n;
-    document* doc;
+    blda_document* doc;
     int seen[num_topics][NUM_INIT];
     int already_selected;
 
@@ -159,11 +159,11 @@ void corpus_initialize_ss(lda_suffstats* ss, lda_model* model, corpus* c)
     }
 }
 
-void manual_initialize_ss(char *seedfile, lda_suffstats* ss, lda_model* model, corpus* c)
+void manual_initialize_ss(char *seedfile, blda_suffstats* ss, blda_model* model, blda_corpus* c)
 {
     int num_topics = model->num_topics;
     int i, k, d, n, err;
-    document* doc;
+    blda_document* doc;
 
     FILE *seeds = fopen(seedfile,"r");
     if (seeds == NULL) {
@@ -208,12 +208,12 @@ void manual_initialize_ss(char *seedfile, lda_suffstats* ss, lda_model* model, c
  *
  */
 
-lda_model* new_lda_model(int num_terms, int num_topics)
+blda_model* new_lda_model(int num_terms, int num_topics)
 {
     int i,j;
-    lda_model* model;
+    blda_model* model;
 
-    model = (lda_model*)malloc(sizeof(lda_model));
+    model = (blda_model*)malloc(sizeof(blda_model));
     model->num_topics = num_topics;
     model->num_terms = num_terms;
     model->alpha = 1.0;
@@ -233,7 +233,7 @@ lda_model* new_lda_model(int num_terms, int num_topics)
  *
  */
 
-void free_lda_model(lda_model* model)
+void free_lda_model(blda_model* model)
 {
     int i;
 
@@ -250,7 +250,7 @@ void free_lda_model(lda_model* model)
  *
  */
 
-void save_lda_model(lda_model* model, char* model_root)
+void save_lda_model(blda_model* model, char* model_root)
 {
     char filename[100];
     FILE* fileptr;
@@ -277,7 +277,7 @@ void save_lda_model(lda_model* model, char* model_root)
 }
 
 
-lda_model* load_lda_model(char* model_root)
+blda_model* load_lda_model(char* model_root)
 {
     char filename[100];
     FILE* fileptr;
@@ -292,7 +292,7 @@ lda_model* load_lda_model(char* model_root)
     fscanf(fileptr, "alpha %f\n", &alpha);
     fclose(fileptr);
 
-    lda_model* model = new_lda_model(num_terms, num_topics);
+    blda_model* model = new_lda_model(num_terms, num_topics);
     model->alpha = alpha;
 
     sprintf(filename, "%s.beta", model_root);

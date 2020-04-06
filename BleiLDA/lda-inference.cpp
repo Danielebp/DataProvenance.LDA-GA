@@ -25,7 +25,7 @@ int VAR_MAX_ITER;
  *
  */
 
-double lda_inference(document* doc, lda_model* model, double* var_gamma, double** phi)
+double lda_inference(blda_document* doc, blda_model* model, double* var_gamma, double** phi)
 {
     double converged = 1;
     double phisum = 0, likelihood = 0;
@@ -74,13 +74,16 @@ double lda_inference(document* doc, lda_model* model, double* var_gamma, double*
                 digamma_gam[k] = digamma(var_gamma[k]);
             }
         }
-
+    
         likelihood = compute_likelihood(doc, model, phi, var_gamma);
         assert(!isnan(likelihood));
         converged = (likelihood_old - likelihood) / likelihood_old;
         likelihood_old = likelihood;
 
         // printf("[LDA INF] %8.5f %1.3e\n", likelihood, converged);
+    }
+    for (k = 0; k < model->num_topics; k++){
+        printf("Topic %d distribution: %f\n", k, var_gamma[k]);
     }
     return(likelihood);
 }
@@ -92,7 +95,7 @@ double lda_inference(document* doc, lda_model* model, double* var_gamma, double*
  */
 
 double
-compute_likelihood(document* doc, lda_model* model, double** phi, double* var_gamma)
+compute_likelihood(blda_document* doc, blda_model* model, double** phi, double* var_gamma)
 {
     double likelihood = 0, digsum = 0, var_gamma_sum = 0, dig[model->num_topics];
     int k, n;

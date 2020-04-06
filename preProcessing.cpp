@@ -180,13 +180,13 @@ void createBleiLDAFiles(ConfigOptions* cfg){
 
         // write word map
         ofstream outWordMap;
-        outWordMap.open (cfg->wordmapfile);
+        outWordMap.open (cfg->wordmapFile);
         for (pair<string, int> element : word2id) {
             outWordMap<<element.second<<"\t"<<element.first<<"\t"<<wordCountTot[element.second]<<endl;
         }
         outWordMap.close();
 
-        return 0;
+        return;
 
 }
 
@@ -204,8 +204,8 @@ unordered_map<string, Document> prepareData(ConfigOptions* cfg){
 
     switch (cfg->ldaLibrary) {
          case llda:
-            cfg.logger.log(debug, "Creating LightLDA files");
-            createLightLDAFiles(&cfg, documentsMap.size());
+            cfg->logger.log(debug, "Creating LightLDA files");
+            createLightLDAFiles(cfg, documentsMap.size());
             break;
          case blda:
             createBleiLDAFiles(cfg);

@@ -18,4 +18,4 @@ unordered_map<string, Document> loadPreProcessed(ConfigOptions* cfg);
 void createLightLDAFiles(ConfigOptions* cfg, int ndocs);
 void createBleiLDAFiles(ConfigOptions* cfg);
 
-prepareData prepareData(ConfigOptions* cfg);
+unordered_map<string, Document> prepareData(ConfigOptions* cfg);

@@ -62,6 +62,12 @@ private:
     //#####################################################
     multiverso::lightlda::LightLDA* lightldaModel;
     map<int, string>* LLDA_doc_index_map;
+
+    //#####################################################
+    //############### BleiLDA Variables ###################
+    //#####################################################
+    LDA_Estimate* blda_model;
+
 public:
     vector<learning_lda::LDADocument*>* PLDA_corpus;
   TopicModelling(int numberOfTopics, int numberOfIterations, int numberOfDocuments, long seed, ConfigOptions* cfg);
@@ -106,6 +112,12 @@ public:
   void LLDA_WriteFiles(bool isfinal) ;
   long LIGHT_LDA(string MyCount);
   double LLDA_getDistribution(int topic);
+
+  //#####################################################
+  //############### BleiLDA Functions ##################
+  //#####################################################
+  long BLDA_LDA(string MyCount);
+  void BLDA_WriteFiles(bool isfinal) ;
 };
 
 #endif
