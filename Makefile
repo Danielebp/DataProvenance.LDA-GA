@@ -35,10 +35,10 @@ GPU_ARCH_FLAG   = arch=compute_70,code=sm_70
 
 
 # C++ compiler configuration
-CXX             = g++
-CXXFLAGS        = -O0 -g -Wall -std=c++11 #$(LLDAFLAGS) $(INC_FLAGS) $(LD_FLAGS)
-PLDAFLAGS	= -O0 -g -Wall -Wno-sign-compare
-GLDAFLAGS        = -O0 -g -std=c++11
+CXX				= g++
+CXXFLAGS	= -O3 -Wall -std=c++11 #$(LLDAFLAGS) $(INC_FLAGS) $(LD_FLAGS)
+PLDAFLAGS	= -O3 -Wall -Wno-sign-compare
+GLDAFLAGS	= -O3 -std=c++11
 
 # CUDA compiler configuration
 NVCC_HOME       = /usr/local/cuda
