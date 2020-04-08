@@ -1,12 +1,6 @@
 #define STRIP_FLAG_HELP 0
 
-#include <gflags/gflags.h>
-
-#include "Bigraph.hpp"
-#include "Vocab.hpp"
-#include "Utils.hpp"
-#include <exception>
-#include <algorithm>
+#include "format.hpp"
 using namespace std;
 
 DEFINE_string(prefix, "./prefix", "prefix of output files");
@@ -91,7 +85,7 @@ void text_to_bin(std::string in, std::string out)
     cout << "Done. Processed " << num_tokens << " tokens." << endl;
 }
 
-int main(int argc, char** argv)
+int wlda_format(int argc, char** argv)
 {
     gflags::SetUsageMessage("Usage : ./transform [ flags... ]");
 	gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -116,7 +110,7 @@ int main(int argc, char** argv)
 
     if (FLAGS_test)
         text_to_bin<true>(FLAGS_input, FLAGS_output);
-    else 
+    else
         text_to_bin<false>(FLAGS_input, FLAGS_output);
 
 	return 0;

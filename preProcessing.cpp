@@ -214,6 +214,13 @@ unordered_map<string, Document> prepareData(ConfigOptions* cfg){
          case blda:
             createBleiLDAFiles(cfg);
             break;
+         case wlda:
+            char* args[] = {(char*)"format",
+                       (char*)"-input", (char*)cfg->ldaInputFile.cstr(),
+                       (char*)"-prefix", (char*)(cfg->inputDir + "/wlda_input"),
+                        NULL};
+            wlda_format();
+            break;
          default:
            break;
      }

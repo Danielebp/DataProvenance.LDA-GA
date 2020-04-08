@@ -27,6 +27,7 @@
 #include "LightLDA/src/lightlda.h"
 #endif
 #include "BleiLDA/lda-estimate.h"
+#include "WarpLDA/src/warp.hpp"
 
 using namespace std;
 
@@ -71,6 +72,11 @@ private:
     //#####################################################
     LDA_Estimate* blda_model;
 
+    //#####################################################
+    //############### WarpLDA Variables ###################
+    //#####################################################
+    double** wldaDocTopDist;
+
 public:
     vector<learning_lda::LDADocument*>* PLDA_corpus;
   TopicModelling(int numberOfTopics, int numberOfIterations, int numberOfDocuments, long seed, ConfigOptions* cfg);
@@ -85,6 +91,7 @@ public:
   void WriteFiles(bool isfinal);
   long LDA(string MyCount = "");
   int getMainTopic(int docNum);
+  bool LoadDocMap();
 
   //#####################################################
   //############## GLDA Functions #######################
@@ -123,6 +130,14 @@ public:
   //#####################################################
   long BLDA_LDA(string MyCount);
   void BLDA_WriteFiles(bool isfinal) ;
+
+  //#####################################################
+  //################ WarpLDA Functions ##################
+  //#####################################################
+  long WLDA_LDA(string MyCount);
+  bool WLDA_loadDistributions();
+  bool WLDA_loadWords(vector<string>* topWords);
+
 };
 
 #endif

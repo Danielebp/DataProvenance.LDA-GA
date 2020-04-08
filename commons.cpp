@@ -18,12 +18,16 @@ string getLogLabel(LogLevel level){
 
 string getLibraryLabel(LDALibrary library){
 	switch(library) {
-		case plda: 
+		case plda:
 			return "PLDA";
 		case llda:
 			return "LightLDA";
 		case glda:
 			return "GLDA";
+        case blda:
+            return "BleiLDA";
+        case wlda:
+            return "WarpLDA";
 	}
 	return "";
 }

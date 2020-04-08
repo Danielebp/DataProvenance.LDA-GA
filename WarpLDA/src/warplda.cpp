@@ -507,7 +507,7 @@ void WarpLDA<MH>::writeInfo(std::string vocab_fname, std::string info, uint32_t 
 		}
 	});
 	std::ofstream fou1(info+".full.txt");
-	std::ofstream fou2(info+".words.txt");
+	std::ofstream fou2(info+".txt");
 	std::vector<std::vector<std::pair<double, TVID>>> ans;
 	for (TTopic k = 0; k < K; k++)
 	{

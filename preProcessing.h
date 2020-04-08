@@ -10,6 +10,7 @@
 #include "config.h"
 #include "wordFilter.h"
 #include "LightLDA/preprocess/dump_binary.h"
+#include "WarpLDA/src/format.hpp"
 
 using namespace std;
 

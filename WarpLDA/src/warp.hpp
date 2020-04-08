@@ -8,6 +8,6 @@
 #include "warplda.hpp"
 
 
-int run_lda(int argc, char** argv);
+int run_wlda(int argc, char** argv);
 
 #endif

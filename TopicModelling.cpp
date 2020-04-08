@@ -25,15 +25,25 @@ TopicModelling::TopicModelling(int numberOfTopics, int numberOfIterations, int n
             break;
 #if defined(USELLDA)
           case llda:
-		this->lightldaModel = new multiverso::lightlda::LightLDA();
-		this->doc_index_map = new map<int, string>();
+    		this->lightldaModel = new multiverso::lightlda::LightLDA();
+    		this->doc_index_map = new map<int, string>();
+            LoadDocMap();
             break;
 #endif
           case blda:
             blda_model = new LDA_Estimate(numberOfDocuments, numberOfTopics);
     		this->doc_index_map = new map<int, string>();
+            LoadDocMap();
             break;
+          case wlda:
+            this->doc_index_map = new map<int, string>();
+            LoadDocMap();
+            wldaDocTopDist = new double*[numberOfDocuments];
+            for(unsigned i = 0; i < numberOfDocuments; ++i)
+                wldaDocTopDist[i] = new double[numberOfTopics];
           default:
+            this->doc_index_map = new map<int, string>();
+            LoadDocMap();
             break;
       }
   }
@@ -60,6 +70,11 @@ TopicModelling::~TopicModelling(){
           delete blda_model;
           delete doc_index_map;
           break;
+        case wlda:
+          delete doc_index_map;
+          for(int i = 0; i < numberOfDocuments; ++i)
+            delete [] wldaDocTopDist[i];
+          delete [] wldaDocTopDist;
         default:
                 break;
       }
@@ -101,6 +116,8 @@ double TopicModelling::getDistribution(int topic, int docNum){
 #endif
           case blda:
             return blda_model->getDocTopDist(docNum, topic);
+          case wlda:
+            return wldaDocTopDist[docNum][topic];
           default:
             break;
       }
@@ -115,14 +132,8 @@ double TopicModelling::getDistribution(int topic, int docNum){
 #endif
           case plda:
             return PLDA_getDocNameByNumber(num);
-#if defined(USELLDA)
-          case llda:
-            return (*doc_index_map)[num];
-#endif
-          case blda:
-            return (*doc_index_map)[num];
           default:
-            break;
+            return (*doc_index_map)[num];
       }
         return "";
   }
@@ -165,6 +176,23 @@ double TopicModelling::getDistribution(int topic, int docNum){
 
       return 0;
   }
+
+  bool TopicModelling::LoadDocMap(){
+      cfg->logger.log(debug, "Reading Doc Map: " + cfg->ldaInputFile);
+      string line;
+      int docID = 0;
+      ifstream ldaInputFile;
+      ldaInputFile.open (cfg->ldaInputFile);
+      while (getline(ldaInputFile, line)) {
+          // Each line has top 20 words of a topic
+          string name = line.substr(0, line.find(cfg->delimiter));
+          (*doc_index_map)[docID++] = name;
+
+      }
+      ldaInputFile.close()
+
+      return true;
+}
 
 //#####################################################
 //############## GLDA Functions #######################
@@ -463,25 +491,6 @@ long TopicModelling::LIGHT_LDA(string MyCount){
     string niters = to_string(numberOfIterations);
     string ndocs = to_string(numberOfDocuments);
 
-    cfg->logger.log(debug, "Reading Doc Map: " + cfg->docmapFile);
-
-    Scanner sc2;
-    try {
-        cfg->logger.log(debug, "Oppenning file");
-        sc2.open(cfg->docmapFile);
-	cfg->logger.log(debug, "Oppened file");
-        do {
-            int idx = sc2.nextInt();
-            string name = sc2.nextWord();
-           (*doc_index_map)[idx] = name;
-        } while(sc2.nextLine());
-    } catch (exception& e) {
-
-        cfg->logger.log(error, "Hit error while reading the Doc Map File");
-        cfg->logger.log(error, e.what());
-    }
-    sc2.close();
-
     cfg->logger.log(debug, "Starting LightLDA estimate");
     // -num_vocabs 111400 -num_topics 1000 -num_iterations 2 -alpha 0.1 -beta 0.01 -mh_steps 2 -num_local_workers 1 -num_blocks 1 -max_num_document 300000 -input_dir ~/git_files/DataProvenance.LDA-GA/LightLDA/example/data/nytimes/ -data_capacity 800
     string num_vocab = "111400";
@@ -608,4 +617,99 @@ void TopicModelling::BLDA_WriteFiles(bool isfinal) {
         }
     }
     distFile<<out.str();
+}
+
+// #######################################################
+// ###################### WarpLDA ########################
+// #######################################################
+long TopicModelling::WLDA_LDA(string MyCount) {
+  srand(seed);
+  cfg->logger.log(debug, "#### Starting LDA with " + to_string(numberOfTopics)
+                + " topics and " + to_string(numberOfIterations) + " iterations ####");
+
+  outputFile = MyCount;
+
+  clock_t t = clock();
+
+  char* args[] = {(char*)"warplda",
+                (char*)"--prefix", (char*)(cfg->inputDir + "/wlda_input"),
+                (char*)"--k", (char*)"20",
+                (char*)"--niter", (char*)"500",
+                (char*)"--dir", (char*)(cfg->outputDir.c_str()),
+                 NULL};
+
+  cfg->logger.log(debug, "WLDA setup completed. Starting estimate");
+
+  run_wlda(9, args);
+
+  cfg->logger.log(debug, "WLDA estimate completed");
+
+  // load doc x topic distribution from prefix.dist files
+  if(!WLDA_loadDistributions())
+    cfg->logger.log(error, "Error reading Doc x Topic distributions");
+
+  // load words from prefix.info.words.txt file
+  vector<string> topWords;
+  if(!WLDA_loadWords(&topWords))
+    cfg->logger.log(error, "Error reading TopWords for topics");
+
+  // TODO: load topic distribution somehow
+  vector<double> topDist;
+
+  // write topic.txt
+  ofstream outTop;
+  outTop.open (cfg->outputDir + "/topic.txt");
+  outTop<<"topic\tdist\twords"<<endl;
+  for (int topic = 0; topic < numberOfTopics; topic++) {
+      outTop<<topic<<"\t"<<topDist[topic]<<"\t"<<topWords[topic]<<endl;
+  }
+
+  outTop.close();
+  t = clock() - t;
+  long time = (((float)t)/(CLOCKS_PER_SEC/1000));
+
+  cfg->logger.log(debug, "#### Ending LDA ####");
+
+  return time;
+}
+
+bool TopicModelling::WLDA_loadDistributions(){
+    Scanner sc2;
+    try {
+        sc2.open(cfg->outputDir + "/distribution.txt");
+        do {
+            int docID = sc2.nextInt();
+            for (unsigned t = 0; t<numberOfTopics; t++){
+                int topic  = sc2.nextInt();
+                double dist = sc2.nextDouble();
+                wldaDocTopDist[docID][topic] = dist;
+            }
+        } while(sc2.nextLine());
+    } catch (exception& e) {
+
+        cfg->logger.log(error, "Hit error while reading the Distribution File");
+        cfg->logger.log(error, e.what());
+        return false;
+    }
+    sc2.close();
+    return true;
+}
+
+bool TopicModelling::WLDA_loadWords(vector<string>* topWords){
+    string line;
+    try {
+        ifstream topWordsFile;
+        topWordsFile.open (cfg->outputDir + "/top_words.txt");
+        while (getline(topWordsFile, line)) {
+            // Each line has top 20 words of a topic
+            topWords->push_back(line);
+        }
+        topWordsFile.close()
+    } catch (exception& e) {
+        cfg->logger.log(error, "Hit error while reading the Distribution File");
+        cfg->logger.log(error, e.what());
+        return false;
+    }
+
+    return true;
 }

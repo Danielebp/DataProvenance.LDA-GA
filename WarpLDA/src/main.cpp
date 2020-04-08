@@ -14,9 +14,9 @@ int main(int argc, char** argv)
                   (char*)"--niter", (char*)"300",
                   NULL};
 
-  run_lda(7, arg2);
+  run_wlda(7, arg2);
   printf("\n\n\nFinished first!\n\n\n");
-  run_lda(7, arg1);
+  run_wlda(7, arg1);
 
   return 0;
 }
