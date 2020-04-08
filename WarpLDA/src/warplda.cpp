@@ -447,30 +447,6 @@ void WarpLDA<MH>::storeZ(std::string filez)  {
 }
 
 template <unsigned MH>
-void WarpLDA<MH>::storeDocTopicDistribution(std::string filez, int nTopics)  {
-    std::ofstream fou(filez); // docID topicID dist docID dist
-    int doc = 0;
-    double* dist;
-	shuffle->VisitURemoteDataSequential([&](TUID d, TDegree N, const TVID* lnks, RemoteArray64<TData> &data)
-    {
-        dist = new double[nTopics]();
-        fou << doc;
-        for (unsigned i = 0; i < N; i++)
-        {
-            dist[data[i].oldk]++;
-        }
-
-        for (unsigned i = 0; i<nTopics; i++){
-            fou << ' ' << i << ' ' << (dist[i]/N);
-        }
-        fou << '\n';
-        doc++;
-        delete dist;
-    });
-    fou.close();
-}
-
-template <unsigned MH>
 void WarpLDA<MH>::writeInfo(std::string vocab_fname, std::string info, uint32_t ntop)
 {
     Vocab vocab;
