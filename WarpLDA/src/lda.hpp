@@ -16,6 +16,7 @@ public:
     virtual void storeModel(std::string prefix) = 0;
     virtual void loadZ(std::string prefix) = 0;
     virtual void storeZ(std::string prefix) = 0;
+    virtual void storeDocTopicDistribution(std::string prefix, int nTopics) = 0;
     virtual void writeInfo(std::string vocab, std::string info, uint32_t ntop) = 0;
 };
 
