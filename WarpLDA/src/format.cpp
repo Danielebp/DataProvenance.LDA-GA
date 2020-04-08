@@ -15,13 +15,18 @@ DEFINE_string(vocab_out, "", "output vocabulary file");
 DEFINE_string(input, "", "input file");
 DEFINE_string(output, "", "output file");
 DEFINE_string(type, "text", "type of input: text, uci, libsvm");
-DEFINE_int32(skip, 2, "skip num of words at first of each line (only for text)");
+DEFINE_int32(skip, 0, "skip num of words at first of each line (only for text)");
 DEFINE_bool(test, false, "test mode (throw away unseen words)");
 
 template <bool testMode = false>
 void parse_document(string &line, std::vector<TVID> &v, Vocab &vocab)
 {
-    std::istringstream sin(line);
+    string delimiter = "##lda_delimiter##";
+
+    int pos = line.find(delimiter);
+    string content = line.substr(pos+17);
+
+    std::istringstream sin(content);
     std::string w;
     v.clear();
     if (FLAGS_type == "text")
