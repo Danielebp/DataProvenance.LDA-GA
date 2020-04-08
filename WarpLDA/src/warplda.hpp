@@ -22,6 +22,7 @@ public:
     virtual void storeModel(std::string prefix) override;
     virtual void loadZ(std::string prefix) override;
     virtual void storeZ(std::string prefix) override;
+    virtual void storeDocTopicDistribution(std::string prefix, int nTopics) override;
     virtual void writeInfo(std::string vocab, std::string info, uint32_t ntop) override;
 
 private:
