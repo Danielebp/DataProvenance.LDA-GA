@@ -13,6 +13,7 @@ DEFINE_string(info, "", "info");
 DEFINE_string(vocab, "", "vocabulary file");
 DEFINE_string(topics, "", "topic assignment file");
 DEFINE_string(z, "", "Z file name");
+DEFINE_string(dtdist, "", "Doc Topic Dist file name");
 DEFINE_bool(estimate, false, "estimate model parameters");
 DEFINE_bool(inference, false, "inference latent topic assignments");
 DEFINE_bool(writeinfo, true, "write info");
@@ -29,6 +30,7 @@ int run_lda(int argc, char** argv)
     FLAGS_vocab = "";
     FLAGS_topics  = "";
     FLAGS_z = "";
+    FLAGS_dtdist = "";
 
     gflags::SetUsageMessage("Usage : ./warplda [ flags... ]");
 	gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -43,6 +45,8 @@ int run_lda(int argc, char** argv)
     SetIfEmpty(FLAGS_info, FLAGS_prefix + ".info");
     SetIfEmpty(FLAGS_vocab, FLAGS_prefix + ".vocab");
     SetIfEmpty(FLAGS_topics, FLAGS_prefix + ".topics");
+    SetIfEmpty(FLAGS_dtdist, FLAGS_prefix + ".dist");
+
 
     LDA *lda = new WarpLDA<1>();
     lda->loadBinary(FLAGS_bin);
@@ -63,7 +67,8 @@ int run_lda(int argc, char** argv)
         {
             SetIfEmpty(FLAGS_z, FLAGS_prefix + ".z.estimate");
             std::cout << "Dump Z " << FLAGS_z << std::endl;
-            lda->storeZ(FLAGS_z);
+            //lda->storeZ(FLAGS_z);
+            lda->storeDocTopicDistribution(FLAGS_dtdist, FLAGS_k);
         }
     }
     else if(FLAGS_inference)
@@ -79,4 +84,3 @@ int run_lda(int argc, char** argv)
     }
 	return 0;
 }
-
