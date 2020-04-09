@@ -78,7 +78,7 @@ void WarpLDA<MH>::initialize()
     if (!testMode)
         reduce_ck();
 
-	printf("Initialization finished.\n");
+	//printf("Initialization finished.\n");
 }
 
 
@@ -297,9 +297,9 @@ void WarpLDA<MH>::estimate(int _K, float _alpha, float _beta, int _niter, int _p
             ppl = perplexity();
 
         double tm = clk.timeElapsed();
-		printf("Iteration %d, %f s, %.2f Mtokens/s, log_likelihood (per token) %lf", i, tm, (double)g.NE()/tm/1e6, total_log_likelihood/g.NE());
-        if (eval_perplexity) printf(" perplexity %lf\n", ppl);
-        else printf("\n");
+		//printf("Iteration %d, %f s, %.2f Mtokens/s, log_likelihood (per token) %lf", i, tm, (double)g.NE()/tm/1e6, total_log_likelihood/g.NE());
+      //  if (eval_perplexity) printf(" perplexity %lf\n", ppl);
+      //  else printf("\n");
 		fflush(stdout);
 	}
 }
@@ -325,9 +325,9 @@ void WarpLDA<MH>::inference(int niter, int _perperplexity_interval)
             ppl = perplexity<true>();
 
 		// Evaluate likelihood p(w_d | \hat\theta, \hat\phi)
-		printf("Iteration %d, %f s, %.2f Mtokens/s ", i, tm, (double)g.NE()/tm/1e6);
-        if (eval_perplexity) printf(" perplexity %lf\n", ppl);
-        else printf("\n");
+		//printf("Iteration %d, %f s, %.2f Mtokens/s ", i, tm, (double)g.NE()/tm/1e6);
+    //    if (eval_perplexity) printf(" perplexity %lf\n", ppl);
+    //    else printf("\n");
 		fflush(stdout);
 	}
 }
@@ -461,7 +461,7 @@ void WarpLDA<MH>::storeDocTopicDistribution(std::string filez, int nTopics)  {
         }
 
         for (unsigned i = 0; i<nTopics; i++){
-            fou << ' ' << i << ' ' << (dist[i]/N);
+            fou << '\t' << i << '\t' << (dist[i]/N);
         }
         fou << '\n';
         doc++;
@@ -599,7 +599,7 @@ double WarpLDA<MH>::perplexity()
                 L += entry.second;
                 prob += entry.second * (cxk.Get(entry.first) + beta) / (ck[entry.first] + beta_bar);
                 if ((cxk.Get(entry.first) + beta) / (ck[entry.first] + beta_bar) > 1) {
-                    std::cout << cxk.Get(entry.first) << ' ' << beta << ' ' << ck[entry.first] << ' ' << beta_bar << std::endl;
+                    //std::cout << cxk.Get(entry.first) << ' ' << beta << ' ' << ck[entry.first] << ' ' << beta_bar << std::endl;
                     throw std::runtime_error("what?");
                 }
             }

@@ -151,6 +151,8 @@ double TopicModelling::getDistribution(int topic, int docNum){
 #endif
           case blda:
             return BLDA_WriteFiles(isfinal);
+          case wlda:
+            return WLDA_WriteFiles(isfinal);   
           default:
             break;
       }
@@ -170,6 +172,8 @@ double TopicModelling::getDistribution(int topic, int docNum){
 #endif
           case blda:
             return BLDA_LDA(MyCount);
+          case wlda:
+            return WLDA_LDA(MyCount);
           default:
             break;
       }
@@ -655,8 +659,11 @@ long TopicModelling::WLDA_LDA(string MyCount) {
   if(!WLDA_loadWords(&topWords))
     cfg->logger.log(error, "Error reading TopWords for topics");
 
-  // TODO: load topic distribution somehow
   vector<double> topDist;
+  // TODO: load topic distribution somehow
+  for (int topic = 0; topic < numberOfTopics; topic++) {
+      topDist.push_back(0.0);
+  }
 
   // write topic.txt
   ofstream outTop;
@@ -678,7 +685,7 @@ long TopicModelling::WLDA_LDA(string MyCount) {
 bool TopicModelling::WLDA_loadDistributions(){
     Scanner sc2;
     try {
-        sc2.open(cfg->outputDir + "/distribution.txt");
+        sc2.open(cfg->outputDir + "/wdistribution.txt");
         do {
             int docID = sc2.nextInt();
             for (unsigned t = 0; t<numberOfTopics; t++){
@@ -715,3 +722,17 @@ bool TopicModelling::WLDA_loadWords(vector<string>* topWords){
 
     return true;
 }
+
+void TopicModelling::WLDA_WriteFiles(bool isfinal) {
+    ifstream idFile(cfg->outputDir + "/wdistribution.txt");
+    ofstream distFile(cfg->outputDir + "/distribution" + (isfinal ? "" : outputFile) + ".txt");
+    string line;
+    while (getline(idFile, line)) {
+        int pos = line.find("\t");
+        int docID = stoi(line.substr(0, pos));
+        string docName = getDocNameByNumber(docID);
+        distFile<<docName<<line.substr(pos)<<endl;
+    }
+}
+
+

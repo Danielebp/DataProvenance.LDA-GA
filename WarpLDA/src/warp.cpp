@@ -24,7 +24,6 @@ DEFINE_int32(perplexity, -1, "Interval to evaluate perplexity. -1 for don't eval
 
 int run_wlda(int argc, char** argv)
 {
-    std::cout<<"Starting WLDA"<<std::endl;
     // resets flags from previous executions
     FLAGS_bin = "";
     FLAGS_model = "";
@@ -46,8 +45,8 @@ int run_wlda(int argc, char** argv)
         FLAGS_dumpz = true;
 
     //input
-    SetIfEmpty(FLAGS_bin, FLAGS_dir + FLAGS_prefix + ".bin");
-    SetIfEmpty(FLAGS_vocab, FLAGS_dir + FLAGS_prefix + ".vocab");
+    SetIfEmpty(FLAGS_bin, FLAGS_prefix + ".bin");
+    SetIfEmpty(FLAGS_vocab, FLAGS_prefix + ".vocab");
 
     // not being used?
     SetIfEmpty(FLAGS_topics, FLAGS_dir + FLAGS_prefix + ".topics");
@@ -55,9 +54,8 @@ int run_wlda(int argc, char** argv)
     // output
     SetIfEmpty(FLAGS_model, FLAGS_dir + FLAGS_prefix + ".model");
     SetIfEmpty(FLAGS_info, FLAGS_dir + "top_words");
-    SetIfEmpty(FLAGS_dtdist, FLAGS_dir + "distribution.txt");
+    SetIfEmpty(FLAGS_dtdist, FLAGS_dir + "wdistribution.txt");
 
-    std::cout<<"Input File: "<<FLAGS_bin<<std::endl;
 
     LDA *lda = new WarpLDA<1>();
     lda->loadBinary(FLAGS_bin);
@@ -66,18 +64,18 @@ int run_wlda(int argc, char** argv)
         lda->estimate(FLAGS_k, FLAGS_alpha / FLAGS_k, FLAGS_beta, FLAGS_niter, FLAGS_perplexity);
         if (FLAGS_dumpmodel)
         {
-            std::cout << "Dump model " << FLAGS_model << std::endl;
+//            std::cout << "Dump model " << FLAGS_model << std::endl;
             lda->storeModel(FLAGS_model);
         }
         if (FLAGS_writeinfo)
         {
-            std::cout << "Write Info " << FLAGS_info << " ntop " << FLAGS_ntop << std::endl;
+//            std::cout << "Write Info " << FLAGS_info << " ntop " << FLAGS_ntop << std::endl;
             lda->writeInfo(FLAGS_vocab, FLAGS_info, FLAGS_ntop);
         }
         if (FLAGS_dumpz)
         {
             SetIfEmpty(FLAGS_z, FLAGS_prefix + ".z.estimate");
-            std::cout << "Dump Z " << FLAGS_z << std::endl;
+//            std::cout << "Dump Z " << FLAGS_z << std::endl;
             //lda->storeZ(FLAGS_z);
             lda->storeDocTopicDistribution(FLAGS_dtdist, FLAGS_k);
         }
@@ -89,7 +87,7 @@ int run_wlda(int argc, char** argv)
         if (FLAGS_dumpz)
         {
             SetIfEmpty(FLAGS_z, FLAGS_prefix + ".z.inference");
-            std::cout << "Dump Z " << FLAGS_z << std::endl;
+ //           std::cout << "Dump Z " << FLAGS_z << std::endl;
             lda->storeZ(FLAGS_z);
         }
     }

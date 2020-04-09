@@ -137,7 +137,7 @@ public:
   long WLDA_LDA(string MyCount);
   bool WLDA_loadDistributions();
   bool WLDA_loadWords(vector<string>* topWords);
-
+  void WLDA_WriteFiles(bool isfinal);
 };
 
 #endif
