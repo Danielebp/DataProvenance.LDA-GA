@@ -189,7 +189,7 @@ double TopicModelling::getDistribution(int topic, int docNum){
           (*doc_index_map)[docID++] = name;
 
       }
-      ldaInputFile.close()
+      ldaInputFile.close();
 
       return true;
 }
@@ -630,11 +630,13 @@ long TopicModelling::WLDA_LDA(string MyCount) {
   outputFile = MyCount;
 
   clock_t t = clock();
-
+  string winf = cfg->inputDir + "wlda_input";
+  string ntopics = to_string(numberOfTopics);
+  string niters = to_string(numberOfIterations);
   char* args[] = {(char*)"warplda",
-                (char*)"--prefix", (char*)(cfg->inputDir + "/wlda_input"),
-                (char*)"--k", (char*)"20",
-                (char*)"--niter", (char*)"500",
+                (char*)"--prefix", (char*)winf.c_str(),
+                (char*)"--k", (char*)ntopics.c_str(),
+                (char*)"--niter", (char*)niters.c_str(),
                 (char*)"--dir", (char*)(cfg->outputDir.c_str()),
                  NULL};
 
@@ -704,7 +706,7 @@ bool TopicModelling::WLDA_loadWords(vector<string>* topWords){
             // Each line has top 20 words of a topic
             topWords->push_back(line);
         }
-        topWordsFile.close()
+        topWordsFile.close();
     } catch (exception& e) {
         cfg->logger.log(error, "Hit error while reading the Distribution File");
         cfg->logger.log(error, e.what());

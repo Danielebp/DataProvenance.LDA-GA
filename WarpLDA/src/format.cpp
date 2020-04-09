@@ -3,7 +3,7 @@
 #include "format.hpp"
 using namespace std;
 
-DEFINE_string(prefix, "./prefix", "prefix of output files");
+DEFINE_string(myprefix, "./prefix", "prefix of output files");
 DEFINE_string(vocab_in, "", "input vocabulary file");
 DEFINE_string(vocab_out, "", "output vocabulary file");
 DEFINE_string(input, "", "input file");
@@ -87,15 +87,15 @@ void text_to_bin(std::string in, std::string out)
 
 int wlda_format(int argc, char** argv)
 {
-    gflags::SetUsageMessage("Usage : ./transform [ flags... ]");
+    //gflags::SetUsageMessage("Usage : ./transform [ flags... ]");
 	gflags::ParseCommandLineFlags(&argc, &argv, true);
 
 	if (FLAGS_input.empty())
-		FLAGS_input = FLAGS_prefix + ".txt";
+		FLAGS_input = FLAGS_myprefix + ".txt";
 	if (FLAGS_output.empty())
-		FLAGS_output = FLAGS_prefix + ".bin";
+		FLAGS_output = FLAGS_myprefix + ".bin";
 	if (FLAGS_vocab_out.empty())
-		FLAGS_vocab_out = FLAGS_prefix + ".vocab";
+		FLAGS_vocab_out = FLAGS_myprefix + ".vocab";
     if (FLAGS_vocab_in.empty() && (FLAGS_test || FLAGS_type != "text"))
         throw runtime_error("Input vocabulary is not specified.");
     if (FLAGS_vocab_in == FLAGS_vocab_out)

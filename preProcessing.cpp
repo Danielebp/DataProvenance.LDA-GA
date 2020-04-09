@@ -215,11 +215,15 @@ unordered_map<string, Document> prepareData(ConfigOptions* cfg){
             createBleiLDAFiles(cfg);
             break;
          case wlda:
+         {
+            string outf = cfg->inputDir + "wlda_input";
             char* args[] = {(char*)"format",
-                       (char*)"-input", (char*)cfg->ldaInputFile.cstr(),
-                       (char*)"-prefix", (char*)(cfg->inputDir + "/wlda_input"),
+                       (char*)"-input", (char*)cfg->ldaInputFile.c_str(),
+                       (char*)"-myprefix", (char*)outf.c_str(),
                         NULL};
-            wlda_format();
+            wlda_format(5, args);
+            
+         }
             break;
          default:
            break;

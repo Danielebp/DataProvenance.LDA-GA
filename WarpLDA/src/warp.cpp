@@ -24,6 +24,7 @@ DEFINE_int32(perplexity, -1, "Interval to evaluate perplexity. -1 for don't eval
 
 int run_wlda(int argc, char** argv)
 {
+    std::cout<<"Starting WLDA"<<std::endl;
     // resets flags from previous executions
     FLAGS_bin = "";
     FLAGS_model = "";
@@ -32,6 +33,7 @@ int run_wlda(int argc, char** argv)
     FLAGS_topics  = "";
     FLAGS_z = "";
     FLAGS_dtdist = "";
+    FLAGS_dir = "";
 
     gflags::SetUsageMessage("Usage : ./warplda [ flags... ]");
 	gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -55,6 +57,7 @@ int run_wlda(int argc, char** argv)
     SetIfEmpty(FLAGS_info, FLAGS_dir + "top_words");
     SetIfEmpty(FLAGS_dtdist, FLAGS_dir + "distribution.txt");
 
+    std::cout<<"Input File: "<<FLAGS_bin<<std::endl;
 
     LDA *lda = new WarpLDA<1>();
     lda->loadBinary(FLAGS_bin);

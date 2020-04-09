@@ -36,9 +36,10 @@ GPU_ARCH_FLAG   = arch=compute_70,code=sm_70
 
 # C++ compiler configuration
 CXX				= g++
-CXXFLAGS	= -O3 -Wall -std=c++11 #$(LLDAFLAGS) $(INC_FLAGS) $(LD_FLAGS)
+CXXFLAGS	= -O3 -Wall -std=c++11 $(WLDAFLAGS) #$(LLDAFLAGS) $(INC_FLAGS) $(LD_FLAGS)
 PLDAFLAGS	= -O3 -Wall -Wno-sign-compare
 GLDAFLAGS	= -O3 -std=c++11
+WLDAFLAGS = -fopenmp -march=native -DNDEBUG -g -rdynamic -lnuma WarpLDA/release/gflags/libgflags_nothreads.a
 
 # CUDA compiler configuration
 NVCC_HOME       = /usr/local/cuda
@@ -46,7 +47,6 @@ NVCC            = nvcc
 CUDA_INC        = -I$(NVCC_HOME)/include
 CUDA_LIB        = -L$(NVCC_HOME)/lib64 -lcuda -lcudart
 CUDA_FLAGS      = -O3 -m64 -gencode $(GPU_ARCH_FLAG)
-
 
 # Project configuration
 INCLUDE		= $(CUDA_INC)
@@ -58,18 +58,23 @@ PLDAOBJS=	plda_accumulative_model.o plda_cmd_flags.o plda_common.o plda_document
 OBJS=		main.o commons.o logger.o config.o document.o cluster.o myutils.o scanner.o dataProvenance.o geneticAlgorithm.o resultStatistics.o populationConfig.o parallelizables.o TopicModelling.o preProcessing.o wordFilter.o strtokenizer.o
 BLDA_OBJS= BleiLDA/lda-alpha.o BleiLDA/lda-data.o BleiLDA/lda-inference.o BleiLDA/utils.o BleiLDA/lda-estimate.o BleiLDA/lda-model.o
 
+WLDA_COMMON= WarpLDA/release/src/CMakeFiles/common.dir/AdjList.cpp.o WarpLDA/release/src/CMakeFiles/common.dir/Bigraph.cpp.o WarpLDA/release/src/CMakeFiles/common.dir/clock.cpp.o WarpLDA/release/src/CMakeFiles/common.dir/NumaArray.cpp.o WarpLDA/release/src/CMakeFiles/common.dir/Vocab.cpp.o
+WLDA_WARP= WarpLDA/release/src/CMakeFiles/warplda.dir/lda.cpp.o WarpLDA/release/src/CMakeFiles/warplda.dir/warp.cpp.o WarpLDA/release/src/CMakeFiles/warplda.dir/warplda.cpp.o
+WLDA_FORMAT= WarpLDA/release/src/CMakeFiles/format.dir/format.cpp.o
+WLDA_INC=  -IWarpLDA/release/gflags/include/ -IWarpLDA/./src#/gflags/gflags.h WarpLDA/release/gflags/include/gflags/gflags_declare.h WarpLDA/release/gflags/include/gflags/gflags_gflags.h
+
 # LIGHTLDAOBJS=  LightLDA/bin/dump_binary LightLDA/src/alias_table.o LightLDA/src/document.o LightLDA/src/meta.o LightLDA/src/common.o LightLDA/src/eval.o LightLDA/src/model.o LightLDA/src/data_block.o LightLDA/src/sampler.o LightLDA/src/data_stream.o LightLDA/src/lightlda.o LightLDA/src/trainer.o LightLDA/multiverso/src/multiverso/aggregator.o LightLDA/multiverso/src/multiverso/barrier.o LightLDA/multiverso/src/multiverso/communicator.o LightLDA/multiverso/src/multiverso/data_block.o LightLDA/multiverso/src/multiverso/delta_pool.o LightLDA/multiverso/src/multiverso/endpoint_list.o LightLDA/multiverso/src/multiverso/lock.o LightLDA/multiverso/src/multiverso/log.o LightLDA/multiverso/src/multiverso/mpi_util.o LightLDA/multiverso/src/multiverso/msg_pack.o LightLDA/multiverso/src/multiverso/multiverso.o LightLDA/multiverso/src/multiverso/parameter_loader.o LightLDA/multiverso/src/multiverso/row_iter.o LightLDA/multiverso/src/multiverso/row.o LightLDA/multiverso/src/multiverso/server.o LightLDA/multiverso/src/multiverso/stop_watch.o LightLDA/multiverso/src/multiverso/table_iter.o LightLDA/multiverso/src/multiverso/table.o LightLDA/multiverso/src/multiverso/trainer.o LightLDA/multiverso/src/multiverso/vector_clock.o LightLDA/multiverso/src/multiverso/zmq_util.o
 
 MAIN=           main
 
 all: $(OBJS) $(GLDAOBJS) $(PLDAOBJS)
-	$(CXX) -o $(MAIN) $(OBJS) $(GLDAOBJS) $(PLDAOBJS) $(BLDA_OBJS) ${LIB} ${CXXFLAGS} #$(LIGHTLDAOBJS)
+	$(CXX) -o $(MAIN) $(OBJS) $(GLDAOBJS) $(PLDAOBJS) $(BLDA_OBJS) $(WLDA_COMMON) $(WLDA_WARP) $(WLDA_FORMAT) $(WLDA_INC) ${LIB} ${CXXFLAGS} #$(LIGHTLDAOBJS)
 
 no_cuda: $(OBJS) $(PLDAOBJS)
-	$(CXX) -o $(MAIN) $(OBJS) $(PLDAOBJS) $(BLDA_OBJS) ${CXXFLAGS}
+	$(CXX) -o $(MAIN) $(OBJS) $(PLDAOBJS) $(BLDA_OBJS) $(WLDA_INC) ${CXXFLAGS}
 
 main.o: ./main.cpp
-	$(CXX) -c -o main.o ./main.cpp $(CXXFLAGS)
+	$(CXX) -c -o main.o ./main.cpp $(WLDA_INC) $(CXXFLAGS)
 
 config.o: ./config.cpp
 	$(CXX) -c -o config.o ./config.cpp $(CXXFLAGS)
@@ -93,10 +98,10 @@ scanner.o: ./scanner.cpp
 	$(CXX) -c -o scanner.o ./scanner.cpp $(CXXFLAGS)
 
 dataProvenance.o: ./dataProvenance.cpp
-	$(CXX) -c -o dataProvenance.o ./dataProvenance.cpp $(CXXFLAGS)
+	$(CXX) -c -o dataProvenance.o ./dataProvenance.cpp $(WLDA_INC) $(CXXFLAGS)
 
 geneticAlgorithm.o: ./geneticAlgorithm.cpp
-	$(CXX) -c -o geneticAlgorithm.o ./geneticAlgorithm.cpp $(CXXFLAGS)
+	$(CXX) -c -o geneticAlgorithm.o ./geneticAlgorithm.cpp $(WLDA_INC) $(CXXFLAGS)
 
 resultStatistics.o: ./resultStatistics.cpp
 	$(CXX) -c -o resultStatistics.o ./resultStatistics.cpp $(CXXFLAGS)
@@ -109,14 +114,14 @@ parallelizables.o: ./parallelizables.cpp
 
 TopicModelling.o: ./TopicModelling.cpp
 ifdef NO_CUDA
-	$(CXX) -c -o TopicModelling.o ./TopicModelling.cpp $(CXXFLAGS)
+	$(CXX) -c -o TopicModelling.o ./TopicModelling.cpp $(CXXFLAGS) $(WLDA_INC)
 else
-	$(CXX) -c -o TopicModelling.o ./TopicModelling.cpp -D USECUDA $(CXXFLAGS) $(INCLUDE)
+	$(CXX) -c -o TopicModelling.o ./TopicModelling.cpp -D USECUDA $(CXXFLAGS) $(WLDA_INC) $(INCLUDE)
 endif
 
 
 preProcessing.o: ./preProcessing.cpp
-	$(CXX) -c -o preProcessing.o ./preProcessing.cpp $(CXXFLAGS)
+	$(CXX) -c -o preProcessing.o ./preProcessing.cpp $(CXXFLAGS) $(WLDA_INC)
 
 wordFilter.0: ./wordFilter.cpp
 	$(CXX) -c -o wordFilter.o ./wordFilter.cpp $(CXXFLAGS)
