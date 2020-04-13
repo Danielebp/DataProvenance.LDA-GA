@@ -152,7 +152,7 @@ double TopicModelling::getDistribution(int topic, int docNum){
           case blda:
             return BLDA_WriteFiles(isfinal);
           case wlda:
-            return WLDA_WriteFiles(isfinal);   
+            return WLDA_WriteFiles(isfinal);
           default:
             break;
       }
@@ -233,7 +233,7 @@ long TopicModelling::GLDA_LDA(string MyCount) {
 
   outputFile = MyCount;
 
-  clock_t t = clock();
+  clock_t t = time(NULL);
 
   string ntopics = to_string(numberOfTopics);
   string niters = to_string(numberOfIterations);
@@ -265,8 +265,8 @@ long TopicModelling::GLDA_LDA(string MyCount) {
   }
 
   outTop.close();
-  t = clock() - t;
-  long time = (((float)t)/(CLOCKS_PER_SEC/1000));
+  long delta = time(NULL) - t;
+  long time = delta*1000;
 
   cfg->logger.log(debug, "#### Ending LDA ####");
 
@@ -319,7 +319,7 @@ long TopicModelling::PLDA_LDA(string MyCount) {
   PLDA_LoadAndInitTrainingCorpus(cfg->ldaInputFile);
   cfg->logger.log(debug, "Finished Load -> Start Model");
 
-  clock_t t = clock();
+  clock_t t = time(NULL);
   learning_lda::LDAModel model(numberOfTopics, PLDA_word_index_map);
   PLDA_accum_model = new learning_lda::LDAAccumulativeModel(numberOfTopics, PLDA_word_index_map->size(), PLDA_corpus->size());
 
@@ -329,8 +329,8 @@ long TopicModelling::PLDA_LDA(string MyCount) {
 
   cfg->logger.log(debug, "Finished Train -> Write file");
 
-  t = clock() - t;
-  time = ((float)t)/(CLOCKS_PER_SEC/1000);
+  long delta = time(NULL) - t;
+  time = delta*1000;
 
   // Show top 5 words in topics with proportions for the first document
 
@@ -489,7 +489,7 @@ long TopicModelling::LIGHT_LDA(string MyCount){
 
     outputFile = MyCount;
 
-    clock_t t = clock();
+    clock_t t = time(NULL);
 
     string ntopics = to_string(numberOfTopics);
     string niters = to_string(numberOfIterations);
@@ -526,8 +526,8 @@ long TopicModelling::LIGHT_LDA(string MyCount){
     outTop.close();
     cfg->logger.log(debug, "Wrote Topic Dist");
 
-    t = clock() - t;
-    long time = (((float)t)/(CLOCKS_PER_SEC/1000));
+    long delta = time(NULL) - t;
+    long time = delta*1000;
 
     cfg->logger.log(debug, "#### Ending LDA ####");
 
@@ -565,7 +565,7 @@ long TopicModelling::BLDA_LDA(string MyCount) {
 
   outputFile = MyCount;
 
-  clock_t t = clock();
+  clock_t t = time(NULL);
 
   blda_corpus* ldacorpus = read_data(const_cast<char*>(cfg->libsvmFile.c_str()));
   cfg->logger.log(debug, "BLDA setup completed. Starting estimate");
@@ -600,8 +600,8 @@ long TopicModelling::BLDA_LDA(string MyCount) {
   }
 
   outTop.close();
-  t = clock() - t;
-  long time = (((float)t)/(CLOCKS_PER_SEC/1000));
+  long delta = time(NULL) - t;
+  long time = delta*1000;
 
   cfg->logger.log(debug, "#### Ending LDA ####");
 
@@ -734,5 +734,3 @@ void TopicModelling::WLDA_WriteFiles(bool isfinal) {
         distFile<<docName<<line.substr(pos)<<endl;
     }
 }
-
-

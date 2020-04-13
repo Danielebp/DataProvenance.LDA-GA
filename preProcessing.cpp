@@ -83,11 +83,11 @@ unordered_map<string, Document> preProcess(ConfigOptions* cfg){
     WordFilter wordFilter(cfg->stopWordsFile);
     cfg->logger.log(debug, "Starting to tokenize files");
     // tokenize articles
-    t = clock();
+    t = time(NULL);
     unordered_map<string,Document> documentsMap = tokenizeFiles(cfg->dataDir, cfg->mirrorDir, wordFilter, cfg);
-    t = clock() - t;
+    long delta = time(NULL) - t;
     // Output the time it took to find all article's titles and keywords
-    cfg->logger.log(status, "Preprocessing takes " + to_string(((float)t)/(CLOCKS_PER_SEC/1000)) + "ms");
+    cfg->logger.log(status, "Preprocessing takes " + to_string(delta*1000) + "ms");
 
     // write input file for LDA
     ofstream outfile (cfg->ldaInputFile);
@@ -222,7 +222,7 @@ unordered_map<string, Document> prepareData(ConfigOptions* cfg){
                        (char*)"-myprefix", (char*)outf.c_str(),
                         NULL};
             wlda_format(5, args);
-            
+
          }
             break;
          default:

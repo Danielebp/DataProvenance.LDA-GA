@@ -325,7 +325,7 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
 		iddleIterations = 0;
 	}
 	else iddleIterations++;
-	
+
 	delete tm;
 	if(iddleIterations > maxIddle){
 		cfg->logger.log(debug, "Re-run LDA");
@@ -346,15 +346,15 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
 
         cfg->logger.log(info, "Best LDA Attempt: ["+to_string(currBestConfig.number_of_topics)+"x"+to_string(currBestConfig.number_of_iterations)+"] - Fitness: "+to_string(currBestConfig.fitness_value));
 
-        t = clock();
+        t = time(NULL);
 
         PopulationConfig* newPopulation = mutateToNewPopulation(population, cfg);
         //substitute the initial population with the new population and continue
         delete[] population;
         population = newPopulation;
 
-        t = clock() - t;
-        cfg->logger.log(info, "GA iteration "+std::to_string(GACounter)+ " took " + std::to_string(((float)t)/(CLOCKS_PER_SEC/1000)) + "ms");
+        long delta = time(NULL) - t;
+        cfg->logger.log(info, "GA iteration "+std::to_string(GACounter)+ " took " + std::to_string(delta*1000) + "ms");
    }
 
 #if defined (_MPI_VERSION_)
