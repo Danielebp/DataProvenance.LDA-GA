@@ -633,7 +633,7 @@ long TopicModelling::WLDA_LDA(string MyCount) {
 
   outputFile = MyCount;
 
-  clock_t t = clock();
+  clock_t t = time(NULL);
   string winf = cfg->inputDir + "wlda_input";
   string ntopics = to_string(numberOfTopics);
   string niters = to_string(numberOfIterations);
@@ -674,8 +674,8 @@ long TopicModelling::WLDA_LDA(string MyCount) {
   }
 
   outTop.close();
-  t = clock() - t;
-  long time = (((float)t)/(CLOCKS_PER_SEC/1000));
+  long delta = time(NULL) - t;
+  long time = (delta*1000);
 
   cfg->logger.log(debug, "#### Ending LDA ####");
 
