@@ -3,7 +3,8 @@
 root=`pwd`
 echo $root
 bin=$root/../bin
-dir=$root/data/nytimes
+#dir=$root/data/nytimes
+dir=$root/data/dt10
 
 mkdir -p $dir
 cd $dir

@@ -10,7 +10,7 @@ CXX_FLAG = -arch=sm_61
 
 #-maxrregcount=32
 
-DEBUG_FLAG = 
+DEBUG_FLAG = -G -g 
 #DEBUG_FLAG = -G -g
 #DEBUG_FLAG = -DDEBUGPrint
 

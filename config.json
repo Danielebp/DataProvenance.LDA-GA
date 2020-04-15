@@ -2,8 +2,8 @@
     "logLevel": "info",
     "logFileLevel": "status",
     "runType": "train",
-    "perfType": "cpu",
-    "ldaLibrary": "llda",
+    "perfType": "cuda",
+    "ldaLibrary": "wlda",
     "skipPreprocess": true,
 
     "populationSize": 9,

@@ -49,8 +49,6 @@ int main(int argc, char* argv[]) {
 	}
         else if(s.compare("-seed") == 0)
             srand(stoi(argv[++arg]));
-        else if(s.compare("-cuda") == 0)
-            cfg.perfType = cuda;
         else if(s.compare("-metrics") == 0)
             cfg.runType = metric;
         else if(s.compare("-debug") == 0)
@@ -59,6 +57,8 @@ int main(int argc, char* argv[]) {
           cfg.logLevel = info;
         else if(s.compare("-glda") == 0)
           cfg.ldaLibrary = glda;
+        else if(s.compare("-gibbs") == 0)
+          cfg.ldaLibrary = gibbs;
         else if(s.compare("-plda") == 0)
           cfg.ldaLibrary = plda;
         else if(s.compare("-blda") == 0)
@@ -79,8 +79,8 @@ int main(int argc, char* argv[]) {
     cfg.logger.log(status, "Fitness Threshold: " + std::to_string(cfg.fitnessThreshold));
     cfg.logger.log(status, "Population Size: " + std::to_string(cfg.populationSize));
     cfg.logger.log(status, "Running on "+ std::string((cfg.ldaLibrary==glda && cfg.perfType == cuda) ? "GPU" : "CPU"));
-    cfg.logger.log(status, "Number of Documents: " + std::to_string(documentsMap.size()));
     cfg.logger.log(status, "Library: " + getLibraryLabel(cfg.ldaLibrary));
+    cfg.logger.log(status, "Number of Documents: " + std::to_string(documentsMap.size()));
 
     int articlesCount = 0;
     for (std::pair<std::string, Document> element : documentsMap)

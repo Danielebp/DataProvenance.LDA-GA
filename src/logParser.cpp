@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
     int nGA=0;
     int nLDA=0;
     int ldaAvgMs=0;
-
+    string library;
     for (int arg = 0; arg < argc; arg++) {
         string s = argv[arg];
         if(s.compare("-log") == 0)
@@ -39,8 +39,8 @@ int main(int argc, char* argv[]) {
 
   ofstream outfile;
   outfile.open(filename_out, std::ios_base::app); // append instead of overwrite
-    
-    Scanner sc(filename_log);
+
+Scanner sc(filename_log);
     if(cpp){
         // has 17 lines
         // interested on lines 3, 6, 7, 11, 12, 13, 14, 15, 16, 17
@@ -49,6 +49,9 @@ int main(int argc, char* argv[]) {
         fitnessThreshold = sc.nextDouble();
         sc.nextLineClean();
         sc.nextLineClean();
+        sc.nextLineClean();
+        sc.nextWord();
+        library = sc.nextWord();
         sc.nextLineClean();
         nDocs = sc.nextInt();
         sc.nextLineClean();
@@ -85,7 +88,8 @@ int main(int argc, char* argv[]) {
             <<execMs          <<"\t"
             <<ldaAvgMs        <<"\t"
             <<nGA             <<"\t"
-            <<nLDA            <<endl;
+            <<nLDA            <<"\t"
+            <<library<<endl;
 
     } else if (java){
         // 2 lines

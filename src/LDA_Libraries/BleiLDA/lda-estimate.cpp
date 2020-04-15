@@ -270,7 +270,7 @@ void LDA_Estimate::run_em(char* start, char* directory, blda_corpus* corpus)
     }
 
     // output the word assignments (for visualization)
-
+/*
     sprintf(filename, "%s/word-assignments.dat", directory);
     FILE* w_asgn_file = fopen(filename, "w");
     for (d = 0; d < corpus->num_docs; d++)
@@ -279,6 +279,7 @@ void LDA_Estimate::run_em(char* start, char* directory, blda_corpus* corpus)
         write_word_assignment(w_asgn_file, &(corpus->docs[d]), phi, model);
     }
     fclose(w_asgn_file);
+    */
     fclose(likelihood_file);
 }
 

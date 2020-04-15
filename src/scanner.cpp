@@ -40,27 +40,26 @@ bool Scanner::nextLineClean() {
     ss.clear();
     if(getline (myfile, line, '\n')) {
         pos = line.find("STATUS");
-        if(pos!=std::string::npos)line.replace(pos, 43, " ");
+        if(pos!=std::string::npos && pos<line.size())line.replace(pos, 42, " ");
         pos = line.find(":");
-        while(pos!=std::string::npos){
+        while(pos!=std::string::npos && pos<line.size()){
             line.replace(pos, 1, " ");
             pos = line.find(":");
         }
         pos = line.find("ms");
-        while(pos!=std::string::npos){
+        while(pos!=std::string::npos && pos<line.size()){
             line.replace(pos, 2, " ");
             pos = line.find("ms");
         }
         pos = line.find("(");
-	while(pos!=std::string::npos){
+	while(pos!=std::string::npos && pos<line.size()){
             int pos2 = line.find(")");
             line.replace(pos, pos2-pos, " ");
             pos = line.find("(");
         }
 
         pos = line.find("calls");
-        if(pos!=std::string::npos)line.replace(pos, 5, "calls ");
-
+        if(pos!=std::string::npos && pos<line.size())line.replace(pos, 5, "calls ");
         ss.str(line);
         return true;
     }

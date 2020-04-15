@@ -24,7 +24,7 @@ ConfigOptions::ConfigOptions(string filename){
     logLevel = j["logLevel"];
     logFileLevel = j["logFileLevel"];
     runType = j["runType"];
-    perfType = j["perfType"];
+//    perfType = j["perfType"];
     ldaLibrary = j["ldaLibrary"];
     skipPreprocess = j["skipPreprocess"];
 
@@ -54,7 +54,7 @@ ConfigOptions::ConfigOptions(string filename){
     logFileLevel = status;
     runType = train;
     perfType = cpu;
-    ldaLibrary = glda;
+    ldaLibrary = wlda;
 
     populationSize      = 9;
     device		= 0;
@@ -82,7 +82,13 @@ ConfigOptions::ConfigOptions(string filename){
 }
 
 bool ConfigOptions::start() {
-    
+    if(ldaLibrary == glda){
+        perfType = cuda;
+    }
+    else {
+        perfType = cpu;
+    }
+
     truthFile       = inputDir + truthFile;
     dataDir         = inputDir + dataDir;
     preProcessedFile= inputDir + preProcessedFile;

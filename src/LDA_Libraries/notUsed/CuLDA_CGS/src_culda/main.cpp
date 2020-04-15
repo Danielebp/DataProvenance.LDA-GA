@@ -187,6 +187,7 @@ int main(int argc, char**argv)
 
 	doc.generateTopics(argument.k);
 
+  printf("Starting computation ...\n");
 	//computation
 	LDATrain(doc, vocab, argument);
 

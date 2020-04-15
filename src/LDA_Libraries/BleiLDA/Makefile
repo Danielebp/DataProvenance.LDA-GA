@@ -27,7 +27,7 @@ LOBJECTS= lda-data.o lda-estimate.o lda-model.o lda-inference.o utils.o lda-alph
 LSOURCE= lda-data.c lda-estimate.c lda-model.c lda-inference.c utils.c lda-alpha.c
 
 lda:	$(LOBJECTS)
-	$(CC) main.cpp $(CFLAGS) $(LOBJECTS) ../utils.o -o lda $(LDFLAGS)
+	$(CC) main.cpp $(CFLAGS) $(LOBJECTS) ../../utils.o -o lda $(LDFLAGS)
 
 clean:
 	-rm -f *.o

@@ -24,7 +24,9 @@ string getLibraryLabel(LDALibrary library){
 			return "LightLDA";
 		case glda:
 			return "GLDA";
-        case blda:
+    case gibbs:
+      return "GibbsLDA";
+    case blda:
             return "BleiLDA";
         case wlda:
             return "WarpLDA";

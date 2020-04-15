@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "../../config.h"
+#include "../../../config.h"
 
 using namespace std;
 

@@ -101,6 +101,9 @@ void ModelThetaChunk::InitData(const vector<int> &docLenVec)
 
     //transfer MaxIA
     toGPU();
+
+    cudaDeviceSynchronize();
+    gpuErr(cudaPeekAtLastError());
 }
 
 void ModelThetaChunk::UpdateThetaGPU(Document &doc, cudaStream_t stream)
@@ -280,6 +283,8 @@ void ModelThetaChunk::toGPU()
                hostThetaMaxIA, 
                sizeof(int)*(numDocs + 1),  
                cudaMemcpyHostToDevice);
+    cudaDeviceSynchronize();
+    gpuErr(cudaPeekAtLastError());
     //gpuErr(cudaPeekAtLastError());
 
     //printf("ModelThetaChunk::toGPU() finished ...\n\n");
