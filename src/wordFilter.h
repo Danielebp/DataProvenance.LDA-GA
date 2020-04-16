@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <fstream>
 #include "utils.h"
-#include "gldaCuda/src/strtokenizer.h"
+#include "./LDA_Libraries/gldaCuda/src/strtokenizer.h"
 
 
 using namespace std;

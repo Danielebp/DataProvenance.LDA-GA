@@ -9,7 +9,7 @@
 #include "utils.h"
 #include "config.h"
 #include "wordFilter.h"
-#include "WarpLDA/src/format.hpp"
+#include "./LDA_Libraries/WarpLDA/src/format.hpp"
 
 using namespace std;
 

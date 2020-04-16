@@ -6,7 +6,7 @@
 #include <math.h>
 #include "lda.h"
 #include "lda-alpha.h"
-#include "../utils.h"
+#include "../../utils.h"
 
 #define NUM_INIT 1
 

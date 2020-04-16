@@ -8,7 +8,6 @@
 #ifndef CUDASAMPLING_H
 #define	CUDASAMPLING_H
 
-#include "../../config.h"
 #include "common.h"
 #include "model.h"
 #include "math.h"

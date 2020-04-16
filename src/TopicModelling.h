@@ -15,16 +15,16 @@
 #include "scanner.h"
 
 #if defined(USECUDA)
-#include "gldaCuda/src/model.h"
+#include "./LDA_Libraries/gldaCuda/src/model.h"
 #endif
-#include "plda/common.h"
-#include "plda/document.h"
-#include "plda/model.h"
-#include "plda/accumulative_model.h"
-#include "plda/sampler.h"
-#include "plda/cmd_flags.h"
-#include "BleiLDA/lda-estimate.h"
-#include "WarpLDA/src/warp.hpp"
+#include "./LDA_Libraries/plda/common.h"
+#include "./LDA_Libraries/plda/document.h"
+#include "./LDA_Libraries/plda/model.h"
+#include "./LDA_Libraries/plda/accumulative_model.h"
+#include "./LDA_Libraries/plda/sampler.h"
+#include "./LDA_Libraries/plda/cmd_flags.h"
+#include "./LDA_Libraries/BleiLDA/lda-estimate.h"
+#include "./LDA_Libraries/WarpLDA/src/warp.hpp"
 
 using namespace std;
 
