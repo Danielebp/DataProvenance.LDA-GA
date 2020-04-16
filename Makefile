@@ -13,7 +13,7 @@ GLDAOBJS=	$(OBJ_DIR)/glda_dataset.o $(OBJ_DIR)/glda_utils.o $(OBJ_DIR)/glda_mode
 
 
 ###################### PLDA #####################
-PLDAFLAGS	= -g -O0 -Wall -Wno-sign-compare -std=c++11
+PLDAFLAGS	= -g -O0 -Wall -Wno-sign-compare
 PLDAOBJS=	$(OBJ_DIR)/plda_accumulative_model.o $(OBJ_DIR)/plda_cmd_flags.o $(OBJ_DIR)/plda_common.o $(OBJ_DIR)/plda_document.o $(OBJ_DIR)/plda_model.o $(OBJ_DIR)/plda_sampler.o
 
 

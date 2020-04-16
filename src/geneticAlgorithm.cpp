@@ -315,7 +315,7 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
 
             }
             delete tm;
-	          cfg->logger.log(info, "Embrace for next LDA attempt");
+	          cfg->logger.log(debug, "Embrace for next LDA attempt");
         }
         // stops GA as Fitness Threshold was reached
         if(fitnessThresholdFound) break;

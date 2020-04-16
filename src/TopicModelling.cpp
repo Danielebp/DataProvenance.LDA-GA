@@ -324,6 +324,13 @@ long TopicModelling::PLDA_LDA(string MyCount) {
   long delta = time(NULL) - t;
   total_time = delta*1000;
 
+  // Show top 5 words in topics with proportions for the first document
+
+//  cfg->logger.log(debug, "Finished Write -> Start Infer");
+//  time += Infer(model, word_index_map, cfg->ldaInputFile);
+//  cfg->logger.log(debug, "###########################");
+
+  cfg->logger.log(debug, "#### Writing LDA ####");
 
   cfg->logger.log(debug, "word index map has size: " + to_string(PLDA_word_index_map->size()));
   // write topic.txt
@@ -451,7 +458,7 @@ void TopicModelling::PLDA_FreeCorpus() {
        ++iter) {
       if(*iter != 0 && *iter != NULL){
               delete (*iter);
-              *iter = NULL;
+              *iter = 0;
 
       }
   }
