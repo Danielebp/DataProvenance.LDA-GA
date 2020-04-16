@@ -227,7 +227,7 @@ long TopicModelling::GLDA_LDA(string MyCount) {
 
   outputFile = MyCount;
 
-  clock_t t = time(NULL);
+  auto t = chrono::high_resolution_clock::now();
 
   string ntopics = to_string(numberOfTopics);
   string niters = to_string(numberOfIterations);
@@ -259,8 +259,8 @@ long TopicModelling::GLDA_LDA(string MyCount) {
   }
 
   outTop.close();
-  long delta = time(NULL) - t;
-  long time = delta*1000;
+  t = chrono::high_resolution_clock::now() - t;
+  auto time = chrono::duration_cast<chrono::milliseconds>(t).count();
 
   cfg->logger.log(debug, "#### Ending LDA ####");
 
@@ -308,10 +308,10 @@ long TopicModelling::PLDA_LDA(string MyCount) {
 
   long total_time = 0;
   outputFile = MyCount;
-    
+
   learning_lda::LDAModel model(numberOfTopics, PLDA_word_index_map);
 
-  clock_t t = time(NULL);
+  auto t = chrono::high_resolution_clock::now();
 
   cfg->logger.log(debug, "Finished Model -> Start Train");
 
@@ -319,8 +319,8 @@ long TopicModelling::PLDA_LDA(string MyCount) {
 
   cfg->logger.log(debug, "Finished Train -> Write file");
 
-  long delta = time(NULL) - t;
-  total_time = delta*1000;
+  t = chrono::high_resolution_clock::now() - t;
+  total_time = chrono::duration_cast<chrono::milliseconds>(t).count();
 
   // Show top 5 words in topics with proportions for the first document
 
@@ -476,7 +476,7 @@ long TopicModelling::BLDA_LDA(string MyCount) {
 
   outputFile = MyCount;
 
-  clock_t t = time(NULL);
+  auto t = chrono::high_resolution_clock::now();
 
   blda_corpus* ldacorpus = read_data(const_cast<char*>(cfg->libsvmFile.c_str()));
   cfg->logger.log(debug, "BLDA setup completed. Starting estimate");
@@ -511,8 +511,8 @@ long TopicModelling::BLDA_LDA(string MyCount) {
   }
 
   outTop.close();
-  long delta = time(NULL) - t;
-  long time = delta*1000;
+  t = chrono::high_resolution_clock::now() - t;
+  long time = chrono::duration_cast<chrono::milliseconds>(t).count();
 
   cfg->logger.log(debug, "#### Ending LDA ####");
 
@@ -544,7 +544,7 @@ long TopicModelling::WLDA_LDA(string MyCount) {
 
   outputFile = MyCount;
 
-  clock_t t = time(NULL);
+  auto t = chrono::high_resolution_clock::now();
   string winf = cfg->inputDir + "wlda_input";
   string ntopics = to_string(numberOfTopics);
   string niters = to_string(numberOfIterations);
@@ -585,8 +585,8 @@ long TopicModelling::WLDA_LDA(string MyCount) {
   }
 
   outTop.close();
-  long delta = time(NULL) - t;
-  long time = (delta*1000);
+  t = chrono::high_resolution_clock::now() - t;
+  long time = chrono::duration_cast<chrono::milliseconds>(t).count();
 
   cfg->logger.log(debug, "#### Ending LDA ####");
 

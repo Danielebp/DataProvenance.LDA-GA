@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 #include <ctime>
+#include <chrono>
+
 using namespace std;
 
 string trim(string str);

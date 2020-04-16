@@ -270,7 +270,7 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
     long LDATotTime = 0;
     bool fitnessThresholdFound = false;
 
-    clock_t t;
+    auto t;
 
     TopicModelling* tm;
 
@@ -347,15 +347,16 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
 
         cfg->logger.log(info, "Best LDA Attempt: ["+to_string(currBestConfig.number_of_topics)+"x"+to_string(currBestConfig.number_of_iterations)+"] - Fitness: "+to_string(currBestConfig.fitness_value));
 
-        t = time(NULL);
+        t = chrono::high_resolution_clock::now();
 
         PopulationConfig* newPopulation = mutateToNewPopulation(population, cfg);
         //substitute the initial population with the new population and continue
         delete[] population;
         population = newPopulation;
 
-        long delta = time(NULL) - t;
-        cfg->logger.log(info, "GA iteration "+std::to_string(GACounter)+ " took " + std::to_string(delta*1000) + "ms");
+        t = chrono::high_resolution_clock::now() - t;
+        long delta = chrono::duration_cast<std::chrono::milliseconds>(t).count();
+        cfg->logger.log(info, "GA iteration "+std::to_string(GACounter)+ " took " + std::to_string(delta) + "ms");
    }
 
 #if defined (_MPI_VERSION_)

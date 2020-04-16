@@ -127,10 +127,10 @@ ResultStatistics reconstructProvenance(int numberOfDocuments, ConfigOptions * cf
     ResultStatistics result;
     GeneticAlgorithm ga;
 
-    clock_t exTm = time(NULL);
+    auto exTm = chrono::high_resolution_clock::now();
 
     result = ga.geneticLogic(numberOfDocuments, cfg);
-    clock_t geneticEndTime = time(NULL);
+    auto geneticEndTime = chrono::high_resolution_clock::now();
 
 
     stringstream ss;
@@ -150,7 +150,7 @@ ResultStatistics reconstructProvenance(int numberOfDocuments, ConfigOptions * cf
         }
     }
 
-    ss<< "Genetic algorithm takes " << (geneticEndTime - exTm) << "ms";
+    ss<< "Genetic algorithm takes " << chrono::duration_cast<chrono::milliseconds>(geneticEndTime - exTm).count() << "ms";
     cfg->logger.log(status,ss.str());
     ss.str(std::string());
     ss.clear();
@@ -158,8 +158,8 @@ ResultStatistics reconstructProvenance(int numberOfDocuments, ConfigOptions * cf
     // create clusters based on the distribution.txt
     vector<Cluster> clusters = performClustering(articlesMap, sourceFileMap, cfg);
 
-    clock_t clusteringEndTime = time(NULL);
-    ss<<"Clustering takes " << (clusteringEndTime - geneticEndTime) << "ms";
+    clock_t clusteringEndTime = chrono::high_resolution_clock::now();
+    ss<<"Clustering takes " << chrono::duration_cast<chrono::milliseconds>(clusteringEndTime - geneticEndTime).count() << "ms";
     cfg->logger.log(status, ss.str());
     ss.str(std::string());
     ss.clear();
@@ -167,8 +167,8 @@ ResultStatistics reconstructProvenance(int numberOfDocuments, ConfigOptions * cf
     result = calculatePrecisionRecall(result, clusters, cfg);
     cfg->logger.log(debug, "Calculated precision & recall");
 
-    long delta = time(NULL) - exTm;
-    result.execution_milliseconds = (delta*1000);
+    long delta = chrono::high_resolution_clock::now() - exTm;
+    result.execution_milliseconds = (chrono::duration_cast<chrono::milliseconds>(delta).count());
     cfg->logger.log(status, result.to_string(""));
     cfg->logger.log(info, "###########################################");
 
