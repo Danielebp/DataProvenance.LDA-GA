@@ -46,7 +46,6 @@ TopicModelling::TopicModelling(int numberOfTopics, int numberOfIterations, int n
   }
 
 TopicModelling::~TopicModelling(){
-    cfg->logger.log(info, "Delete TM");
       switch (cfg->ldaLibrary) {
 #if defined(USECUDA)
           case glda:
@@ -79,7 +78,6 @@ TopicModelling::~TopicModelling(){
             delete doc_index_map;
             break;
       }
-      cfg->logger.log(info, "Done cleaning TM");
   }
 
 int TopicModelling::getMainTopic(int docNum) {
@@ -259,8 +257,8 @@ long TopicModelling::GLDA_LDA(string MyCount) {
   }
 
   outTop.close();
-  t = chrono::high_resolution_clock::now() - t;
-  auto time = chrono::duration_cast<chrono::milliseconds>(t).count();
+  auto delta = chrono::high_resolution_clock::now() - t;
+  long time = chrono::duration_cast<chrono::milliseconds>(delta).count();
 
   cfg->logger.log(debug, "#### Ending LDA ####");
 
@@ -319,8 +317,8 @@ long TopicModelling::PLDA_LDA(string MyCount) {
 
   cfg->logger.log(debug, "Finished Train -> Write file");
 
-  t = chrono::high_resolution_clock::now() - t;
-  total_time = chrono::duration_cast<chrono::milliseconds>(t).count();
+  auto delta = chrono::high_resolution_clock::now() - t;
+  total_time = chrono::duration_cast<chrono::milliseconds>(delta).count();
 
   // Show top 5 words in topics with proportions for the first document
 
@@ -511,8 +509,8 @@ long TopicModelling::BLDA_LDA(string MyCount) {
   }
 
   outTop.close();
-  t = chrono::high_resolution_clock::now() - t;
-  long time = chrono::duration_cast<chrono::milliseconds>(t).count();
+  auto delta = chrono::high_resolution_clock::now() - t;
+  long time = chrono::duration_cast<chrono::milliseconds>(delta).count();
 
   cfg->logger.log(debug, "#### Ending LDA ####");
 
@@ -585,8 +583,8 @@ long TopicModelling::WLDA_LDA(string MyCount) {
   }
 
   outTop.close();
-  t = chrono::high_resolution_clock::now() - t;
-  long time = chrono::duration_cast<chrono::milliseconds>(t).count();
+  auto delta = chrono::high_resolution_clock::now() - t;
+  long time = chrono::duration_cast<chrono::milliseconds>(delta).count();
 
   cfg->logger.log(debug, "#### Ending LDA ####");
 
