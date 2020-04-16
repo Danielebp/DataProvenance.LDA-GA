@@ -1,34 +1,3 @@
-# LightLDA
-
-#PROJECT := $(shell readlink $(dir $(lastword $(MAKEFILE_LIST))) -f)
-#
-#LLDAFLAGS = -Wno-sign-compare \
-#           -fno-omit-frame-pointer
-#
-#MULTIVERSO_DIR = $(PROJECT)/LightLDA/multiverso
-#MULTIVERSO_INC = $(MULTIVERSO_DIR)/include
-#MULTIVERSO_LIB = $(MULTIVERSO_DIR)/lib
-#THIRD_PARTY_LIB = $(MULTIVERSO_DIR)/third_party/lib
-#THIRD_PARTY_INC = $(MULTIVERSO_DIR)/third_party/include
-#
-#INC_FLAGS = -I$(MULTIVERSO_INC) -I$(THIRD_PARTY_INC) -I$(PROJECT)/LightLDA/src
-#LD_FLAGS  = -L$(MULTIVERSO_LIB) -lmultiverso
-#LD_FLAGS += -L$(THIRD_PARTY_LIB) -lzmq -lmpich -lmpl -lpthread
-#
-#BASE_SRC = $(shell find $(PROJECT)/LightLDA/src -type f -name "*.cpp" -type f ! -name "lightldamain.cpp")
-#BASE_OBJ = $(BASE_SRC:.cpp=.o)
-#
-#LIGHTLDA_HEADERS = $(shell find $(PROJECT)/LightLDA/src -type f -name "*.h")
-#LIGHTLDA_SRC     = $(shell find $(PROJECT)/LightLDA/src -type f -name "*.cpp")
-#LIGHTLDA_OBJ = $(LIGHTLDA_SRC:.cpp=.o)
-#
-#DUMP_BINARY_SRC = $(shell find $(PROJECT)/LightLDA/preprocess -type f -name "*.cpp")
-#
-#BIN_DIR = $(PROJECT)/LightLDA/bin
-#DUMP_BINARY = $(BIN_DIR)/dump_binary
-
-
-
 
 # GPU architecture specification
 GPU_ARCH_FLAG   = arch=compute_70,code=sm_70
@@ -36,7 +5,7 @@ GPU_ARCH_FLAG   = arch=compute_70,code=sm_70
 
 # C++ compiler configuration
 CXX				= g++
-CXXFLAGS	= -O3 -Wall -std=c++11 $(WLDAFLAGS) #$(LLDAFLAGS) $(INC_FLAGS) $(LD_FLAGS)
+CXXFLAGS	= -O3 -Wall -std=c++11 $(WLDAFLAGS)
 PLDAFLAGS	= -O3 -Wall -Wno-sign-compare
 GLDAFLAGS	= -O3 -std=c++11
 WLDAFLAGS = -fopenmp -march=native -DNDEBUG -g -rdynamic -lnuma WarpLDA/release/gflags/libgflags_nothreads.a
@@ -63,12 +32,11 @@ WLDA_WARP= WarpLDA/release/src/CMakeFiles/warplda.dir/lda.cpp.o WarpLDA/release/
 WLDA_FORMAT= WarpLDA/release/src/CMakeFiles/format.dir/format.cpp.o
 WLDA_INC=  -IWarpLDA/release/gflags/include/ -IWarpLDA/./src#/gflags/gflags.h WarpLDA/release/gflags/include/gflags/gflags_declare.h WarpLDA/release/gflags/include/gflags/gflags_gflags.h
 
-# LIGHTLDAOBJS=  LightLDA/bin/dump_binary LightLDA/src/alias_table.o LightLDA/src/document.o LightLDA/src/meta.o LightLDA/src/common.o LightLDA/src/eval.o LightLDA/src/model.o LightLDA/src/data_block.o LightLDA/src/sampler.o LightLDA/src/data_stream.o LightLDA/src/lightlda.o LightLDA/src/trainer.o LightLDA/multiverso/src/multiverso/aggregator.o LightLDA/multiverso/src/multiverso/barrier.o LightLDA/multiverso/src/multiverso/communicator.o LightLDA/multiverso/src/multiverso/data_block.o LightLDA/multiverso/src/multiverso/delta_pool.o LightLDA/multiverso/src/multiverso/endpoint_list.o LightLDA/multiverso/src/multiverso/lock.o LightLDA/multiverso/src/multiverso/log.o LightLDA/multiverso/src/multiverso/mpi_util.o LightLDA/multiverso/src/multiverso/msg_pack.o LightLDA/multiverso/src/multiverso/multiverso.o LightLDA/multiverso/src/multiverso/parameter_loader.o LightLDA/multiverso/src/multiverso/row_iter.o LightLDA/multiverso/src/multiverso/row.o LightLDA/multiverso/src/multiverso/server.o LightLDA/multiverso/src/multiverso/stop_watch.o LightLDA/multiverso/src/multiverso/table_iter.o LightLDA/multiverso/src/multiverso/table.o LightLDA/multiverso/src/multiverso/trainer.o LightLDA/multiverso/src/multiverso/vector_clock.o LightLDA/multiverso/src/multiverso/zmq_util.o
 
 MAIN=           main
 
 all: $(OBJS) $(GLDAOBJS) $(PLDAOBJS)
-	$(CXX) -o $(MAIN) $(OBJS) $(GLDAOBJS) $(PLDAOBJS) $(BLDA_OBJS) $(WLDA_COMMON) $(WLDA_WARP) $(WLDA_FORMAT) $(WLDA_INC) ${LIB} ${CXXFLAGS} #$(LIGHTLDAOBJS)
+	$(CXX) -o $(MAIN) $(OBJS) $(GLDAOBJS) $(PLDAOBJS) $(BLDA_OBJS) $(WLDA_COMMON) $(WLDA_WARP) $(WLDA_FORMAT) $(WLDA_INC) ${LIB} ${CXXFLAGS}
 
 no_cuda: $(OBJS) $(PLDAOBJS)
 	$(CXX) -o $(MAIN) $(OBJS) $(PLDAOBJS) $(BLDA_OBJS) $(WLDA_INC) ${CXXFLAGS}

@@ -23,9 +23,6 @@
 #include "plda/accumulative_model.h"
 #include "plda/sampler.h"
 #include "plda/cmd_flags.h"
-#if defined(USELLDA)
-#include "LightLDA/src/lightlda.h"
-#endif
 #include "BleiLDA/lda-estimate.h"
 #include "WarpLDA/src/warp.hpp"
 
@@ -61,12 +58,6 @@ private:
     learning_lda::LDAAccumulativeModel* PLDA_accum_model;
     map<string, int>* PLDA_word_index_map;
 
-    //#####################################################
-    //############### LightLDA Variables ##################
-    //#####################################################
-#if defined(USELLDA)
-    multiverso::lightlda::LightLDA* lightldaModel;
-#endif
     //#####################################################
     //############### BleiLDA Variables ###################
     //#####################################################
@@ -115,15 +106,6 @@ public:
   int PLDA_LoadAndInitTrainingCorpus(const string& corpus_file) ;
   bool PLDA_AgrupateTokens (string line, map<string, int>* wordCount);
   void PLDA_FreeCorpus();
-
-  //#####################################################
-  //############### LIGHTLDA Functions ##################
-  //#####################################################
-  #if defined(USELLDA)
-  void LLDA_WriteFiles(bool isfinal) ;
-  long LIGHT_LDA(string MyCount);
-  double LLDA_getDistribution(int topic);
-  #endif
 
   //#####################################################
   //############### BleiLDA Functions ##################
