@@ -313,7 +313,7 @@ long TopicModelling::PLDA_LDA(string MyCount) {
   cfg->logger.log(debug, "#### Starting LDA with " + to_string(numberOfTopics)
                 + " topics and " + to_string(numberOfIterations) + " iterations ####");
 
-  long time = 0;
+  long ttime = 0;
   outputFile = MyCount;
   cfg->logger.log(debug, "corpus has size: " + to_string(PLDA_corpus->size()));
   PLDA_LoadAndInitTrainingCorpus(cfg->ldaInputFile);
@@ -330,7 +330,7 @@ long TopicModelling::PLDA_LDA(string MyCount) {
   cfg->logger.log(debug, "Finished Train -> Write file");
 
   long delta = time(NULL) - t;
-  time = delta*1000;
+  ttime = delta*1000;
 
   // Show top 5 words in topics with proportions for the first document
 
@@ -352,7 +352,7 @@ long TopicModelling::PLDA_LDA(string MyCount) {
 
   cfg->logger.log(debug, "#### Ending LDA ####");
 
-  return time;
+  return ttime;
 }
 double TopicModelling::PLDA_getDistribution(int topic, int docNum) {
     double dist = 0.0;
