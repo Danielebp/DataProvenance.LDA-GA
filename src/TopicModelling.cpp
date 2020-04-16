@@ -293,14 +293,12 @@ void TopicModelling::PLDA_WriteFiles(bool isfinal) {
          << ((topic < (numberOfTopics - 1)) ? "\t" : "\n");
      }
     }
-    distFile<<out.str();
-    distFile.close();
+    distFile<<out.str();;
 
     ofstream modelFile(cfg->outputDir + "/model"+(isfinal ? "" : outputFile)+".txt");
     stringstream fout;
     PLDA_accum_model->AppendAsString(PLDA_word_index_map, fout);
     modelFile<<fout.str();
-    modelFile.close();
 }
 // should write distribution.txt and topics.txt
 long TopicModelling::PLDA_LDA(string MyCount) {
@@ -373,6 +371,13 @@ bool TopicModelling::PLDA_TrainModel(learning_lda::LDAModel * model) {
 
     for (int iter = 0; iter < numberOfIterations; ++iter) {
       cfg->logger.log(debug, "Iteration " + to_string(iter));
+      // if (flags.compute_likelihood_ == "true") {
+      //   double loglikelihood = 0;
+      //   for (list<LDADocument*>::const_iterator iterator = PLDA_corpus->begin(); iterator != PLDA_corpus->end(); ++iterator) {
+      //     loglikelihood += sampler.LogLikelihood(*iterator);
+      //   }
+      //   cout << "Loglikelihood: " << loglikelihood << endl;
+      // }
       sampler.DoIteration(PLDA_corpus, true, iter < burnInIterations);
     }
     PLDA_accum_model->AverageModel(numberOfIterations - burnInIterations);
@@ -456,13 +461,8 @@ void TopicModelling::PLDA_FreeCorpus() {
   for (vector<learning_lda::LDADocument*>::iterator iter = PLDA_corpus->begin();
        iter != PLDA_corpus->end();
        ++iter) {
-      if(*iter != 0 && *iter != NULL){
-              delete (*iter);
-              *iter = 0;
-
-      }
+	delete (*iter);
   }
-  PLDA_corpus->clear();
 }
 
 
