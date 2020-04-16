@@ -39,6 +39,11 @@ bool Scanner::nextLineClean() {
     ss.str(std::string());
     ss.clear();
     if(getline (myfile, line, '\n')) {
+        pos = line.find("ERROR");
+        while(pos!=std::string::npos && pos<line.size()){
+            getline (myfile, line, '\n');
+            pos = line.find("ERROR");
+        }
         pos = line.find("STATUS");
         if(pos!=std::string::npos && pos<line.size())line.replace(pos, 42, " ");
         pos = line.find(":");

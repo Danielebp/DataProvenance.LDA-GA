@@ -47,6 +47,15 @@ int main(int argc, char* argv[]) {
 	    string outdir = argv[++arg];
             cfg.outputDir = cfg.outputDir + "/" + outdir;
 	}
+        else if(s.compare("-truth")==0){
+            cfg.truthFile = argv[++arg];
+        }
+        else if(s.compare("-prep")==0){
+            cfg.preProcessedFile = argv[++arg];
+        }
+        else if(s.compare("-input")==0){
+            cfg.ldaInputFile = argv[++arg];
+        }
         else if(s.compare("-seed") == 0)
             srand(stoi(argv[++arg]));
         else if(s.compare("-metrics") == 0)

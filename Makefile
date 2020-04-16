@@ -13,7 +13,7 @@ GLDAOBJS=	$(OBJ_DIR)/glda_dataset.o $(OBJ_DIR)/glda_utils.o $(OBJ_DIR)/glda_mode
 
 
 ###################### PLDA #####################
-PLDAFLAGS	= -O3 -Wall -Wno-sign-compare
+PLDAFLAGS	= -g -O0 -Wall -Wno-sign-compare
 PLDAOBJS=	$(OBJ_DIR)/plda_accumulative_model.o $(OBJ_DIR)/plda_cmd_flags.o $(OBJ_DIR)/plda_common.o $(OBJ_DIR)/plda_document.o $(OBJ_DIR)/plda_model.o $(OBJ_DIR)/plda_sampler.o
 
 
@@ -34,7 +34,7 @@ BLDA_OBJS= $(LIBS_DIR)/BleiLDA/lda-alpha.o $(LIBS_DIR)/BleiLDA/lda-data.o $(LIBS
 
 # C++ compiler configuration
 CXX				= g++
-CXXFLAGS	= -O3 -Wall -std=c++11 $(WLDAFLAGS) 
+CXXFLAGS	= -O0 -g -Wall -std=c++11 $(WLDAFLAGS) 
 
 
 # Project configuration

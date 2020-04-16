@@ -20,9 +20,11 @@ TopicModelling::TopicModelling(int numberOfTopics, int numberOfIterations, int n
             break;
 #endif
           case plda:
-		this->PLDA_corpus = new vector<learning_lda::LDADocument*>();
-      		this->PLDA_corpus->clear();
-      		cfg->logger.log(debug, "Corpus has size " + to_string(PLDA_corpus->size()));
+		        this->PLDA_corpus = new vector<learning_lda::LDADocument*>();
+      		  this->PLDA_corpus->clear();
+            PLDA_word_index_map = new map<string, int>();
+            PLDA_LoadAndInitTrainingCorpus(cfg->ldaInputFile);
+            PLDA_accum_model = new learning_lda::LDAAccumulativeModel(numberOfTopics, PLDA_word_index_map->size(), PLDA_corpus->size());
             break;
           case blda:
             blda_model = new LDA_Estimate(numberOfDocuments, numberOfTopics);
@@ -35,6 +37,7 @@ TopicModelling::TopicModelling(int numberOfTopics, int numberOfIterations, int n
             wldaDocTopDist = new double*[numberOfDocuments];
             for(unsigned i = 0; i < numberOfDocuments; ++i)
                 wldaDocTopDist[i] = new double[numberOfTopics];
+            break;
           default:
             this->doc_index_map = new map<int, string>();
             LoadDocMap();
@@ -43,6 +46,7 @@ TopicModelling::TopicModelling(int numberOfTopics, int numberOfIterations, int n
   }
 
 TopicModelling::~TopicModelling(){
+    cfg->logger.log(info, "Delete TM");
       switch (cfg->ldaLibrary) {
 #if defined(USECUDA)
           case glda:
@@ -51,9 +55,15 @@ TopicModelling::~TopicModelling(){
             break;
 #endif
           case plda:
+            cfg->logger.log(info, "Cleaning up");
             PLDA_FreeCorpus();
-	    delete PLDA_accum_model;
+            cfg->logger.log(info, "Cleaned corpus elements");
+            delete PLDA_corpus;
+             cfg->logger.log(info, "Cleaned corpus");
+	          delete PLDA_accum_model;
+            cfg->logger.log(info, "Cleaned model");
             delete PLDA_word_index_map;
+            cfg->logger.log(info, "Cleaned idx map");
             break;
         case blda:
           delete blda_model;
@@ -64,9 +74,12 @@ TopicModelling::~TopicModelling(){
           for(int i = 0; i < numberOfDocuments; ++i)
             delete [] wldaDocTopDist[i];
           delete [] wldaDocTopDist;
+          break;
         default:
-                break;
+            delete doc_index_map;
+            break;
       }
+      cfg->logger.log(info, "Done cleaning TM");
   }
 
 int TopicModelling::getMainTopic(int docNum) {
@@ -290,19 +303,15 @@ void TopicModelling::PLDA_WriteFiles(bool isfinal) {
 // should write distribution.txt and topics.txt
 long TopicModelling::PLDA_LDA(string MyCount) {
   srand(seed);
-    cfg->logger.log(debug, "corpus has size: " + to_string(PLDA_corpus->size()));
   cfg->logger.log(debug, "#### Starting LDA with " + to_string(numberOfTopics)
                 + " topics and " + to_string(numberOfIterations) + " iterations ####");
 
   long total_time = 0;
   outputFile = MyCount;
-  cfg->logger.log(debug, "corpus has size: " + to_string(PLDA_corpus->size()));
-  PLDA_LoadAndInitTrainingCorpus(cfg->ldaInputFile);
-  cfg->logger.log(debug, "Finished Load -> Start Model");
+    
+  learning_lda::LDAModel model(numberOfTopics, PLDA_word_index_map);
 
   clock_t t = time(NULL);
-  learning_lda::LDAModel model(numberOfTopics, PLDA_word_index_map);
-  PLDA_accum_model = new learning_lda::LDAAccumulativeModel(numberOfTopics, PLDA_word_index_map->size(), PLDA_corpus->size());
 
   cfg->logger.log(debug, "Finished Model -> Start Train");
 
@@ -378,7 +387,6 @@ bool TopicModelling::PLDA_TrainModel(learning_lda::LDAModel * model) {
 int TopicModelling::PLDA_LoadAndInitTrainingCorpus(const string& corpus_file) {
   cfg->logger.log(debug, "Restart corpus");
   cfg->logger.log(debug, "Restart word index");
-  PLDA_word_index_map = new map<string, int>();
   cfg->logger.log(debug, "Done");
 
   cfg->logger.log(debug, corpus_file);
@@ -454,7 +462,6 @@ void TopicModelling::PLDA_FreeCorpus() {
        iter != PLDA_corpus->end();
        ++iter) {
 	delete (*iter);
-	*iter = 0;
   }
 }
 
