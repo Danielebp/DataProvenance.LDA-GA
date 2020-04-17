@@ -20,8 +20,8 @@ string getLibraryLabel(LDALibrary library){
 	switch(library) {
 		case plda:
 			return "PLDA";
-		case llda:
-			return "LightLDA";
+		case gibbs:
+			return "GibbsLDA";
 		case glda:
 			return "GLDA";
         case blda:

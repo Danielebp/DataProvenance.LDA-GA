@@ -1,14 +1,6 @@
-
+#GLDA
 # GPU architecture specification
 GPU_ARCH_FLAG   = arch=compute_70,code=sm_70
-
-
-# C++ compiler configuration
-CXX				= g++
-CXXFLAGS	= -O3 -Wall -std=c++11 $(WLDAFLAGS)
-PLDAFLAGS	= -O3 -Wall -Wno-sign-compare
-GLDAFLAGS	= -O3 -std=c++11
-WLDAFLAGS = -fopenmp -march=native -DNDEBUG -g -rdynamic -lnuma $(LIBS_DIR)/WarpLDA/release/gflags/libgflags_nothreads.a
 
 # CUDA compiler configuration
 NVCC_HOME       = /usr/local/cuda
@@ -16,6 +8,32 @@ NVCC            = nvcc
 CUDA_INC        = -I$(NVCC_HOME)/include
 CUDA_LIB        = -L$(NVCC_HOME)/lib64 -lcuda -lcudart
 CUDA_FLAGS      = -O3 -m64 -gencode $(GPU_ARCH_FLAG)
+GLDAFLAGS	= -O3 -std=c++11
+GLDAOBJS=	glda_dataset.o glda_utils.o glda_model.o glda_CUDASampling.o glda_sample_kernel.o
+
+#PLDA
+PLDAFLAGS	= -O3 -Wall -Wno-sign-compare
+PLDAOBJS=	plda_accumulative_model.o plda_cmd_flags.o plda_common.o plda_document.o plda_model.o plda_sampler.o
+
+
+#WLDA
+WLDAFLAGS = -fopenmp -march=native -DNDEBUG -g -rdynamic -lnuma $(LIBS_DIR)/WarpLDA/release/gflags/libgflags_nothreads.a
+WLDA_COMMON= $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/common.dir/AdjList.cpp.o $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/common.dir/Bigraph.cpp.o $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/common.dir/clock.cpp.o $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/common.dir/NumaArray.cpp.o $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/common.dir/Vocab.cpp.o
+WLDA_WARP= $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/warplda.dir/lda.cpp.o $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/warplda.dir/warp.cpp.o $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/warplda.dir/warplda.cpp.o
+WLDA_FORMAT= $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/format.dir/format.cpp.o
+WLDA_INC=  -I$(LIBS_DIR)/WarpLDA/release/gflags/include/ -I$(LIBS_DIR)/WarpLDA/./src#/gflags/gflags.h WarpLDA/release/gflags/include/gflags/gflags_declare.h WarpLDA/release/gflags/include/gflags/gflags_gflags.h
+
+
+#BLDA
+BLDA_OBJS= $(LIBS_DIR)/BleiLDA/lda-alpha.o $(LIBS_DIR)/BleiLDA/lda-data.o $(LIBS_DIR)/BleiLDA/lda-inference.o $(LIBS_DIR)/BleiLDA/utils.o $(LIBS_DIR)/BleiLDA/lda-estimate.o $(LIBS_DIR)/BleiLDA/lda-model.o
+
+
+# C++ compiler configuration
+CXX				= g++
+CXXFLAGS	= -O3 -Wall -std=c++11 $(WLDAFLAGS)
+
+
+
 
 # Project configuration
 INCLUDE		= $(CUDA_INC)
@@ -23,18 +41,11 @@ LIB			= $(CUDA_LIB)
 SRC_DIR= src
 LIBS_DIR= $(SRC_DIR)/LDA_Libraries
 
-GLDAOBJS=	glda_dataset.o glda_utils.o glda_model.o glda_CUDASampling.o glda_sample_kernel.o
-PLDAOBJS=	plda_accumulative_model.o plda_cmd_flags.o plda_common.o plda_document.o plda_model.o plda_sampler.o
 OBJS=		main.o commons.o logger.o config.o document.o cluster.o myutils.o scanner.o dataProvenance.o geneticAlgorithm.o resultStatistics.o populationConfig.o parallelizables.o TopicModelling.o preProcessing.o wordFilter.o strtokenizer.o
-BLDA_OBJS= $(LIBS_DIR)/BleiLDA/lda-alpha.o $(LIBS_DIR)/BleiLDA/lda-data.o $(LIBS_DIR)/BleiLDA/lda-inference.o $(LIBS_DIR)/BleiLDA/utils.o $(LIBS_DIR)/BleiLDA/lda-estimate.o $(LIBS_DIR)/BleiLDA/lda-model.o
-
-WLDA_COMMON= $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/common.dir/AdjList.cpp.o $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/common.dir/Bigraph.cpp.o $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/common.dir/clock.cpp.o $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/common.dir/NumaArray.cpp.o $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/common.dir/Vocab.cpp.o
-WLDA_WARP= $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/warplda.dir/lda.cpp.o $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/warplda.dir/warp.cpp.o $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/warplda.dir/warplda.cpp.o
-WLDA_FORMAT= $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/format.dir/format.cpp.o
-WLDA_INC=  -I$(LIBS_DIR)/WarpLDA/release/gflags/include/ -I$(LIBS_DIR)/WarpLDA/./src#/gflags/gflags.h WarpLDA/release/gflags/include/gflags/gflags_declare.h WarpLDA/release/gflags/include/gflags/gflags_gflags.h
 
 
-MAIN=           main
+
+MAIN=           provenance
 
 all: $(OBJS) $(GLDAOBJS) $(PLDAOBJS)
 	$(CXX) -o $(MAIN) $(OBJS) $(GLDAOBJS) $(PLDAOBJS) $(BLDA_OBJS) $(WLDA_COMMON) $(WLDA_WARP) $(WLDA_FORMAT) $(WLDA_INC) ${LIB} ${CXXFLAGS}

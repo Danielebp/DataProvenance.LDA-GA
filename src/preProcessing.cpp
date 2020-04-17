@@ -190,12 +190,6 @@ unordered_map<string, Document> prepareData(ConfigOptions* cfg){
     }
 
     switch (cfg->ldaLibrary) {
-#ifdef USELLDA
-         case llda:
-            cfg->logger.log(debug, "Creating LightLDA files");
-            createLightLDAFiles(cfg, documentsMap.size());
-            break;
-#endif
          case blda:
             createBleiLDAFiles(cfg);
             break;

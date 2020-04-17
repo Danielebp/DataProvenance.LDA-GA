@@ -47,6 +47,15 @@ int main(int argc, char* argv[]) {
 	    string outdir = argv[++arg];
             cfg.outputDir = cfg.outputDir + "/" + outdir;
 	}
+        else if(s.compare("-truth")==0){
+            cfg.truthFile = argv[++arg];
+        }
+        else if(s.compare("-prep")==0){
+            cfg.preProcessedFile = argv[++arg];
+        }
+        else if(s.compare("-input")==0){
+            cfg.ldaInputFile = argv[++arg];
+        }
         else if(s.compare("-seed") == 0)
             srand(stoi(argv[++arg]));
         else if(s.compare("-cuda") == 0)
@@ -65,6 +74,8 @@ int main(int argc, char* argv[]) {
           cfg.ldaLibrary = blda;
         else if(s.compare("-wlda") == 0)
           cfg.ldaLibrary = wlda;
+        else if (s.compare("-gibbs")==0)
+          cfg.ldaLibrary = gibbs;
         else
             cout<<"\tparameter not recognized: "<<argv[arg]<<endl;
     }
@@ -79,8 +90,8 @@ int main(int argc, char* argv[]) {
     cfg.logger.log(status, "Fitness Threshold: " + std::to_string(cfg.fitnessThreshold));
     cfg.logger.log(status, "Population Size: " + std::to_string(cfg.populationSize));
     cfg.logger.log(status, "Running on "+ std::string((cfg.ldaLibrary==glda && cfg.perfType == cuda) ? "GPU" : "CPU"));
-    cfg.logger.log(status, "Number of Documents: " + std::to_string(documentsMap.size()));
     cfg.logger.log(status, "Library: " + getLibraryLabel(cfg.ldaLibrary));
+    cfg.logger.log(status, "Number of Documents: " + std::to_string(documentsMap.size()));
 
     int articlesCount = 0;
     for (std::pair<std::string, Document> element : documentsMap)

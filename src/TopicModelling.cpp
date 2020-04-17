@@ -15,6 +15,7 @@ TopicModelling::TopicModelling(int numberOfTopics, int numberOfIterations, int n
       switch (cfg->ldaLibrary) {
 #if defined(USECUDA)
           case glda:
+          case gibbs:
       		this->gldaModel = new model();
             break;
 #endif
@@ -23,13 +24,6 @@ TopicModelling::TopicModelling(int numberOfTopics, int numberOfIterations, int n
       		this->PLDA_corpus->clear();
       		cfg->logger.log(debug, "Corpus has size " + to_string(PLDA_corpus->size()));
             break;
-#if defined(USELLDA)
-          case llda:
-    		this->lightldaModel = new multiverso::lightlda::LightLDA();
-    		this->doc_index_map = new map<int, string>();
-            LoadDocMap();
-            break;
-#endif
           case blda:
             blda_model = new LDA_Estimate(numberOfDocuments, numberOfTopics);
     		this->doc_index_map = new map<int, string>();
@@ -52,6 +46,7 @@ TopicModelling::~TopicModelling(){
       switch (cfg->ldaLibrary) {
 #if defined(USECUDA)
           case glda:
+          case gibbs:
            delete gldaModel;
             break;
 #endif
@@ -60,12 +55,6 @@ TopicModelling::~TopicModelling(){
 	    delete PLDA_accum_model;
             delete PLDA_word_index_map;
             break;
-#if defined(USELLDA)
-          case llda:
-	    delete lightldaModel;
-	    delete doc_index_map;
-	    break;
-#endif
         case blda:
           delete blda_model;
           delete doc_index_map;
@@ -82,10 +71,6 @@ TopicModelling::~TopicModelling(){
 
 int TopicModelling::getMainTopic(int docNum) {
   switch (cfg->ldaLibrary) {
-#if defined(USELLDA)
-    case llda:
-      return lightldaModel->GetMainTopic(docNum);
-#endif
     case blda:
       return blda_model->getMainTopic(docNum);
     default:
@@ -106,14 +91,11 @@ double TopicModelling::getDistribution(int topic, int docNum){
       switch (cfg->ldaLibrary) {
 #if defined(USECUDA)
           case glda:
+          case gibbs:
             return GLDA_getDistribution(topic, docNum);
 #endif
           case plda:
             return PLDA_getDistribution(topic, docNum);
-#if defined(USELLDA)
-          case llda:
-            return lightldaModel->GetDocTopicDistribution(docNum, topic);
-#endif
           case blda:
             return blda_model->getDocTopDist(docNum, topic);
           case wlda:
@@ -128,6 +110,7 @@ double TopicModelling::getDistribution(int topic, int docNum){
       switch (cfg->ldaLibrary) {
 #if defined(USECUDA)
           case glda:
+          case gibbs:
             return GLDA_getDocNameByNumber(num);
 #endif
           case plda:
@@ -141,14 +124,11 @@ double TopicModelling::getDistribution(int topic, int docNum){
       switch (cfg->ldaLibrary) {
 #if defined(USECUDA)
           case glda:
+          case gibbs:
             return GLDA_WriteFiles(isfinal);
 #endif
           case plda:
             return PLDA_WriteFiles(isfinal);
-#if defined(USELLDA)
-          case llda:
-            return LLDA_WriteFiles(isfinal);
-#endif
           case blda:
             return BLDA_WriteFiles(isfinal);
           case wlda:
@@ -162,14 +142,11 @@ double TopicModelling::getDistribution(int topic, int docNum){
      switch (cfg->ldaLibrary) {
  #if defined(USECUDA)
           case glda:
+          case gibbs:
             return GLDA_LDA(MyCount);
 #endif
           case plda:
             return PLDA_LDA(MyCount);
-#if defined(USELLDA)
-          case llda:
-            return LIGHT_LDA(MyCount);
-#endif
           case blda:
             return BLDA_LDA(MyCount);
           case wlda:
