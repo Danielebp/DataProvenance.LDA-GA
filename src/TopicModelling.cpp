@@ -210,7 +210,8 @@ long TopicModelling::GLDA_LDA(string MyCount) {
 
   outputFile = MyCount;
 
-  clock_t t = time(NULL);
+  Timer t;
+  t.start();
 
   string ntopics = to_string(numberOfTopics);
   string niters = to_string(numberOfIterations);
@@ -242,8 +243,7 @@ long TopicModelling::GLDA_LDA(string MyCount) {
   }
 
   outTop.close();
-  long delta = time(NULL) - t;
-  long time = delta*1000;
+  long time = t.getTime();
 
   cfg->logger.log(debug, "#### Ending LDA ####");
 
@@ -296,7 +296,8 @@ long TopicModelling::PLDA_LDA(string MyCount) {
   PLDA_LoadAndInitTrainingCorpus(cfg->ldaInputFile);
   cfg->logger.log(debug, "Finished Load -> Start Model");
 
-  clock_t t = time(NULL);
+  Timer t;
+  t.start();
   learning_lda::LDAModel model(numberOfTopics, PLDA_word_index_map);
   PLDA_accum_model = new learning_lda::LDAAccumulativeModel(numberOfTopics, PLDA_word_index_map->size(), PLDA_corpus->size());
 
@@ -306,8 +307,7 @@ long TopicModelling::PLDA_LDA(string MyCount) {
 
   cfg->logger.log(debug, "Finished Train -> Write file");
 
-  long delta = time(NULL) - t;
-  ttime = delta*1000;
+  ttime = t.getTime();
 
   // Show top 5 words in topics with proportions for the first document
 
@@ -542,7 +542,8 @@ long TopicModelling::BLDA_LDA(string MyCount) {
 
   outputFile = MyCount;
 
-  clock_t t = time(NULL);
+  Timer t;
+  t.start();
 
   blda_corpus* ldacorpus = read_data(const_cast<char*>(cfg->libsvmFile.c_str()));
   cfg->logger.log(debug, "BLDA setup completed. Starting estimate");
@@ -577,8 +578,7 @@ long TopicModelling::BLDA_LDA(string MyCount) {
   }
 
   outTop.close();
-  long delta = time(NULL) - t;
-  long time = delta*1000;
+  long time = t.getTime();
 
   cfg->logger.log(debug, "#### Ending LDA ####");
 
@@ -610,7 +610,8 @@ long TopicModelling::WLDA_LDA(string MyCount) {
 
   outputFile = MyCount;
 
-  clock_t t = time(NULL);
+  Timer t;
+  t.start();
   string winf = cfg->inputDir + "wlda_input";
   string ntopics = to_string(numberOfTopics);
   string niters = to_string(numberOfIterations);
@@ -651,8 +652,7 @@ long TopicModelling::WLDA_LDA(string MyCount) {
   }
 
   outTop.close();
-  long delta = time(NULL) - t;
-  long time = (delta*1000);
+  long time = t.getTime();
 
   cfg->logger.log(debug, "#### Ending LDA ####");
 

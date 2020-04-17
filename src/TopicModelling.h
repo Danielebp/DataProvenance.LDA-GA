@@ -13,6 +13,7 @@
 #include "config.h"
 #include "utils.h"
 #include "scanner.h"
+#include "timer.h"
 
 #if defined(USECUDA)
 #include "./LDA_Libraries/gldaCuda/src/model.h"

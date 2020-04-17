@@ -41,7 +41,7 @@ LIB			= $(CUDA_LIB)
 SRC_DIR= src
 LIBS_DIR= $(SRC_DIR)/LDA_Libraries
 
-OBJS=		main.o commons.o logger.o config.o document.o cluster.o myutils.o scanner.o dataProvenance.o geneticAlgorithm.o resultStatistics.o populationConfig.o parallelizables.o TopicModelling.o preProcessing.o wordFilter.o strtokenizer.o
+OBJS=		main.o commons.o logger.o config.o document.o cluster.o myutils.o scanner.o dataProvenance.o geneticAlgorithm.o resultStatistics.o populationConfig.o parallelizables.o TopicModelling.o preProcessing.o wordFilter.o strtokenizer.o timer.o
 
 
 
@@ -61,6 +61,9 @@ config.o: $(SRC_DIR)/config.cpp
 
 commons.o: $(SRC_DIR)/commons.cpp
 	$(CXX) -c -o commons.o $(SRC_DIR)/commons.cpp $(CXXFLAGS)
+
+timer.o: $(SRC_DIR)/timer.cpp
+		$(CXX) -c -o timer.o $(SRC_DIR)/timer.cpp $(CXXFLAGS)
 
 logger.o: $(SRC_DIR)/logger.cpp
 	$(CXX) -c -o logger.o $(SRC_DIR)/logger.cpp $(CXXFLAGS)

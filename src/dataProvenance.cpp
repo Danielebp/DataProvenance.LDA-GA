@@ -127,13 +127,20 @@ ResultStatistics reconstructProvenance(int numberOfDocuments, ConfigOptions * cf
     ResultStatistics result;
     GeneticAlgorithm ga;
 
-    clock_t exTm = time(NULL);
+    Timer exTm;
+    exTm.start();
 
     result = ga.geneticLogic(numberOfDocuments, cfg);
-    clock_t geneticEndTime = time(NULL);
+    Timer geneticEndTime;
+    geneticEndTime.start();
 
 
     stringstream ss;
+    ss<< "Genetic algorithm takes " << (exTm.getTime()) << "ms";
+    cfg->logger.log(status,ss.str());
+    ss.str(std::string());
+    ss.clear();
+    
     unordered_map<string, Article> articlesMap;
     unordered_map<string, SourceFile> sourceFileMap;
 
@@ -150,16 +157,11 @@ ResultStatistics reconstructProvenance(int numberOfDocuments, ConfigOptions * cf
         }
     }
 
-    ss<< "Genetic algorithm takes " << (geneticEndTime - exTm) << "ms";
-    cfg->logger.log(status,ss.str());
-    ss.str(std::string());
-    ss.clear();
 
     // create clusters based on the distribution.txt
     vector<Cluster> clusters = performClustering(articlesMap, sourceFileMap, cfg);
 
-    clock_t clusteringEndTime = time(NULL);
-    ss<<"Clustering takes " << (clusteringEndTime - geneticEndTime) << "ms";
+    ss<<"Clustering takes " << (geneticEndTime.getTime()) << "ms";
     cfg->logger.log(status, ss.str());
     ss.str(std::string());
     ss.clear();
@@ -167,8 +169,7 @@ ResultStatistics reconstructProvenance(int numberOfDocuments, ConfigOptions * cf
     result = calculatePrecisionRecall(result, clusters, cfg);
     cfg->logger.log(debug, "Calculated precision & recall");
 
-    long delta = time(NULL) - exTm;
-    result.execution_milliseconds = (delta*1000);
+    result.execution_milliseconds = exTm.getTime();
     cfg->logger.log(status, result.to_string(""));
     cfg->logger.log(info, "###########################################");
 
