@@ -171,8 +171,8 @@ double TopicModelling::getDistribution(int topic, int docNum){
       while (getline(ldaInputFile, line)) {
           // Each line has top 20 words of a topic
           string name = line.substr(0, line.find(cfg->delimiter));
-          (*doc_index_map)[docID++] = name;
-
+//          (*doc_index_map)[docID++] = name;
+          doc_index_map->push_back(name);
       }
       ldaInputFile.close();
 
