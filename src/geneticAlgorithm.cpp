@@ -253,7 +253,7 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
     PopulationConfig currBestConfig(population[0]); // starts on the first config
     currBestConfig.fitness_value = -1;
 
-    int    maxIddle = 10;
+    int    maxIddle = 5;
     int    iddleIterations = 0;
 
     cfg->logger.log(debug, "Starting GA with " + std::to_string(numberOfDocuments) + " files");
