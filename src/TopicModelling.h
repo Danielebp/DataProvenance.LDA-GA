@@ -42,7 +42,7 @@ private:
     int numberOfIterations;
     int numberOfDocuments;
     long seed;
-    map<int, string>* doc_index_map;
+    vector<string>* doc_index_map;
 
 
     //#####################################################

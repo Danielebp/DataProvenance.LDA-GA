@@ -26,17 +26,20 @@ TopicModelling::TopicModelling(int numberOfTopics, int numberOfIterations, int n
             break;
           case blda:
             blda_model = new LDA_Estimate(numberOfDocuments, numberOfTopics);
-    		this->doc_index_map = new map<int, string>();
+    		this->doc_index_map = new vector<string>();
+            this->doc_index_map.reserve(numberOfDocuments);
             LoadDocMap();
             break;
           case wlda:
-            this->doc_index_map = new map<int, string>();
+            this->doc_index_map = new vector<string>();
+            this->doc_index_map.reserve(numberOfDocuments);
             LoadDocMap();
             wldaDocTopDist = new double*[numberOfDocuments];
             for(unsigned i = 0; i < numberOfDocuments; ++i)
                 wldaDocTopDist[i] = new double[numberOfTopics];
           default:
-            this->doc_index_map = new map<int, string>();
+            this->doc_index_map = new vector<string>();
+            this->doc_index_map.reserve(numberOfDocuments);
             LoadDocMap();
             break;
       }
@@ -78,8 +81,9 @@ int TopicModelling::getMainTopic(int docNum) {
       int idMax = -1;
 
       for(int i = 0; i<numberOfTopics; i++) {
-        if(getDistribution (i, docNum) > max) {
-            max = getDistribution (i, docNum);
+          double curr = getDistribution (i, docNum)
+        if(curr > max) {
+            max = curr;
             idMax = i;
         }
       }
@@ -557,10 +561,12 @@ long TopicModelling::WLDA_LDA(string MyCount) {
 
   // load words from prefix.info.words.txt file
   vector<string> topWords;
+  topWords.reserve(numberOfTopics);
   if(!WLDA_loadWords(&topWords))
     cfg->logger.log(error, "Error reading TopWords for topics");
 
   vector<double> topDist;
+  topDist.reserve(numberOfTopics);
   // TODO: load topic distribution somehow
   for (int topic = 0; topic < numberOfTopics; topic++) {
       topDist.push_back(0.0);

@@ -298,7 +298,7 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
             cfg->logger.log(info, "LDA Attempt: "+std::to_string(LDACounter)+" ["+to_string(population[i].number_of_topics)+"x"+to_string(population[i].number_of_iterations)+"] - Fitness: "+std::to_string(population[i].fitness_value));
 
 
-            if(population[i].fitness_value >= cfg->fitnessThreshold) {
+            if(UNLIKELY(population[i].fitness_value >= cfg->fitnessThreshold)) {
                 cfg->logger.log(info, "Achieved fitness");
                 // if fitness was achieved write dist files
                 tm->WriteFiles(true);
@@ -314,7 +314,7 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
                 break;
 
             }
-	    cfg->logger.log(debug, "Embrace for next LDA attempt");
+	        cfg->logger.log(debug, "Embrace for next LDA attempt");
         }
         // stops GA as Fitness Threshold was reached
         if(fitnessThresholdFound) break;
