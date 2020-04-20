@@ -27,19 +27,19 @@ TopicModelling::TopicModelling(int numberOfTopics, int numberOfIterations, int n
           case blda:
             blda_model = new LDA_Estimate(numberOfDocuments, numberOfTopics);
     		this->doc_index_map = new vector<string>();
-            this->doc_index_map.reserve(numberOfDocuments);
+            this->doc_index_map->reserve(numberOfDocuments);
             LoadDocMap();
             break;
           case wlda:
             this->doc_index_map = new vector<string>();
-            this->doc_index_map.reserve(numberOfDocuments);
+            this->doc_index_map->reserve(numberOfDocuments);
             LoadDocMap();
             wldaDocTopDist = new double*[numberOfDocuments];
             for(unsigned i = 0; i < numberOfDocuments; ++i)
                 wldaDocTopDist[i] = new double[numberOfTopics];
           default:
             this->doc_index_map = new vector<string>();
-            this->doc_index_map.reserve(numberOfDocuments);
+            this->doc_index_map->reserve(numberOfDocuments);
             LoadDocMap();
             break;
       }
@@ -81,7 +81,7 @@ int TopicModelling::getMainTopic(int docNum) {
       int idMax = -1;
 
       for(int i = 0; i<numberOfTopics; i++) {
-          double curr = getDistribution (i, docNum)
+          double curr = getDistribution (i, docNum);
         if(curr > max) {
             max = curr;
             idMax = i;
