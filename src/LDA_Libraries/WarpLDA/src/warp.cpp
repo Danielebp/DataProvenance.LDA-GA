@@ -57,39 +57,40 @@ int run_wlda(int argc, char** argv)
     SetIfEmpty(FLAGS_dtdist, FLAGS_dir + "wdistribution.txt");
 
 
-    LDA *lda = new WarpLDA<1>();
-    lda->loadBinary(FLAGS_bin);
+    WarpLDA<1> lda;// = new WarpLDA<1>();
+    lda.loadBinary(FLAGS_bin);
     if (FLAGS_estimate)
     {
-        lda->estimate(FLAGS_k, FLAGS_alpha / FLAGS_k, FLAGS_beta, FLAGS_niter, FLAGS_perplexity);
+        lda.estimate(FLAGS_k, FLAGS_alpha / FLAGS_k, FLAGS_beta, FLAGS_niter, FLAGS_perplexity);
         if (FLAGS_dumpmodel)
         {
 //            std::cout << "Dump model " << FLAGS_model << std::endl;
-            lda->storeModel(FLAGS_model);
+            lda.storeModel(FLAGS_model);
         }
         if (FLAGS_writeinfo)
         {
 //            std::cout << "Write Info " << FLAGS_info << " ntop " << FLAGS_ntop << std::endl;
-            lda->writeInfo(FLAGS_vocab, FLAGS_info, FLAGS_ntop);
+            lda.writeInfo(FLAGS_vocab, FLAGS_info, FLAGS_ntop);
         }
         if (FLAGS_dumpz)
         {
             SetIfEmpty(FLAGS_z, FLAGS_prefix + ".z.estimate");
 //            std::cout << "Dump Z " << FLAGS_z << std::endl;
             //lda->storeZ(FLAGS_z);
-            lda->storeDocTopicDistribution(FLAGS_dtdist, FLAGS_k);
+            lda.storeDocTopicDistribution(FLAGS_dtdist, FLAGS_k);
         }
     }
     else if(FLAGS_inference)
     {
-        lda->loadModel(FLAGS_model);
-        lda->inference(FLAGS_niter, FLAGS_perplexity);
+        lda.loadModel(FLAGS_model);
+        lda.inference(FLAGS_niter, FLAGS_perplexity);
         if (FLAGS_dumpz)
         {
             SetIfEmpty(FLAGS_z, FLAGS_prefix + ".z.inference");
  //           std::cout << "Dump Z " << FLAGS_z << std::endl;
-            lda->storeZ(FLAGS_z);
+            lda.storeZ(FLAGS_z);
         }
     }
+    //delete lda;
 	return 0;
 }

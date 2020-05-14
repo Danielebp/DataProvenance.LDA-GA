@@ -37,6 +37,7 @@ TopicModelling::TopicModelling(int numberOfTopics, int numberOfIterations, int n
             wldaDocTopDist = new double*[numberOfDocuments];
             for(unsigned i = 0; i < numberOfDocuments; ++i)
                 wldaDocTopDist[i] = new double[numberOfTopics];
+            break;
           default:
             this->doc_index_map = new vector<string>();
             this->doc_index_map->reserve(numberOfDocuments);
@@ -63,10 +64,13 @@ TopicModelling::~TopicModelling(){
           delete doc_index_map;
           break;
         case wlda:
+          doc_index_map->clear();
+          doc_index_map->shrink_to_fit();
           delete doc_index_map;
           for(int i = 0; i < numberOfDocuments; ++i)
             delete [] wldaDocTopDist[i];
           delete [] wldaDocTopDist;
+          break;
         default:
                 break;
       }
@@ -580,6 +584,8 @@ long TopicModelling::WLDA_LDA(string MyCount) {
       outTop<<topic<<"\t"<<topDist[topic]<<"\t"<<topWords[topic]<<endl;
   }
 
+  topDist.clear();
+
   outTop.close();
   long time = t.getTime();
 
@@ -639,4 +645,6 @@ void TopicModelling::WLDA_WriteFiles(bool isfinal) {
         string docName = getDocNameByNumber(docID);
         distFile<<docName<<line.substr(pos)<<endl;
     }
+    idFile.close();
+    distFile.close();
 }

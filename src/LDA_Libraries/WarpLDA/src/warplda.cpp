@@ -16,6 +16,16 @@ WarpLDA<MH>::WarpLDA() : LDA()
 }
 
 template <unsigned MH>
+WarpLDA<MH>::~WarpLDA(){
+    shuffle.reset(nullptr);
+
+    for(int i = 0; i< local_buffers.size(); i++)
+    {
+        local_buffers[i].reset(nullptr);
+    }
+}
+
+template <unsigned MH>
 void WarpLDA<MH>::reduce_ck()
 {
     #pragma omp parallel for
@@ -36,8 +46,9 @@ void WarpLDA<MH>::initialize()
 	alpha_bar = alpha * K;
 	beta_bar = beta * g.NV();
 
-	if (!testMode)
+	if (!testMode){
         ck.Assign(K, 0);
+  }
 
 	nnz_d.Assign(g.NU());
 	nnz_w.Assign(g.NV());
@@ -465,7 +476,7 @@ void WarpLDA<MH>::storeDocTopicDistribution(std::string filez, int nTopics)  {
         }
         fou << '\n';
         doc++;
-        delete dist;
+        delete [] dist;
     });
     fou.close();
 }

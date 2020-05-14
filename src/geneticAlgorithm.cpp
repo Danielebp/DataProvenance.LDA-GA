@@ -104,6 +104,7 @@ bool GeneticAlgorithm::getMinDistancesOutsideClusters(double* minDistanceOutside
             }
         }
     }
+    delete [] clusterCentroids;
     return true;
 }
 
@@ -141,6 +142,8 @@ double GeneticAlgorithm::calculateFitness(TopicModelling* tm, int numberOfTopics
     if(!getMinDistancesOutsideClusters(minDistanceOutsideCluster, &clusterMap, tm, numberOfTopics, cfg))
         cfg->logger.log(error, "Error getting distances outside cluster");
 
+    cfg->logger.log(debug, "Got all data from TM");
+
     //calculate the Silhouette coefficient for each document
     double* silhouetteCoefficient = new double[numberOfDocuments]{};
     for(int m = 0 ; m < (numberOfDocuments); m++ ) {
@@ -155,6 +158,14 @@ double GeneticAlgorithm::calculateFitness(TopicModelling* tm, int numberOfTopics
     for(int m = 0 ; m < (numberOfDocuments); m++ ) {
         total += silhouetteCoefficient[m];
     }
+
+    cfg->logger.log(debug, "Done with silhouette calculations");
+
+    delete [] maxDistanceInsideCluster;
+    delete [] minDistanceOutsideCluster;
+    delete [] silhouetteCoefficient;
+
+    cfg->logger.log(debug, "Cleaned pointers");
 
     return (total / (numberOfDocuments));
 }
@@ -218,7 +229,6 @@ PopulationConfig* GeneticAlgorithm::mutateToNewPopulation (PopulationConfig* pop
 	newPopulation[i].random_topic();
         newPopulation[i].random_iteration();
     }
-
     return newPopulation;
 }
 
@@ -288,7 +298,7 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
             // creates TopicModelling obj and runs lda for pair i
             tm = new TopicModelling(population[i].number_of_topics, population[i].number_of_iterations, numberOfDocuments, population[i].seed, cfg);
             long ldaTime = tm->LDA(tempFileID);
-
+            cfg->logger.log(debug, "Done with LDA");
             // updates times
             population[i].LDA_execution_milliseconds = ldaTime;
             LDATotTime += population[i].LDA_execution_milliseconds;
@@ -314,6 +324,7 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
                 break;
 
             }
+          delete tm;
 	        cfg->logger.log(debug, "Embrace for next LDA attempt");
         }
         // stops GA as Fitness Threshold was reached
@@ -326,7 +337,6 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
 	}
 	else iddleIterations++;
 
-	delete tm;
 	if(iddleIterations > maxIddle){
 		cfg->logger.log(debug, "Re-run LDA");
                 tm = new TopicModelling(currBestConfig.number_of_topics, currBestConfig.number_of_iterations, numberOfDocuments, currBestConfig.seed, cfg);
@@ -350,7 +360,7 @@ ResultStatistics GeneticAlgorithm::geneticLogic(int numberOfDocuments, ConfigOpt
 
         PopulationConfig* newPopulation = mutateToNewPopulation(population, cfg);
         //substitute the initial population with the new population and continue
-        delete[] population;
+        delete [] population;
         population = newPopulation;
 
         long delta = t.getTime();
@@ -384,5 +394,6 @@ void GeneticAlgorithm::sortInitialPopulation(PopulationConfig* mInitialPopulatio
 			sortedPopulation[--j] = mInitialPopulation[i];
 		}
 	}
+  delete[] mInitialPopulation;
 	mInitialPopulation = sortedPopulation;
 }

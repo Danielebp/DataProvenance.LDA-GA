@@ -57,8 +57,8 @@ template <class T>
 class NumaArray
 {
 	public:
-		NumaArray() : arr_(nullptr) {}
-		~NumaArray() { Free(); }
+		inline NumaArray() : arr_(nullptr) {}
+		inline ~NumaArray() { Free(); }
 		NumaArray(size_t n, T v = T())
 		{
 			Assign(n, v);
@@ -74,10 +74,12 @@ class NumaArray
 				arr_[i] = v;
 			size_ = n;
 		}
-		void Free()
+		inline void Free()
 		{
-			if (arr_)
+			if (arr_){
 				delete[] arr_;
+    }
+
 		}
 		size_t size() { return size_; }
 		T& operator[](size_t pos) { return arr_[pos]; }

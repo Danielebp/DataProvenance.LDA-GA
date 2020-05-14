@@ -17,7 +17,8 @@ class Shuffle
 {
 public:
 	Shuffle(Bigraph &g) : g_(g) { Init(); }
-	~Shuffle() {}
+	~Shuffle() {
+    }
 public:
 	T* DataV(TVID v) { return &v_data_vec_[g_.VIdx(v)]; }
 
@@ -120,6 +121,8 @@ private:
 		Bigraph &g_;
 		NumaArray<T> v_data_vec_;
 		NumaArray<TEID> v2u_shuffle_pos_;
+
+
 		size_t cnt_u_data;
 		size_t cnt_v_data;
 	};
