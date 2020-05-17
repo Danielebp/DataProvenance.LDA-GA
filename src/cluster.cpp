@@ -77,15 +77,18 @@ vector<Cluster> ClusterManager::createClusters(ConfigOptions* cfg) {
 // the keywords that are associated with those clusters need to be found
 // the source file can be transferred to the cluster with which it matches the
 // most
-vector<Cluster> ClusterManager::cleanSourceFileCluster(vector<Cluster> clusters, unordered_map<string, SourceFile> sourceFileMap, ConfigOptions* cfg) {
+vector<Cluster> ClusterManager::cleanSourceFileCluster(vector<Cluster>& _clusters, unordered_map<string, SourceFile>& sourceFileMap, ConfigOptions* cfg) {
 
     stringstream ss;
+    vector<Cluster> clusters;
+    clusters.reserve(_clusters.size());
 
     // collect all the source files from clusters without an article
     vector<SourceFile> sourceFiles;
 
+    cfg->logger.log(debug, "Going over clusters");
     // go through all the clusters
-    for ( auto it = clusters.begin(); it != clusters.end();){
+    for ( auto it = _clusters.begin(); it != _clusters.end();){
         //while (clusterNo < clusters.size()) {
         //Cluster cl = clusters[clusterNo];
         Cluster cl = *it;
@@ -95,12 +98,14 @@ vector<Cluster> ClusterManager::cleanSourceFileCluster(vector<Cluster> clusters,
 
         if (cl.articles.size() > 1) {
             cfg->logger.log(info, ">>>>>Cluster has more than one article.");
-            it++;
+            clusters.push_back(cl);
         } else if (cl.articles.size() == 1) {
-            it++;
+            clusters.push_back(cl);
         } else {
             // if it has no articles then
 
+            // allocates enough memory for all sources
+            sourceFiles.reserve(sourceFiles.size() + cl.sourceFiles.size());
             for (unsigned int i=0; i < cl.sourceFiles.size(); i++) {
                 if(sourceFileMap.find(cl.sourceFiles[i]) == sourceFileMap.end()){
                     // this should never happen if clusters were generated from same sourceFiles
@@ -114,17 +119,20 @@ vector<Cluster> ClusterManager::cleanSourceFileCluster(vector<Cluster> clusters,
                     sourceFiles.push_back(sf);
                 }
             }
-
-            it = clusters.erase(it);
+            // does not add cluster
+            //it = clusters.erase(it);
         }
+            it++;
     }
-
+    clusters.shrink_to_fit();
+    cfg->logger.log(debug, "Went over clusters, now re-distributing sources");
     // once all the source files have been collected figure out which cluster these
     // files belong to
     for (unsigned int i = 0; i < sourceFiles.size(); i++) {
         int maxMatch = INT_MIN;
         int maxMatchClusterNo = 0;
 
+        cfg->logger.log(debug, "Source " + to_string(i) + "/" + to_string(sourceFiles.size()));
         // get all the keywords of the source file
         vector<string> keywords = split(sourceFiles[i].keyWords, ' ');
 
@@ -162,8 +170,9 @@ vector<Cluster> ClusterManager::cleanSourceFileCluster(vector<Cluster> clusters,
 	// create new cluster for each of these article and add them to the main list,
 	// remove the cluster which had more then one article from the main list
 	// "clusters"
-vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered_map<string, Article> articleMap, unordered_map<string, SourceFile> sourceFileMap, ConfigOptions* cfg) {
+vector<Cluster> ClusterManager::cleanCluster(vector<Cluster>& clusters, unordered_map<string, Article>& articleMap, unordered_map<string, SourceFile>& sourceFileMap, ConfigOptions* cfg) {
         vector<Cluster> newClusterList;
+        newClusterList.reserve(articleMap.size());
         stringstream ss;
 
 		// this is to make sure all the clusters are checked
@@ -191,6 +200,7 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 
 				// get the articles of this cluster
                 vector<Article> articlesInCluster;
+                articlesInCluster.reserve(cluster.articles.size());
 
 				for (unsigned int i = 0; i < cluster.articles.size(); i++) {
                     if(articleMap.find(cluster.articles[i]) == articleMap.end()){
@@ -211,7 +221,7 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 				// in the same time also count the total number of words in this article
 				// so instead of having the unique words as a set, lets change the unique
 				// words into a hashmap
-                // cout<<"Iterate over articlesMap"<<endl;
+        cfg->logger.log(debug, "Iterate over articlesMap");
 				for (unsigned int i = 0; i < articlesInCluster.size(); i++) {
 					// cout<<articlesInCluster[i].name<<endl;
 					// cout<<articlesInCluster[i].getKeyWords()<<endl;
@@ -230,7 +240,7 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 					}
 				}
 
-                // cout<<"Remove common words"<<endl;
+        cfg->logger.log(debug, "Remove common words");
 				// then remove the words from the articles that belong to other articles to
 				// now remove all the common keywords that are there between any two articles
 				// the articles should be left with keywords that are soleley special to them
@@ -252,7 +262,7 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 				// remove the words that occur less than the threshold
 
 				// for each of the articles
-                // cout<<"Remove words with lower occurence"<<endl;
+        cfg->logger.log(debug, "Remove words with lower occurence");
 				for (unsigned int i = 0; i < articlesInCluster.size(); i++) {
 
 					// for every unique word in the article
@@ -268,9 +278,10 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 					}
 				}
 
-                // cout<<"Backup source files"<<endl;
+       cfg->logger.log(debug, "Backup source files");
 				// get the list of source files in the cluster
 				vector<SourceFile> sourceFilesInCluster;
+        sourceFilesInCluster.reserve(cluster.sourceFiles.size());
 				// retrieve the sourcefiles from the SourceFileMap
 				for (unsigned int i = 0; i < cluster.sourceFiles.size(); i++) {
                     if(sourceFileMap.find(cluster.sourceFiles[i]) == sourceFileMap.end()){
@@ -290,7 +301,7 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 				// add the name of the article to the article list
 				// add this to the new cluster list
 
-                // cout<<"Create new clusters"<<endl;
+        cfg->logger.log(debug, "Create new clusters");
 				for (unsigned int i = 0; i < articlesInCluster.size(); i++) {
 					Cluster newCluster;
 					newCluster.clusterNo = cluster.clusterNo + "_" + to_string(i);
@@ -300,18 +311,21 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 				}
 
 
-                // cout<<"Re-distribute source files"<<endl;
+        cfg->logger.log(debug, "Re-distribute source files");
 				// for each source file find the amount of overlap it has with each of the
 				// article
 				for (unsigned int i = 0; i < sourceFilesInCluster.size(); i++) {
 					// cout<<sourceFilesInCluster[i].getName()<<endl;
 					int max = -1;
 					int clusterOverLapNo = -1;
+          vector<string> srcKeywordArray = split(sourceFilesInCluster[i].keyWords, ' ');
+          unordered_set<string> srcKeyWordSet (srcKeywordArray.begin(), srcKeywordArray.end());
 					// compare the amount of overlap of the source file with each of the articles
 					for (unsigned int j = 0; j < articlesInCluster.size(); j++) {
 						int count = 0;
                         for ( auto it = articlesInCluster[j].uniqueKeyWordSet.begin(); it != articlesInCluster[j].uniqueKeyWordSet.end(); ++it ){
-							if (sourceFilesInCluster[i].keyWords.find(" " + (*it) + " ") != string::npos) {
+							//if (sourceFilesInCluster[i].keyWords.find(" " + (*it) + " ") != string::npos) {
+              if (srcKeyWordSet.find(*it) != srcKeyWordSet.end()){
 								count = count + 1;
 							}
 						}
@@ -329,6 +343,6 @@ vector<Cluster> ClusterManager::cleanCluster(vector<Cluster> clusters, unordered
 			}
 
 		}
-        // cout<<"Finish stage 1 cleanup"<<endl;
+        cfg->logger.log(debug,"Finish stage 1 cleanup");
         return newClusterList;
 	}

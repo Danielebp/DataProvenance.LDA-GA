@@ -47,8 +47,8 @@ public:
 	// create cluster for each topic
 	// assigns the keywords to the appropraite topic
     static vector<Cluster> createClusters(ConfigOptions* cfg) ;
-    static vector<Cluster> cleanSourceFileCluster(vector<Cluster> clusters, unordered_map<string, SourceFile> sourceFileMap, ConfigOptions* cfg);
-    static vector<Cluster> cleanCluster(vector<Cluster> clusters, unordered_map<string, Article> articleMap, unordered_map<string, SourceFile> sourceFileMap, ConfigOptions* cfg);
+    static vector<Cluster> cleanSourceFileCluster(vector<Cluster>& clusters, unordered_map<string, SourceFile>& sourceFileMap, ConfigOptions* cfg);
+    static vector<Cluster> cleanCluster(vector<Cluster>& clusters, unordered_map<string, Article>& articleMap, unordered_map<string, SourceFile>& sourceFileMap, ConfigOptions* cfg);
 	// TODO: cleanClusters ()
 
 };

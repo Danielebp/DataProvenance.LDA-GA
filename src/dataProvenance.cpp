@@ -99,8 +99,8 @@ ResultStatistics calculatePrecisionRecall(ResultStatistics result, vector<Cluste
 
 //getting the centroid of each cluster by calculating the average of their cluster distribution
 
-vector<Cluster> performClustering(unordered_map<string, Article> articlesMap,
-                        unordered_map<string, SourceFile> sourceFileMap, ConfigOptions* cfg){
+vector<Cluster> performClustering(unordered_map<string, Article>& articlesMap,
+                        unordered_map<string, SourceFile>& sourceFileMap, ConfigOptions* cfg){
     // create clusters based on the distribution.txt
 	vector<Cluster> clusters = ClusterManager::createClusters(cfg);
     cfg->logger.log(debug, "Cluster created");
@@ -127,16 +127,13 @@ ResultStatistics reconstructProvenance(int numberOfDocuments, ConfigOptions * cf
     ResultStatistics result;
     GeneticAlgorithm ga;
 
-    Timer exTm;
-    exTm.start();
+    Timer geneticTime;
+    geneticTime.start();
 
     result = ga.geneticLogic(numberOfDocuments, cfg);
-    Timer geneticEndTime;
-    geneticEndTime.start();
-
 
     stringstream ss;
-    ss<< "Genetic algorithm takes " << (exTm.getTime()) << "ms";
+    ss<< "Genetic algorithm takes " << (geneticTime.getTime()) << "ms";
     cfg->logger.log(status,ss.str());
     ss.str(std::string());
     ss.clear();
@@ -157,11 +154,12 @@ ResultStatistics reconstructProvenance(int numberOfDocuments, ConfigOptions * cf
         }
     }
 
-
+    Timer clusteringTime;
+    clusteringTime.start();
     // create clusters based on the distribution.txt
     vector<Cluster> clusters = performClustering(articlesMap, sourceFileMap, cfg);
 
-    ss<<"Clustering takes " << (geneticEndTime.getTime()) << "ms";
+    ss<<"Clustering takes " << (clusteringTime.getTime()) << "ms";
     cfg->logger.log(status, ss.str());
     ss.str(std::string());
     ss.clear();
@@ -169,7 +167,7 @@ ResultStatistics reconstructProvenance(int numberOfDocuments, ConfigOptions * cf
     result = calculatePrecisionRecall(result, clusters, cfg);
     cfg->logger.log(debug, "Calculated precision & recall");
 
-    result.execution_milliseconds = exTm.getTime();
+    result.execution_milliseconds = geneticTime.getTime();
     cfg->logger.log(status, result.to_string(""));
     cfg->logger.log(info, "###########################################");
 

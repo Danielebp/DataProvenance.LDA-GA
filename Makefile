@@ -15,9 +15,10 @@ GLDAOBJS=	glda_dataset.o glda_utils.o glda_model.o glda_CUDASampling.o glda_samp
 PLDAFLAGS	= -O3 -Wall -Wno-sign-compare
 PLDAOBJS=	plda_accumulative_model.o plda_cmd_flags.o plda_common.o plda_document.o plda_model.o plda_sampler.o
 
+DBFLGS= -DNDEBUG -g -fno-omit-frame-pointer
 
 #WLDA
-WLDAFLAGS = -fopenmp -march=native -DNDEBUG -g -rdynamic -lnuma $(LIBS_DIR)/WarpLDA/release/gflags/libgflags_nothreads.a
+WLDAFLAGS = $(DBFLGS) -fopenmp -march=native -rdynamic -lnuma $(LIBS_DIR)/WarpLDA/release/gflags/libgflags_nothreads.a
 WLDA_COMMON= $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/common.dir/AdjList.cpp.o $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/common.dir/Bigraph.cpp.o $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/common.dir/clock.cpp.o $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/common.dir/NumaArray.cpp.o $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/common.dir/Vocab.cpp.o
 WLDA_WARP= $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/warplda.dir/lda.cpp.o $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/warplda.dir/warp.cpp.o $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/warplda.dir/warplda.cpp.o
 WLDA_FORMAT= $(LIBS_DIR)/WarpLDA/release/src/CMakeFiles/format.dir/format.cpp.o
