@@ -1,7 +1,7 @@
 #!/bin/bash
 # "10" "50"
 dataSize=("10" "50" "100" "150" "200" "300" "400" "500")
-libraries=("plda") # "glda" "blda" "gibbs") #"wlda"
+libraries=("plda" "gibbs") #"plda" "glda" "blda" "gibbs") #"wlda"
 idealCount=17
 timestamp=$(date "+%Y%m%d%H%M%S")
 combinedFile=./combinedParsedResults_$timestamp.txt

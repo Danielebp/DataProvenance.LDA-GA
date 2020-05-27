@@ -152,7 +152,7 @@ void model::set_default_values() {
     M = 0;
     V = 0;
     K = 100;
-    alpha = 0.01;//50.0 / K;
+    alpha = 50.0 / K;
     beta = 0.01;
     niters = 2000;
     liter = 0;

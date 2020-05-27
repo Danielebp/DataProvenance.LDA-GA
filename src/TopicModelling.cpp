@@ -365,7 +365,7 @@ string TopicModelling::PLDA_getDocNameByNumber(int num){
 }
 
 bool TopicModelling::PLDA_TrainModel(learning_lda::LDAModel * model) {
-    learning_lda::LDASampler sampler(0.01, 0.01, model, PLDA_accum_model);
+    learning_lda::LDASampler sampler((50/numberOfTopics), 0.01, model, PLDA_accum_model);
     int burnInIterations = 10;
 
     sampler.InitModelGivenTopics(PLDA_corpus);
