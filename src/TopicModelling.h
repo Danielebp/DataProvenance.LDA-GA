@@ -57,6 +57,7 @@ private:
     //#####################################################
     learning_lda::LDAAccumulativeModel* PLDA_accum_model;
     map<string, int>* PLDA_word_index_map;
+    vector<learning_lda::LDADocument*>* PLDA_corpus;
 
     //#####################################################
     //############### BleiLDA Variables ###################
@@ -69,7 +70,6 @@ private:
     double** wldaDocTopDist;
 
 public:
-    vector<learning_lda::LDADocument*>* PLDA_corpus;
   TopicModelling(int numberOfTopics, int numberOfIterations, int numberOfDocuments, long seed, ConfigOptions* cfg);
 
   ~TopicModelling();

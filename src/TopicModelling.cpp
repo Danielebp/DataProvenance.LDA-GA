@@ -21,7 +21,7 @@ TopicModelling::TopicModelling(int numberOfTopics, int numberOfIterations, int n
 #endif
           case plda:
 		this->PLDA_corpus = new vector<learning_lda::LDADocument*>();
-      		this->PLDA_corpus->clear();
+      		//this->PLDA_corpus->clear();
       		cfg->logger.log(debug, "Corpus has size " + to_string(PLDA_corpus->size()));
             break;
           case blda:
@@ -55,9 +55,13 @@ TopicModelling::~TopicModelling(){
             break;
 #endif
           case plda:
+            cfg->logger.log(debug, "Starting PLDA delete");
             PLDA_FreeCorpus();
-	    delete PLDA_accum_model;
+            cfg->logger.log(debug, "Freed Corpus");
+            delete PLDA_accum_model;
+            cfg->logger.log(debug, "Deleted Accum");
             delete PLDA_word_index_map;
+            cfg->logger.log(debug, "Deleted word map");
             break;
         case blda:
           delete blda_model;
@@ -311,8 +315,10 @@ long TopicModelling::PLDA_LDA(string MyCount) {
 
   cfg->logger.log(debug, "Finished Model -> Start Train");
 
+    cfg->logger.log(debug, "corpus has size: " + to_string(PLDA_corpus->size()));
   PLDA_TrainModel(&model); // corpus gets screwed here
 
+    cfg->logger.log(debug, "corpus has size: " + to_string(PLDA_corpus->size()));
   cfg->logger.log(debug, "Finished Train -> Write file");
 
   ttime = t.getTime();
