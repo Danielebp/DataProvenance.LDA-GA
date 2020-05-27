@@ -8,7 +8,7 @@ Version of the LDA-GA algorithm for data provenance in C++
 - gcc
 
 ## Building
-1. Edit the Makefile to reflect the CUDA compute capability of your machine
+1. Edit the Makefile to reflect the CUDA capability of your machine. (You can find this information running the CUDA deviceQuery sample) If the capability of you machine is 3.7 for example, you should change the line `GPU_ARCH_FLAG   = arch=compute_70,code=sm_70` to `GPU_ARCH_FLAG   = arch=compute_37,code=sm_37` 
 
 2. Run the `build.sh` script to build the solution and its dependencies. If the build succeeds the `provenance` executable will be created
 
